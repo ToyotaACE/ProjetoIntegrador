@@ -22,7 +22,7 @@ import yarisHatch from "../image/yaris.png";
 import yarisCross from "../image/yarisseda.png";
 import sw4 from "../image/sw4.png";
 
-const API_ORIGIN = "https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod";
+const API_ORIGIN = (process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api").replace(/\/api\/?$/, "");
 const API_URL = `${API_ORIGIN}/api`;
 
 function getUserEmail(user) {

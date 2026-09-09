@@ -56,7 +56,7 @@ export default function ChatbotScreen() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/chatbot/chat", {
+      const response = await fetch("http://localhost:5000/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

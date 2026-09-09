@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || "https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/api";
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8083/api";
 
 export type Cliente = {
   id?: number;

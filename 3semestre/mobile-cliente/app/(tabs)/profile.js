@@ -19,7 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 
-const API_URL = "https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/api";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
 
 function formatPrice(value) {
   const numberValue = Number(value || 0);

@@ -20,7 +20,7 @@ export default function Financiamento(){
     useEffect(()=>{ // atalho
 
         /* const requisicao = async ()=>{
-            await fetch('localhost:8080/carros').then((res)=>{
+            await fetch('http://localhost:8083/api/veiculos').then((res)=>{
                 res.json()
             }).then((json:any)=>{
                 if(json.body.usuario != null ){

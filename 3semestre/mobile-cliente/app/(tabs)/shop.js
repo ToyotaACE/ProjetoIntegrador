@@ -210,7 +210,7 @@ export default function ShopPage() {
       }
 
       for (const item of cart) {
-        const response = await fetch("https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/api/compras", {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api"}/compras`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

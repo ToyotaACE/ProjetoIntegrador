@@ -12,7 +12,7 @@ export default function DadosPessoais() {
 
     useEffect(() => {
 
-        fetch("https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/api/iot/status/ABC123")
+        fetch("http://localhost:8083/iot/status/ABC123")
             .then((res) => res.json())
             .then((data) => {
                 setEtapas(data)

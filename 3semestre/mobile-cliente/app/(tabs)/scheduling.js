@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 
-const API_URL = "https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/api";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
 
 const timeSlots = ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00"];
 

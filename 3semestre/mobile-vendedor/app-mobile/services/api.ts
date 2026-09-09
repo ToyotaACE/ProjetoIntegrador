@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  "https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/api";
+  process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
 /*
   IMPORTANTE:
 

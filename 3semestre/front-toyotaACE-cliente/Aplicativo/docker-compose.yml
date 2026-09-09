@@ -4,16 +4,16 @@ services:
 
   backend:
     build:
-      context: ./BackEndAPI
+      context: ../../Back-ToyotaACE/Back-Toya
       dockerfile: Dockerfile
     container_name: backend_api
     restart: always
-    command: dotnet run
     ports:
-      - "5000:5000"
+      - "8083:8083"
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=appdb;Username=apiUser;Password=admin
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sistema_estoque
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: senha_segura_123
     depends_on:
       - postgres
 
@@ -27,9 +27,9 @@ services:
       - "3000:3000"
     environment:
       # URL usada pelo frontend dentro do docker
-      VITE_API_URL: http://backend:5000
+      VITE_API_URL: http://localhost:8083/api
       # para Next.js (se existir)
-      NEXT_PUBLIC_API_URL: http://backend:5000
+      NEXT_PUBLIC_API_URL: http://localhost:8083/api
     depends_on:
       - backend
   
@@ -38,9 +38,9 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: apiUser
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: appdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: senha_segura_123
+      POSTGRES_DB: sistema_estoque
     ports:
       - "5432:5432"
     volumes:

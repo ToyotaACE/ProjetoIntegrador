@@ -8,7 +8,7 @@ Backend Spring Boot para o projeto Toyota ACE Cliente.
 docker compose up --build
 ```
 
-Backend: http://localhost:8081
+Backend: http://localhost:8083
 PostgreSQL: localhost:5433
 
 ## Rodar localmente
