@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import logoT from "@/assets/logoT.png";
 
 const RegisterPage = () => {
+  const senhaForte = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -24,8 +25,21 @@ const RegisterPage = () => {
     e.preventDefault();
     setError("");
 
-    if (!nome || !cpf || !email || !password || !confirmPassword) {
+    const cpfLimpo = cpf.trim();
+    const emailLimpo = email.trim();
+
+    if (!nome.trim() || !cpfLimpo || !emailLimpo || !password || !confirmPassword) {
       setError("Preencha nome, CPF, email e senha.");
+      return;
+    }
+
+    if (!/^\d{11}$/.test(cpfLimpo)) {
+      setError("O CPF deve conter exatamente 11 números.");
+      return;
+    }
+
+    if (!senhaForte.test(password)) {
+      setError("A senha deve ter 8 ou mais caracteres, com maiúscula, minúscula, número e símbolo.");
       return;
     }
 
@@ -36,7 +50,7 @@ const RegisterPage = () => {
 
     try {
       setLoading(true);
-      await register({ nome, cpf, telefone, email, senha: password });
+      await register({ nome: nome.trim(), cpf: cpfLimpo, telefone, email: emailLimpo, senha: password });
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível criar sua conta.");
@@ -65,7 +79,16 @@ const RegisterPage = () => {
 
             <div className="space-y-2">
               <Label className="text-white">CPF</Label>
-              <Input placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+              <Input
+                placeholder="00000000000"
+                inputMode="numeric"
+                value={cpf}
+                onChange={(e) => {
+                  const cpfDigitado = e.target.value.replace(/\D/g, "");
+                  setCpf(cpfDigitado);
+                  setError(cpfDigitado.length > 11 ? "O CPF deve conter exatamente 11 números." : "");
+                }}
+              />
             </div>
 
             <div className="space-y-2">
@@ -80,7 +103,15 @@ const RegisterPage = () => {
 
             <div className="space-y-2">
               <Label className="text-white">Senha</Label>
-              <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <p className="text-xs text-white/80">
+                Mínimo de 8 caracteres, com maiúscula, minúscula, número e símbolo.
+              </p>
             </div>
 
             <div className="space-y-2">
