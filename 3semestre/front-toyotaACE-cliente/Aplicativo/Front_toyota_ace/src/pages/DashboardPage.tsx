@@ -125,7 +125,7 @@ const DashboardPage = () => {
             {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}
           </div>
 
-          <Card className="overflow-hidden bg-white dark:bg-zinc-900 border shadow-sm">
+          <Card className="overflow-hidden bg-white dark:bg-red-600 border shadow-sm">
             <CardContent className="p-0">
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <div className="p-8 space-y-6">
@@ -150,7 +150,7 @@ const DashboardPage = () => {
 
                   {veiculos.length > 1 && (
                     <div>
-                      <p className="text-sm text-gray-500 mb-2">
+                      <p className="text-sm text-red-600 mb-2">
                         Escolher veículo principal
                       </p>
 
@@ -167,7 +167,7 @@ const DashboardPage = () => {
                               className={`px-3 py-2 rounded-lg border text-sm transition ${
                                 ativo
                                   ? "border-red-600 bg-red-600 text-white"
-                                  : "border-border hover:border-red-500"
+                                  : "border-border hover:border-red-600"
                               }`}
                             >
                               {veiculo.modeloVeiculo || "Veículo"}
@@ -194,7 +194,7 @@ const DashboardPage = () => {
                   <div className="flex flex-wrap gap-3">
                     <Button
                       asChild
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className="bg-zinc-900 hover:bg-zinc-800 text-white"
                     >
                       <Link to="/veiculo">
                         Ver veículo
@@ -221,7 +221,7 @@ const DashboardPage = () => {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <QuickCard
-              icon={<Car className="h-5 w-5 text-red-600" />}
+              icon={<Car className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
               title="Veículos"
               value={`${veiculos.length}`}
               subtitle="veículo(s) vinculado(s)"
@@ -229,7 +229,7 @@ const DashboardPage = () => {
             />
 
             <QuickCard
-              icon={<CreditCard className="h-5 w-5 text-red-600" />}
+              icon={<CreditCard className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
               title="Próxima parcela"
               value={fmt(valorParcela)}
               subtitle={`${parcelasRestantes} restantes`}
@@ -237,7 +237,7 @@ const DashboardPage = () => {
             />
 
             <QuickCard
-              icon={<Wrench className="h-5 w-5 text-red-600" />}
+              icon={<Wrench className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
               title="Próxima revisão"
               value={veiculoPrincipal?.dataProximaRevisao || "Não informada"}
               subtitle="mantenha sua garantia ativa"
@@ -245,7 +245,7 @@ const DashboardPage = () => {
             />
 
             <QuickCard
-              icon={<ShoppingBag className="h-5 w-5 text-red-600" />}
+              icon={<ShoppingBag className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
               title="Toyota Shop"
               value="Acessórios"
               subtitle="produtos exclusivos Toyota"
@@ -257,7 +257,7 @@ const DashboardPage = () => {
             <Card className="bg-white dark:bg-zinc-900 border shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-red-600" />
+                  <Bell className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
                   Central de avisos
                 </CardTitle>
               </CardHeader>
@@ -295,7 +295,7 @@ const DashboardPage = () => {
             <Card className="bg-white dark:bg-zinc-900 border shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-red-600" />
+                  <ShieldCheck className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
                   Ações rápidas
                 </CardTitle>
               </CardHeader>
@@ -354,9 +354,9 @@ function QuickCard({
 }) {
   return (
     <Link to={to}>
-      <Card className="bg-white dark:bg-zinc-900 border shadow-sm hover:border-red-500/60 hover:shadow-md transition-all h-full">
+      <Card className="bg-white dark:bg-zinc-900 border shadow-sm hover:border-zinc-400 hover:shadow-md transition-all h-full">
         <CardHeader className="flex flex-row items-center gap-3 pb-2">
-          <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+          <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
             {icon}
           </div>
 

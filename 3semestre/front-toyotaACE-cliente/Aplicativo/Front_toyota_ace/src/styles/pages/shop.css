@@ -1,0 +1,2 @@
+/* Loja: ajustes visuais isolados desta tela. */
+body[data-screen="shop"] main { background: hsl(var(--background)); }

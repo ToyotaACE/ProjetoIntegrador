@@ -1,0 +1,2 @@
+/* Perfil: ajustes visuais isolados desta tela. */
+body[data-screen="profile"] main { background: hsl(var(--background)); }

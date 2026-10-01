@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/services/api";
+import { api, type Agendamento } from "@/services/api";
+import {
+  getAvailableAppointmentTimes,
+  getInitialAppointmentDate,
+  normalizeAppointmentTime,
+} from "@/lib/scheduling";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,14 +39,17 @@ import {
 } from "lucide-react";
 
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { enUS, es, ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type AppointmentType = | "visita"
   | "ligacao"
   | "test-drive"
   | "retirada"
-  | "revisao";
+  | "revisao"
+  | "recall"
+  | "outros";
 
 type Appointment = {
   id: number;
@@ -87,51 +95,76 @@ const mapTipoServico = (tipoServico?: string): AppointmentType => {
 
 const SchedulingPage = () => {
   const { user } = useAuth();
+  const { language } = useLanguage();
+  const dateLocale = language === "en-US" ? enUS : language === "es-ES" ? es : ptBR;
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(getInitialAppointmentDate);
   const [month, setMonth] = useState<Date>(new Date());
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [reservedAppointments, setReservedAppointments] = useState<{ date: string; time: string }[]>([]);
+  const [availabilityReady, setAvailabilityReady] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingAppointments, setLoadingAppointments] = useState(false);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
 
   const [form, setForm] = useState({
     time: "",
-    client: user?.name || user?.email || "",
+    client: user?.nome || user?.email || "",
     type: "retirada" as AppointmentType,
     description: "Agendamento de Retirada realizado pelo portal Toyota ACE",
   });
 
   const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-  const formattedDate = format(selectedDate, "d 'de' MMMM, yyyy", {
-    locale: ptBR,
-  });
+  const formattedDate = format(
+    selectedDate,
+    language === "en-US" ? "MMMM d, yyyy" : "d 'de' MMMM 'de' yyyy",
+    { locale: dateLocale },
+  );
 
-  const carregarAgendamentos = async () => {
+  const availableTimes = getAvailableAppointmentTimes(dateStr, reservedAppointments);
+
+  const formatAppointments = (response: Agendamento[]): Appointment[] =>
+    response.map((item) => ({
+      id: item.id,
+      date: item.data,
+      time: normalizeAppointmentTime(item.horario || ""),
+      client: item.cliente?.nome || user?.nome || user?.email || "",
+      type: mapTipoServico(item.tipoServico),
+      description: item.observacao || "",
+    }));
+
+  const carregarAgendamentos = async (): Promise<{ date: string; time: string }[] | null> => {
     try {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setLoadingAppointments(false);
+        return [];
+      }
 
       setLoadingAppointments(true);
 
-      const response = await api.buscarAgendamentosCliente(user.id);
-
-      const dadosFormatados: Appointment[] = response.map((item: any) => ({
-        id: item.id,
-        date: item.data,
-        time: item.horario?.substring(0, 5) || "",
-        client: item.cliente?.nome || user.name || user.email || "",
-        type: mapTipoServico(item.tipoServico),
-        description: item.observacao || "",
+      const [response, allAppointments] = await Promise.all([
+        api.buscarAgendamentosCliente(user.id),
+        api.listarTodosAgendamentos(),
+      ]);
+      const dadosFormatados = formatAppointments(response);
+      const horariosOcupados = allAppointments.map((appointment) => ({
+        date: appointment.data,
+        time: normalizeAppointmentTime(appointment.horario),
       }));
 
       setAppointments(dadosFormatados);
+      setReservedAppointments(horariosOcupados);
+      setAvailabilityReady(true);
+      return horariosOcupados;
     } catch (error) {
       console.error("Erro ao carregar agendamentos:", error);
       toast.error("Não foi possível carregar os agendamentos.");
+      setAvailabilityReady(false);
+      return null;
     } finally {
       setLoadingAppointments(false);
     }
@@ -144,7 +177,7 @@ const SchedulingPage = () => {
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
-      client: user?.name || user?.email || "",
+      client: user?.nome || user?.email || "",
     }));
   }, [user]);
 
@@ -181,6 +214,16 @@ const SchedulingPage = () => {
     try {
       setLoading(true);
 
+      const latestReservedAppointments = await carregarAgendamentos();
+      if (!latestReservedAppointments) return;
+
+      const latestAvailableTimes = getAvailableAppointmentTimes(dateStr, latestReservedAppointments);
+      if (!latestAvailableTimes.includes(form.time)) {
+        setForm((previous) => ({ ...previous, time: "" }));
+        toast.error("Este horário acabou de ser reservado. Escolha outro.");
+        return;
+      }
+
       await api.agendar({
         clienteId: user?.id,
         email: user?.email,
@@ -197,7 +240,7 @@ const SchedulingPage = () => {
 
       setForm({
         time: "",
-        client: user?.name || user?.email || "",
+        client: user?.nome || user?.email || "",
         type: "retirada",
         description: "Agendamento de Retirada realizado pelo portal Toyota ACE",
       });
@@ -238,7 +281,7 @@ const SchedulingPage = () => {
 
           <Button
             onClick={() => setDialogOpen(true)}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-zinc-900 hover:bg-zinc-800 text-white"
           >
             <Plus className="h-4 w-4 mr-1" />
             Novo agendamento
@@ -253,7 +296,7 @@ const SchedulingPage = () => {
               onSelect={(date) => date && setSelectedDate(date)}
               month={month}
               onMonthChange={setMonth}
-              locale={ptBR}
+              locale={dateLocale}
               className="pointer-events-auto"
               disabled={(date) =>
                 date < new Date(new Date().setHours(0, 0, 0, 0))
@@ -264,7 +307,7 @@ const SchedulingPage = () => {
                 ),
               }}
               modifiersClassNames={{
-                hasAppointment: "border-2 border-red-500/50",
+                hasAppointment: "border-2 border-zinc-400/70",
               }}
             />
           </div>
@@ -291,7 +334,7 @@ const SchedulingPage = () => {
                   return (
                     <div
                       key={appointment.id}
-                      className="p-4 rounded-lg border border-border bg-card hover:border-red-500/30 transition-all"
+                      className="p-4 rounded-lg border border-border bg-card hover:border-zinc-400/70 transition-all"
                     >
                       <div className="flex items-start gap-4">
                         <div className="text-center shrink-0 pt-0.5">
@@ -350,13 +393,25 @@ const SchedulingPage = () => {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>Horário</Label>
-              <Input
-                type="time"
+              <Select
                 value={form.time}
-                onChange={(event) =>
-                  setForm({ ...form, time: event.target.value })
-                }
-              />
+                onValueChange={(time) => setForm({ ...form, time })}
+                disabled={loadingAppointments || !availabilityReady || availableTimes.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um horário disponível" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTimes.map((time) => (
+                    <SelectItem key={time} value={time}>{time}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {availabilityReady && availableTimes.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum horário disponível nesta data.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -406,7 +461,7 @@ const SchedulingPage = () => {
             <Button
               onClick={handleSave}
               disabled={loading}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="bg-zinc-900 text-white hover:bg-zinc-800"
             >
               {loading ? "Salvando..." : "Salvar"}
             </Button>

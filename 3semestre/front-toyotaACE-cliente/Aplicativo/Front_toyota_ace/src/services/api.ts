@@ -76,6 +76,20 @@ export type AgendamentoRequest = {
   observacao?: string;
 };
 
+export type Agendamento = {
+  id: number;
+  data: string;
+  horario: string;
+  tipoServico?: string;
+  observacao?: string;
+  cliente?: { nome?: string };
+};
+
+export type HorarioAgendamento = {
+  data: string;
+  horario: string;
+};
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
@@ -172,13 +186,16 @@ export const api = {
     }),
 
   buscarAgendamentosCliente: (clienteId: number) =>
-    request(`/agendamentos/cliente/${clienteId}`),
+    request<Agendamento[]>(`/agendamentos/cliente/${clienteId}`),
 
   listarAgendamentos: (clienteId: number) =>
-    request(`/agendamentos/cliente/${clienteId}`),
+    request<Agendamento[]>(`/agendamentos/cliente/${clienteId}`),
 
   listarTodosAgendamentos: () =>
-    request("/agendamentos"),
+    request<Agendamento[]>("/agendamentos"),
+
+  listarHorariosOcupados: () =>
+    request<HorarioAgendamento[]>("/agendamentos/horarios-ocupados"),
 
   deletarAgendamento: (id: number) =>
     request(`/agendamentos/${id}`, {

@@ -1,0 +1,2 @@
+/* Dashboard: espaço para cartões, indicadores e gráficos. */
+body[data-screen="dashboard"] main { background: hsl(var(--background)); }

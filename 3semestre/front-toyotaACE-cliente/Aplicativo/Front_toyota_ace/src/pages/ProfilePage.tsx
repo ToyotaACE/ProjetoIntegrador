@@ -282,25 +282,25 @@ const ProfilePage = () => {
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <Info
-                    icon={<User className="h-5 w-5 text-red-600" />}
+                    icon={<User className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                     label="Nome"
                     value={dadosBanco?.nome}
                   />
 
                   <Info
-                    icon={<Mail className="h-5 w-5 text-red-600" />}
+                    icon={<Mail className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                     label="Email"
                     value={dadosBanco?.email}
                   />
 
                   <Info
-                    icon={<CreditCard className="h-5 w-5 text-red-600" />}
+                    icon={<CreditCard className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                     label="CPF"
                     value={dadosBanco?.cpf}
                   />
 
                   <Info
-                    icon={<Phone className="h-5 w-5 text-red-600" />}
+                    icon={<Phone className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                     label="Telefone"
                     value={dadosBanco?.telefone}
                   />
@@ -329,7 +329,7 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-800/40 flex items-start gap-3">
-                  <Lock className="h-5 w-5 text-red-600 mt-1" />
+                  <Lock className="h-5 w-5 text-zinc-700 dark:text-zinc-300 mt-1" />
 
                   <div>
                     <p className="font-semibold">Senha de acesso</p>
@@ -355,7 +355,7 @@ const ProfilePage = () => {
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5 text-red-600" />
+                  <ShoppingBag className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
                   Compras Toyota Shop
                 </CardTitle>
 
@@ -393,7 +393,7 @@ const ProfilePage = () => {
                   {purchases.map((purchase) => (
                     <div
                       key={purchase.id}
-                      className="rounded-xl border p-5 hover:border-red-500 transition"
+                      className="rounded-xl border p-5 hover:border-zinc-400 transition"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div>

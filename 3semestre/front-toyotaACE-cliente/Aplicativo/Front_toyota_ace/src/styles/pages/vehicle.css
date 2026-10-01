@@ -1,0 +1,2 @@
+/* Veículo: ajustes visuais isolados desta tela. */
+body[data-screen="vehicle"] main { background: hsl(var(--background)); }

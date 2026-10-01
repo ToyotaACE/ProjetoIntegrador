@@ -258,17 +258,17 @@ const ShopPage = () => {
             Carrinho
 
             {totalItems > 0 && (
-              <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-xs text-white">
+              <span className="ml-2 rounded-full bg-zinc-900 px-2 py-0.5 text-xs text-white">
                 {totalItems}
               </span>
             )}
           </Button>
         </div>
 
-        <section className="relative overflow-hidden rounded-2xl bg-black border border-red-600 shadow-lg">
+        <section className="relative overflow-hidden rounded-2xl bg-black border border-zinc-900 shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-6 md:p-10">
             <div className="space-y-4">
-              <span className="inline-flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+              <span className="inline-flex items-center gap-2 bg-zinc-900 text-white px-3 py-1 rounded-full text-xs font-semibold">
                 <Tag className="h-3.5 w-3.5" />
                 Promoção Especial
               </span>
@@ -340,7 +340,7 @@ const ShopPage = () => {
             {products.map((product) => (
               <Card
                 key={product.id}
-                className="overflow-hidden border hover:border-red-500/50 transition-all hover:shadow-2xl hover:-translate-y-1 duration-300 bg-white dark:bg-zinc-900 rounded-2xl"
+                className="overflow-hidden border hover:border-red-600/70 transition-all hover:shadow-2xl hover:-translate-y-1 duration-300 bg-white dark:bg-zinc-900 rounded-2xl"
               >
                 <div className="relative w-full h-72 overflow-hidden bg-gray-100 dark:bg-zinc-800">
                   <img
@@ -380,7 +380,7 @@ const ShopPage = () => {
                   </div>
 
                   <Button
-                    className="w-full bg-red-600 hover:bg-red-700 text-white h-11 text-sm font-semibold rounded-xl"
+                    className="w-full bg-red-600 hover:bg-red-600 text-white h-11 text-sm font-semibold rounded-xl"
                     onClick={() => addToCart(product)}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
@@ -464,7 +464,7 @@ const ShopPage = () => {
                       variant="ghost"
                       onClick={() => removeFromCart(item.id)}
                     >
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                      <Trash2 className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
                     </Button>
                   </div>
                 ))}
@@ -520,7 +520,7 @@ const ShopPage = () => {
             <Button
               onClick={finishPurchase}
               disabled={loading || cart.length === 0}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-zinc-900 hover:bg-zinc-800 text-white"
             >
               {loading ? "Finalizando..." : "Finalizar compra"}
             </Button>
@@ -548,7 +548,7 @@ const ShopPage = () => {
           <DialogFooter>
             <Button
               onClick={resetPurchase}
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
+              className="w-full bg-zinc-900 hover:bg-zinc-800 text-white"
             >
               Fechar
             </Button>
