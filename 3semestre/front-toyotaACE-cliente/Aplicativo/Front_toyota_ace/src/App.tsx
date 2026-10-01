@@ -5,6 +5,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import AccessibilityMenu from "@/components/AccessibilityMenu";
+import PageTranslation from "@/components/PageTranslation";
+import RouteAppearance from "@/components/RouteAppearance";
 
 import AppLayout from "@/components/AppLayout";
 
@@ -25,12 +29,16 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <LanguageProvider>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <AccessibilityMenu />
+          <PageTranslation />
 
           <BrowserRouter>
+            <RouteAppearance />
             <Routes>
               <Route path="/" element={<Navigate to="/apresentacao" replace />} />
 
@@ -53,6 +61,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

@@ -103,11 +103,11 @@ const LandingPage = () => {
 
         <div className="absolute inset-0 bg-black/65" />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
           <div className="max-w-2xl">
-            <p className="text-sm uppercase tracking-[0.5em] text-red-500 mb-4">
+            <p className="text-sm uppercase tracking-[0.5em] text-zinc-500 mb-4">
               Nova experiência Toyota
             </p>
 
@@ -155,7 +155,7 @@ const LandingPage = () => {
       <section id="modelos" className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-red-500 uppercase tracking-[0.35em] text-xs mb-3">
+            <p className="text-zinc-500 uppercase tracking-[0.35em] text-xs mb-3">
               Modelos
             </p>
 
@@ -189,7 +189,7 @@ const LandingPage = () => {
       {/* PILARES */}
       <section id="experiencia" className="bg-white text-black py-20">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-red-600 uppercase tracking-[0.35em] text-xs mb-3">
+          <p className="text-zinc-700 uppercase tracking-[0.35em] text-xs mb-3">
             Experiência digital
           </p>
 
@@ -199,7 +199,7 @@ const LandingPage = () => {
 
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-8 rounded-3xl bg-neutral-100 hover:bg-neutral-200 transition">
-              <ShieldCheck className="h-10 w-10 text-red-600 mb-6" />
+              <ShieldCheck className="h-10 w-10 text-zinc-700 dark:text-zinc-300 mb-6" />
 
               <h3 className="text-2xl font-bold mb-3">Acessibilidade</h3>
 
@@ -210,7 +210,7 @@ const LandingPage = () => {
             </div>
 
             <div className="p-8 rounded-3xl bg-neutral-100 hover:bg-neutral-200 transition">
-              <Wifi className="h-10 w-10 text-red-600 mb-6" />
+              <Wifi className="h-10 w-10 text-zinc-700 dark:text-zinc-300 mb-6" />
 
               <h3 className="text-2xl font-bold mb-3">Conectividade</h3>
 
@@ -221,7 +221,7 @@ const LandingPage = () => {
             </div>
 
             <div className="p-8 rounded-3xl bg-neutral-100 hover:bg-neutral-200 transition">
-              <Sparkles className="h-10 w-10 text-red-600 mb-6" />
+              <Sparkles className="h-10 w-10 text-zinc-700 dark:text-zinc-300 mb-6" />
 
               <h3 className="text-2xl font-bold mb-3">Experiência</h3>
 
@@ -238,7 +238,7 @@ const LandingPage = () => {
       <section id="historia" className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-red-500 uppercase tracking-[0.35em] text-xs mb-3">
+            <p className="text-zinc-500 uppercase tracking-[0.35em] text-xs mb-3">
               Tradição
             </p>
 

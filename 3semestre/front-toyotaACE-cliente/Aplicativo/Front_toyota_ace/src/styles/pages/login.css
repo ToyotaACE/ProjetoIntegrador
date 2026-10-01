@@ -1,0 +1,2 @@
+/* Login: ajustes visuais isolados desta tela. */
+body[data-screen="login"] #root { min-height: 100vh; }

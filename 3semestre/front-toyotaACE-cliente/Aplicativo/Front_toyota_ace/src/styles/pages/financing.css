@@ -1,0 +1,2 @@
+/* Financiamento: ajustes visuais isolados desta tela. */
+body[data-screen="financing"] main { background: hsl(var(--background)); }

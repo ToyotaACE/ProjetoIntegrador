@@ -1,0 +1,2 @@
+/* Estilos exclusivos do chatbot. */
+body[data-screen] [aria-label="Accessibility"] { isolation: isolate; }

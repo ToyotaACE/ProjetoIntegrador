@@ -111,7 +111,7 @@ export default function ChatbotScreen() {
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 bg-red-700 hover:bg-red-600 transition-all shadow-2xl rounded-full p-4 text-white"
+        className="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-zinc-800 transition-all shadow-2xl rounded-full p-4 text-white"
       >
         {open ? (
           <X size={24} />
@@ -129,7 +129,7 @@ export default function ChatbotScreen() {
           ref={chatRef}
           className="fixed bottom-24 right-6 w-[380px] h-[600px] bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300"
         >
-          <div className="bg-red-700 px-5 py-4 flex items-center justify-between border-b border-red-600">
+          <div className="bg-zinc-900 px-5 py-4 flex items-center justify-between border-b border-zinc-900">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-red-700 font-bold text-lg">
                 <img
@@ -172,7 +172,7 @@ export default function ChatbotScreen() {
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-lg ${
                     message.type === "user"
-                      ? "bg-red-700 text-white rounded-br-sm"
+                      ? "bg-zinc-900 text-white rounded-br-sm"
                       : "bg-zinc-800 text-zinc-100 rounded-bl-sm border border-zinc-700"
                   }`}
                 >
@@ -193,21 +193,21 @@ export default function ChatbotScreen() {
           <div className="px-4 py-3 border-t border-zinc-800 flex flex-wrap gap-2 bg-zinc-900">
             <button
               onClick={() => sendSuggestion("garantia")}
-              className="px-3 py-2 bg-zinc-800 hover:bg-red-700 transition rounded-full text-xs text-white border border-zinc-700"
+              className="px-3 py-2 bg-zinc-800 hover:bg-zinc-800 transition rounded-full text-xs text-white border border-zinc-700"
             >
               🛡️ Garantia
             </button>
 
             <button
               onClick={() => sendSuggestion("financeiro")}
-              className="px-3 py-2 bg-zinc-800 hover:bg-red-700 transition rounded-full text-xs text-white border border-zinc-700"
+              className="px-3 py-2 bg-zinc-800 hover:bg-zinc-800 transition rounded-full text-xs text-white border border-zinc-700"
             >
               💰 Financiamento
             </button>
 
             <button
               onClick={() => sendSuggestion("retirada")}
-              className="px-3 py-2 bg-zinc-800 hover:bg-red-700 transition rounded-full text-xs text-white border border-zinc-700"
+              className="px-3 py-2 bg-zinc-800 hover:bg-zinc-800 transition rounded-full text-xs text-white border border-zinc-700"
             >
               📅 Retirada
             </button>
@@ -220,13 +220,13 @@ export default function ChatbotScreen() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Digite sua mensagem..."
-              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-red-600"
+              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-zinc-900"
             />
 
             <button
               onClick={handleSend}
               disabled={loading}
-              className="bg-red-700 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition p-3 rounded-2xl text-white shadow-lg"
+              className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition p-3 rounded-2xl text-white shadow-lg"
             >
               <Send size={18} />
             </button>

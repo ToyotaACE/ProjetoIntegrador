@@ -1,0 +1,2 @@
+/* Página inicial: ajustes visuais isolados desta tela. */
+body[data-screen="home"] #root { min-height: 100vh; }

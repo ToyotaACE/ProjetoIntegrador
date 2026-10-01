@@ -52,7 +52,7 @@ const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <div className="p-4 flex items-center gap-2 border-b border-border">
-        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center p-1 shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-red flex items-center justify-center p-1 shrink-0">
           <img
             src={toyotaicon}
             alt="Toyota Logo"

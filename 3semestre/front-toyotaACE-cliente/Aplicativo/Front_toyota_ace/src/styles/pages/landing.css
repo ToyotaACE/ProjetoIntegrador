@@ -1,0 +1,2 @@
+/* Apresentação: ajustes visuais isolados desta tela. */
+body[data-screen="landing"] #root { min-height: 100vh; }

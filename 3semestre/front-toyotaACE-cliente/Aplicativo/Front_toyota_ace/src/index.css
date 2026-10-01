@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    --primary: 355 100% 45%;
+    --primary: 0 0% 12%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 93%;
@@ -22,26 +22,26 @@
     --muted: 0 0% 93%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 355 100% 95%;
-    --accent-foreground: 355 100% 45%;
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 12%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 355 100% 45%;
+    --ring: 0 0% 25%;
 
     --radius: 0.625rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 355 100% 45%;
+    --sidebar-primary: 0 0% 12%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 355 100% 96%;
+    --sidebar-accent: 0 0% 94%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 355 100% 45%;
+    --sidebar-ring: 0 0% 25%;
 
     --toyota-red: 355 100% 45%;
     --toyota-dark: 0 0% 0%;
@@ -58,8 +58,8 @@
     --popover: 0 0% 11%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 355 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 88%;
+    --primary-foreground: 0 0% 10%;
 
     --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 95%;
@@ -67,24 +67,24 @@
     --muted: 0 0% 16%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 355 100% 15%;
-    --accent-foreground: 355 100% 70%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 95%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 95%;
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 355 100% 50%;
+    --ring: 0 0% 75%;
 
     --sidebar-background: 0 0% 9%;
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 355 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 88%;
+    --sidebar-primary-foreground: 0 0% 10%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 355 100% 50%;
+    --sidebar-ring: 0 0% 75%;
 
     --toyota-red: 355 100% 50%;
     --toyota-dark: 0 0% 100%;
@@ -100,10 +100,34 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  html[data-color-filter]::after {
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+  }
+
+  html[data-color-filter="high-contrast"]::after {
+    backdrop-filter: contrast(1.3) grayscale(0.2);
+  }
+
+  html[data-color-filter="protanopia"]::after {
+    backdrop-filter: saturate(0.75) hue-rotate(12deg) contrast(1.08);
+  }
+
+  html[data-color-filter="deuteranopia"]::after {
+    backdrop-filter: saturate(0.65) hue-rotate(-10deg) contrast(1.08);
+  }
+
+  html[data-color-filter="tritanopia"]::after {
+    backdrop-filter: saturate(0.7) hue-rotate(35deg) contrast(1.08);
+  }
 }
 
 @layer utilities {
   .toyota-gradient {
-    background: linear-gradient(135deg, hsl(var(--toyota-red)), hsl(355 100% 35%));
+    background: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 28%));
   }
 }

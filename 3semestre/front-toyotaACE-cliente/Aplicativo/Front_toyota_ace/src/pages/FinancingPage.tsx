@@ -277,8 +277,8 @@ const FinancingPage = () => {
                         onClick={() => setSelectedVehicleId(veiculo.id || null)}
                         className={`min-w-[220px] max-w-[220px] flex-shrink-0 snap-start text-left rounded-xl border overflow-hidden bg-white dark:bg-zinc-900 transition-all ${
                           active
-                            ? "border-red-600 ring-2 ring-red-600/20"
-                            : "border-border hover:border-red-400"
+                            ? "border-red-600 ring-2 ring-zinc-400/30"
+                            : "border-border hover:border-zinc-400"
                         }`}
                       >
                         {veiculo.fotoCarroUrl ? (
@@ -311,7 +311,7 @@ const FinancingPage = () => {
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
                 <FinanceCard
-                  icon={<DollarSign className="h-5 w-5 text-red-600" />}
+                  icon={<DollarSign className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                   title="Valor Total"
                   value={fmt(valorTotal)}
                   subtitle={
@@ -320,7 +320,7 @@ const FinancingPage = () => {
                 />
 
                 <FinanceCard
-                  icon={<CreditCard className="h-5 w-5 text-red-600" />}
+                  icon={<CreditCard className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                   title="Entrada"
                   value={fmt(entrada)}
                   subtitle={
@@ -331,7 +331,7 @@ const FinancingPage = () => {
                 />
 
                 <FinanceCard
-                  icon={<Calendar className="h-5 w-5 text-red-600" />}
+                  icon={<Calendar className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                   title="Parcelas"
                   value={
                     parcelasTotais
@@ -342,21 +342,21 @@ const FinancingPage = () => {
                 />
 
                 <FinanceCard
-                  icon={<Wallet className="h-5 w-5 text-red-600" />}
+                  icon={<Wallet className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                   title="Valor Pendente"
                   value={fmt(valorPendente)}
                   subtitle={`Último mês pago: ${ultimoMesPago}`}
                 />
 
                 <FinanceCard
-                  icon={<Percent className="h-5 w-5 text-red-600" />}
+                  icon={<Percent className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                   title="Taxa de Juros"
                   value={taxa ? `${taxa}% a.m.` : "Não informado"}
                   subtitle={taxa ? `${(taxa * 12).toFixed(2)}% ao ano` : ""}
                 />
 
                 <FinanceCard
-                  icon={<ShieldCheck className="h-5 w-5 text-red-600" />}
+                  icon={<ShieldCheck className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
                   title="Garantia"
                   value={veiculoSelecionado?.statusGarantia || "Não informado"}
                   subtitle={`Financiamento: ${
@@ -365,7 +365,7 @@ const FinancingPage = () => {
                 />
               </div>
 
-              <Card className="bg-white dark:bg-zinc-900 border shadow-sm">
+              <Card className="bg-white dark:bg-red-600 border shadow-sm">
                 <CardHeader>
                   <CardTitle>Pagamento simulado</CardTitle>
                 </CardHeader>
@@ -385,7 +385,7 @@ const FinancingPage = () => {
                   <Button
                     onClick={() => setModalPagamentoAberto(true)}
                     disabled={pagando || parcelasRestantes <= 0}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-red-600 hover:bg-zinc-800 text-white"
                   >
                     {parcelasRestantes <= 0
                       ? "Financiamento quitado"
@@ -495,7 +495,7 @@ const FinancingPage = () => {
                 <Button
                   onClick={confirmarPagamento}
                   disabled={pagando}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-zinc-900 hover:bg-zinc-800 text-white"
                 >
                   {pagando ? "Processando..." : "Confirmar pagamento"}
                 </Button>
@@ -522,7 +522,7 @@ function FinanceCard({
   return (
     <Card className="bg-white dark:bg-zinc-900 border shadow-sm hover:shadow-md transition">
       <CardHeader className="flex flex-row items-center gap-3 pb-2">
-        <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+        <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
           {icon}
         </div>
 
