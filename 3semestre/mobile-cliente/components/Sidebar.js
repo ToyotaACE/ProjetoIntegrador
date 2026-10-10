@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Animated
 } from "react-native";
+import { LocalizedText as Text } from "./LocalizedText";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 

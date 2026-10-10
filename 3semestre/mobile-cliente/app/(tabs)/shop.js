@@ -2,26 +2,23 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { LocalizedText as Text } from "../../components/LocalizedText";
 
 import { usePurchases } from "../../contexts/PurchasesContext";
+import { useLocalizedAlert } from "../../components/LocalizedAlert";
 import { useTheme } from "../../contexts/ThemeContext";
 
-// Imagens locais dentro de app/image
-import kitRevisaoImg from "../image/Prot#U00f3tipos Toyota.jpg";
-import tapeteImg from "../image/carro toyota.jpg";
-import boneImg from "../image/logoT.png";
-import limpezaImg from "../image/download.png";
-import acessorioImg from "../image/sw4.png";
-import logoToyotaImg from "../image/Logo.png";
+import kitRevisaoImg from "../../assets/images/kitrevisao.webp";
+import tapeteImg from "../../assets/images/tapete.webp";
+import roupasImg from "../../assets/images/roupas.jpg";
+import boneImg from "../../assets/images/bone.webp";
 
 const promotions = [
   {
@@ -43,7 +40,7 @@ const promotions = [
     title: "Linha Lifestyle",
     description: "Bonés, camisetas, garrafas e produtos oficiais.",
     price: "Até 15% OFF",
-    image: boneImg,
+    image: roupasImg,
   },
 ];
 
@@ -58,43 +55,11 @@ const products = [
   },
   {
     id: 2,
-    name: "Kit Limpeza Automotiva",
-    category: "Cuidados",
-    price: 89.9,
-    oldPrice: 119.9,
-    image: limpezaImg,
-  },
-  {
-    id: 3,
     name: "Boné Toyota Gazoo Racing",
     category: "Lifestyle",
     price: 129.9,
     oldPrice: 159.9,
     image: boneImg,
-  },
-  {
-    id: 4,
-    name: "Protetor de Porta Toyota",
-    category: "Acessórios",
-    price: 79.9,
-    oldPrice: 99.9,
-    image: acessorioImg,
-  },
-  {
-    id: 5,
-    name: "Capa de Chave Toyota",
-    category: "Acessórios",
-    price: 59.9,
-    oldPrice: 79.9,
-    image: logoToyotaImg,
-  },
-  {
-    id: 6,
-    name: "Kit Emergência Veicular",
-    category: "Segurança",
-    price: 149.9,
-    oldPrice: 189.9,
-    image: acessorioImg,
   },
 ];
 
@@ -114,6 +79,7 @@ function formatPrice(value) {
 
 export default function ShopPage() {
   const { theme } = useTheme();
+  const Alert = useLocalizedAlert();
   const { addPurchase } = usePurchases();
   const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -121,6 +87,7 @@ export default function ShopPage() {
   const [successOpen, setSuccessOpen] = useState(false);
   const [cart, setCart] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const promotion = promotions[currentSlide];
 
@@ -191,6 +158,8 @@ export default function ShopPage() {
   }
 
   async function finishPurchase() {
+    if (loading) return;
+
     if (cart.length === 0) {
       Alert.alert("Carrinho vazio", "Adicione algum produto primeiro.");
       return;
@@ -208,6 +177,8 @@ export default function ShopPage() {
         Alert.alert("Erro", "Cliente não identificado. Faça login novamente.");
         return;
       }
+
+      setLoading(true);
 
       for (const item of cart) {
         const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api"}/compras`, {
@@ -241,6 +212,8 @@ export default function ShopPage() {
         "Erro na compra",
         "Não foi possível registrar a compra. Tente novamente."
       );
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -375,7 +348,9 @@ export default function ShopPage() {
               onPress={() => addToCart(product)}
             >
               <Ionicons name="cart-outline" size={14} color="#fff" />
-              <Text style={styles.addButtonText}>Add</Text>
+              <Text style={styles.addButtonText} numberOfLines={1}>
+                Adicionar ao carrinho
+              </Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -540,12 +515,14 @@ export default function ShopPage() {
               style={[
                 styles.finishButton,
                 { backgroundColor: theme.primary },
-                cart.length === 0 && styles.disabled,
+                (cart.length === 0 || loading) && styles.disabled,
               ]}
               onPress={finishPurchase}
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || loading}
             >
-              <Text style={styles.finishButtonText}>Finalizar compra</Text>
+              <Text style={styles.finishButtonText}>
+                {loading ? "Finalizando..." : "Finalizar compra"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -557,7 +534,7 @@ export default function ShopPage() {
             <Ionicons name="checkmark-circle" size={72} color="#22c55e" />
 
             <Text style={[styles.successTitle, { color: theme.text }]}>
-              Compra simulada com sucesso!
+                Compra registrada!
             </Text>
 
             <Text style={[styles.successText, { color: theme.subtext }]}>

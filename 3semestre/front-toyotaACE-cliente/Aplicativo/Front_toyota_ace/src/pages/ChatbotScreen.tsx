@@ -2,6 +2,7 @@
 
 import { X, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Message = {
   type: "bot" | "user";
@@ -9,6 +10,7 @@ type Message = {
 };
 
 export default function ChatbotScreen() {
+  const { language } = useLanguage();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,6 +65,7 @@ export default function ChatbotScreen() {
         },
         body: JSON.stringify({
           mensagem: textoDigitado,
+          idioma: language,
         }),
       });
 

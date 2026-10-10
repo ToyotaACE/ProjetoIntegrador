@@ -2,16 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { LocalizedText as Text } from "../../components/LocalizedText";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useAccessibility } from "../../contexts/AccessibilityContext";
+import { useLocalizedAlert } from "../../components/LocalizedAlert";
 import { useTheme } from "../../contexts/ThemeContext";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
@@ -65,11 +66,11 @@ function formatDateToBackend(date) {
   return `${year}-${month}-${day}`;
 }
 
-function formatDateToDisplay(date) {
-  return date.toLocaleDateString("pt-BR");
+function formatDateToDisplay(date, language) {
+  return date.toLocaleDateString(language);
 }
 
-function createNextDates(days = 5) {
+function createNextDates(days = 5, language = "pt-BR") {
   const result = [];
 
   for (let index = 0; index < days; index += 1) {
@@ -77,7 +78,7 @@ function createNextDates(days = 5) {
     date.setDate(date.getDate() + index);
 
     result.push({
-      label: formatDateToDisplay(date),
+      label: formatDateToDisplay(date, language),
       value: formatDateToBackend(date),
     });
   }
@@ -116,6 +117,8 @@ function normalizeAppointment(item, user) {
 
 export default function SchedulingPage() {
   const { user } = useAuth();
+  const { settings } = useAccessibility();
+  const Alert = useLocalizedAlert();
   const { theme } = useTheme();
 
   const [selectedDate, setSelectedDate] = useState(null);
@@ -131,7 +134,7 @@ export default function SchedulingPage() {
   const clienteId = getUserId(user);
   const email = getUserEmail(user);
 
-  const dates = useMemo(() => createNextDates(5), []);
+  const dates = useMemo(() => createNextDates(5, settings.language), [settings.language]);
 
   const selectedService = serviceTypes.find((item) => item.id === serviceType);
 

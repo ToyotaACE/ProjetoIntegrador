@@ -4,6 +4,8 @@ import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { PurchasesProvider } from "../contexts/PurchasesContext";
+import { AccessibilityProvider } from "../contexts/AccessibilityContext";
+import AccessibilityMenu from "../components/AccessibilityMenu";
 
 function RootNavigator() {
   const { isAuthenticated, loading } = useAuth();
@@ -49,12 +51,15 @@ function RootNavigator() {
 
 export default function Layout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <PurchasesProvider>
-          <RootNavigator />
-        </PurchasesProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <AccessibilityProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <PurchasesProvider>
+            <RootNavigator />
+            <AccessibilityMenu />
+          </PurchasesProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </AccessibilityProvider>
   );
 }
