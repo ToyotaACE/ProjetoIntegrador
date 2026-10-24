@@ -1,0 +1,150 @@
+{
+  "planHash": "928a51b0334219cd9d4043e367bc499a64be21b95047da5d7d24dc04658b23c0",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-10-24T00:15:24.9350130Z",
+  "retryCount": 1,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 0,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "typescript-no-emit",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": false,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 2,
+        "outputSample": "assets/images/LandingPage.tsx(1,29): error TS2307: Cannot find module \u0027react-router-dom\u0027 or its corresponding type declarations.\r\nassets/images/LandingPage.tsx(2,24): error TS2307: Cannot find module \u0027@/components/ui/button\u0027 or its corresponding type declarations.\r\nassets/images/LandingPage.tsx(3,48): error TS2307: Cannot find module \u0027lucide-react\u0027 or its corresponding type declarations.\r\nassets/images/LandingPage.tsx(5,23): error TS2307: Cannot find module \u0027@/assets/hilux.png\u0027 or its corresponding type declarations.\r\nassets/images/LandingPage.tsx(6,19): error TS2307: Cannot find module \u0027@/assets/logoT.png\u0027 or its corresponding type declarations.\r\nassets/images/LandingPage.tsx(7,21): error TS2307: Cannot find module \u0027@/assets/corolla.png\u0027 or its corresponding type declarations.\r\nassets/images/LandingPage.tsx(8,19): error TS2307: Cannot find module \u0027@/assets/yarisseda.png\u0027 or its corresponding type declarations.\r\n",
+        "durationMs": 5650
+      },
+      {
+        "name": "lint-pass",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E toyotaace@1.0.0 lint\r\n\u003E expo lint\r\n\r\n\r\nC:\\Users\\rayan\\Desktop\\PI-4\u00B0semestre\\ProjetoIntegrador\\3semestre\\mobile-cliente\\app\\(tabs)\\financing.js\r\n  140:10  warning  \u0027cliente\u0027 is assigned a value but never used  no-unused-vars\r\n\r\n\u2716 1 problem (0 errors, 1 warning)\r\n\r\n",
+        "durationMs": 6843
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E toyotaace@1.0.0 test\r\n\u003E node --test tests/translations.test.cjs\r\n\r\n\u2714 the store label is available in all supported languages (1.6674ms)\r\n\u2714 financing and Brazilian tax ID labels are understandable in every locale (0.8738ms)\r\n\u2714 sidebar accessibility labels are available in all translated locales (0.148ms)\r\n\u2714 promotion labels and prices are localized (0.2137ms)\r\n\u2714 dynamic purchase labels remain localized (0.4744ms)\r\n\u2714 Japanese uses natural kanji and kana for vehicle status (0.47ms)\r\n\u2714 vehicle documentation labels and disclaimers are localized in every supported language (0.5485ms)\r\n\u2714 document list and PDF picker results are normalized and validated (0.7183ms)\r\n\u2714 session tokens and shared document categories are normalized (0.6615ms)\r\n\u2714 shared document workflow and service labels are localized in every supported language (0.9236ms)\r\n\u2714 next vehicle service is one year after the latest saved review appointment (1.1514ms)\r\n\u2714 vehicle documentation selects a bundled fictional manual for each app language (4.6871ms)\r\n\u2714 localized values can be switched back to Portuguese (0.2855ms)\r\n\u2714 dynamic phrases split across JSX text nodes are localized as a whole (1.2638ms)\r\n\u2714 unmatched mixed text still translates known labels independently (0.2596ms)\r\n\u2714 BRL amounts use the selected language\u0027s number conventions (20.3962ms)\r\n\u2139 tests 16\r\n\u2139 suites 0\r\n\u2139 pass 16\r\n\u2139 fail 0\r\n\u2139 cancelled 0\r\n\u2139 skipped 0\r\n\u2139 todo 0\r\n\u2139 duration_ms 706.8587\r\n",
+        "durationMs": 1437,
+        "testResults": {
+          "testFramework": "unknown",
+          "runnerDetectedFrom": "none",
+          "testsTotal": 0,
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": true
+        }
+      },
+      {
+        "name": "web-export",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "React Compiler enabled\r\nStarting Metro Bundler\r\nStatic rendering is enabled. Learn more: https://docs.expo.dev/router/reference/static-rendering/\r\n\u03BB Bundled 1750ms node_modules\\expo-router\\node\\render.js (849 modules)\r\nWeb node_modules\\expo-router\\entry.js \u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2591 99.9% (841/841)\r\nWeb Bundled 2389ms node_modules\\expo-router\\entry.js (841 modules)\r\n\r\n\u203A web bundles (1):\r\n_expo/static/js/web/entry-3b1f86ec4631237a821d73b6a51312db.js (1.84 MB)\r\n\r\n\u203A Static routes (21):\r\n/shop (23.3 kB)\r\n/ (index) (23.3 kB)\r\n/login (23.3 kB)\r\n/profile (23.3 kB)\r\n/vehicle (23.3 kB)\r\n/register (23.3 kB)\r\n/_sitemap (22.5 kB)\r\n/dashboard (23.3 kB)\r\n/financing (23.3 kB)\r\n/\u002Bnot-found (23.3 kB)\r\n/scheduling (23.3 kB)\r\n/(tabs)/shop (23.3 kB)\r\n/services/api (23.3 kB)\r\n/RootNavigator (23.3 kB)\r\n/(tabs)/profile (23.3 kB)\r\n/(tabs)/vehicle (23.3 kB)\r\n/forgot-password (23.3 kB)\r\n/(tabs)/dashboard (23.3 kB)\r\n/(tabs)/financing (23.3 kB)\r\n/vehicle-documents (23.3 kB)\r\n/(tabs)/scheduling (23.3 kB)\r\n\r\nExported: dist\r\n",
+        "durationMs": 11865
+      },
+      {
+        "name": "expo-web-home",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 200\n\u003C!DOCTYPE html\u003E\u003Chtml  lang=\u0022en\u0022\u003E\u003Chead\u003E\u003Ctitle data-rh=\u0022true\u0022\u003E\u003C/title\u003E\u003Cmeta charSet=\u0022utf-8\u0022/\u003E\u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1, shrink-to-fit=no\u0022/\u003E\u003Cmeta http-equiv=\u0022X-UA-Compatible\u0022 content=\u0022IE=edge\u0022/\u003E\u003Cstyle id=\u0022expo-reset\u0022\u003E#root,body,html{height:100%}body{overflow:hidden}#root{display:flex}\u003C/style\u003E\u003Cstyle id=\u0022react-native-stylesheet\u0022\u003E[stylesheet-group=\u00220\u0022]{}\nbody{margin:0;}\nbutton::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0;}\nhtml{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:rgba(0,0,0,0);}\ninput::-webkit-search-cancel-button,input::-webkit-search-decoration,input::-webkit-search-results-button,input::-webkit-search-results-decoration{display:none;}\n[stylesheet-group=\u00221\u0022]{}\n.css-accessibilityImage-9pa8cd{bottom:0px;height:100%;left:0px;opacity:0;position:absolute;right:0px;top:0px;width:100%;z-index:-1;}\n.css-text-146c3p1{background-color:rgba(0,0,0,0.00);border:0 solid black;box-sizing:border-box;color:rgba(0,0,0,1.00);display:inline;font:14px -apple-system,BlinkMacSystemFont,\u0022Segoe UI\u0022,Roboto,Helvetica,Arial,sans-serif;list-style:none;margin:0px;padding:0px;position:relative;text-align:start;text-decoration:none;white-space:pre-wrap;word-wrap:break-word;}\n.css-textHasAncestor-1jxf684{background-color:rgba(0,0,0,0.00);border:0 solid black;box-sizing:border-box;color:inherit;display:inline;font:inherit;list-style:none;margin:0px;padding:0px;position:relative;text-align:inherit;text-decoration:none;white-space:inherit;word-wrap:break-word;}\n.css-textinput-11aywtz{-moz-appearance:textfield;-webkit-appearance:none;background-color:rgba(0,0,0,0.00);border-bottom-left-radius:0px;border-bottom-right-radius:0px;border-top-left-radius:0px;border-top-right-radius:0px;border:0 solid black;box-sizing:border-box;font:14px -apple-system,BlinkMacSystemFont,\u0022Segoe UI\u0022,Roboto,Helvetica,Arial,sans-serif;margin:0px;padding:0px;resize:none;}\n.css-view-g5y9jx{align-content:flex-start;align-items:stretch;background-color:rgba(0,0,0,0.00);border:0 solid black;box-sizing:border-box;display:flex;flex-basis:auto;flex-direction:column;flex-shrink:0;list-style:none;margin:0px;min-height:0px;min-width:0px;padding:0px;position:relative;text-decoration:none;z-index:0;}\n[stylesheet-group=\u00222\u0022]{}\n.r-borderColor-11mg6pl{border-bottom-color:rgba(255,255,255,1.00);border-left-color:rgba(255,255,255,1.00);border-right-color:rgba(255,255,255,1.00);border-top-color:rgba(255,255,255,1.00);}\n.r-borderColor-161opml{border-bottom-color:rgba(85,85,85,1.00);border-left-color:rgba(85,85,85,1.00);border-right-color:rgba(85,85,85,1.00);border-top-color:rgba(85,85,85,1.00);}\n.r-borderColor-16cv7a7{border-bottom-color:rgba(187,247,208,1.00);border-left-color:rgba(187,247,208,1.00);border-right-color:rgba(187,247,208,1.00);border-top-color:rgba(187,247,208,1.00);}\n.r-borderColor-19o1w7b{border-bottom-color:rgba(59,59,59,1.00);border-left-color:rgba(59,59,59,1.00);border-right-color:rgba(59,59,59,1.00);border-top-color:rgba(59,59,59,1.00);}\n.r-borderColor-1a1f9mo{border-bottom-color:rgba(48,48,48,1.00);border-left-color:rgba(48,48,48,1.00);border-right-color:rgba(48,48,48,1.00);border-top-color:rgba(48,48,48,1.00);}\n.r-borderColor-1awa8pu{border-bottom-color:rgba(101,119,134,1.00);border-left-color:rgba(101,119,134,1.00);border-right-color:rgba(101,119,134,1.00);border-top-color:rgba(101,119,134,1.00);}\n.r-borderColor-1b06462{border-bottom-color:rgba(148,163,184,0.18);border-left-color:rgba(148,163,184,0.18);border-right-color:rgba(148,163,184,0.18);border-top-color:rgba(148,163,184,0.18);}\n.r-borderColor-1c549yc{border-bottom-color:rgba(68,68,68,1.00);border-left-color:rgba(68,68,68,1.00);border-right-color:rgba(68,68,68,1.00);border-top-color:rgba(68,68,68,1.00);}\n.r-borderColor-1d4xg89{border-bottom-color:rgba(170,184,194,1.00);border-left-color:rgba(170,184,194,1.00);border-right-color:rgba(170,184,194,1.00);border-top-color:rgba(170,184,194,1.00);}\n.r-borderColor-1dvw444{border-bottom-color:rgba(57,57,57,1.00);border-left-color:rgba(57,57,57,1.00);border-right-color:rgba(5\n\u2026[truncated]",
+        "durationMs": 34303
+      }
+    ],
+    "executions": [
+      {
+        "source": "typescript-no-emit",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npx.CMD",
+        "args": [
+          "tsc",
+          "--noEmit"
+        ],
+        "cwd": "C:\\Users\\rayan\\Desktop\\PI-4\u00B0semestre\\ProjetoIntegrador\\3semestre\\mobile-cliente",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "lint-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "lint"
+        ],
+        "cwd": "C:\\Users\\rayan\\Desktop\\PI-4\u00B0semestre\\ProjetoIntegrador\\3semestre\\mobile-cliente",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "test"
+        ],
+        "cwd": "C:\\Users\\rayan\\Desktop\\PI-4\u00B0semestre\\ProjetoIntegrador\\3semestre\\mobile-cliente",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "web-export",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npx.CMD",
+        "args": [
+          "expo",
+          "export",
+          "--platform",
+          "web"
+        ],
+        "cwd": "C:\\Users\\rayan\\Desktop\\PI-4\u00B0semestre\\ProjetoIntegrador\\3semestre\\mobile-cliente",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "expo-web-home",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "web",
+          "--",
+          "--port",
+          "8090"
+        ],
+        "cwd": "C:\\Users\\rayan\\Desktop\\PI-4\u00B0semestre\\ProjetoIntegrador\\3semestre\\mobile-cliente",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}

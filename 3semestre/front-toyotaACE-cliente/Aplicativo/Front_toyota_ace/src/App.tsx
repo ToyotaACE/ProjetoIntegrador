@@ -18,6 +18,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import DashboardPage from "@/pages/DashboardPage";
 import VehiclePage from "@/pages/VehiclePage";
+import VehicleDocumentationPage from "@/pages/VehicleDocumentationPage";
 import FinancingPage from "@/pages/FinancingPage";
 import SchedulingPage from "@/pages/SchedulingPage";
 import ProfilePage from "@/pages/ProfilePage";
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/cadastro" element={<RegisterPage />} />
               <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+              <Route path="/documentacao" element={<VehicleDocumentationPage />} />
 
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />

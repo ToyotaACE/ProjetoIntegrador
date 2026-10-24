@@ -10,7 +10,7 @@ export default function TabsLayout() {
   const { theme } = useTheme();
   const { settings } = useAccessibility();
   const tabLabels = {
-    "pt-BR": ["Home", "Veículo", "Financeiro", "Agenda", "Loja", "Perfil"],
+    "pt-BR": ["Início", "Veículo", "Financeiro", "Agenda", "Loja", "Perfil"],
     "en-US": ["Home", "Vehicle", "Financing", "Schedule", "Shop", "Profile"],
     "es-ES": ["Inicio", "Vehículo", "Financiación", "Agenda", "Tienda", "Perfil"],
     "ja-JP": ["ホーム", "車両", "ローン", "予約", "ショップ", "プロフィール"],

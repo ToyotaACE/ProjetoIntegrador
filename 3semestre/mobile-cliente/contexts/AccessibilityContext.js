@@ -64,7 +64,14 @@ export function AccessibilityProvider({ children }) {
 
   return (
     <AccessibilityContext.Provider
-      value={{ settings, updateSetting, resetSettings: () => setSettings(defaults), registerText, getReadableText }}
+      value={{
+        settings,
+        hydrated,
+        updateSetting,
+        resetSettings: () => setSettings(defaults),
+        registerText,
+        getReadableText,
+      }}
     >
       <View style={styles.root}>
         {children}

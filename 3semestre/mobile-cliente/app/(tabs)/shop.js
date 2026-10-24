@@ -13,7 +13,9 @@ import { LocalizedText as Text } from "../../components/LocalizedText";
 
 import { usePurchases } from "../../contexts/PurchasesContext";
 import { useLocalizedAlert } from "../../components/LocalizedAlert";
+import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { formatCurrency } from "../../contexts/formatters";
 
 import kitRevisaoImg from "../../assets/images/kitrevisao.webp";
 import tapeteImg from "../../assets/images/tapete.webp";
@@ -70,15 +72,9 @@ const paymentMethods = [
   { id: "boleto", label: "Boleto", icon: "document-text-outline" },
 ];
 
-function formatPrice(value) {
-  return Number(value || 0).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
-
 export default function ShopPage() {
   const { theme } = useTheme();
+  const { settings } = useAccessibility();
   const Alert = useLocalizedAlert();
   const { addPurchase } = usePurchases();
   const { user } = useAuth();
@@ -336,11 +332,11 @@ export default function ShopPage() {
             </View>
 
             <Text style={[styles.price, { color: theme.text }]}>
-              {formatPrice(product.price)}
+              {formatCurrency(product.price, settings.language)}
             </Text>
 
             <Text style={[styles.oldPrice, { color: theme.subtext }]}>
-              {formatPrice(product.oldPrice)}
+              {formatCurrency(product.oldPrice, settings.language)}
             </Text>
 
             <TouchableOpacity
@@ -404,7 +400,7 @@ export default function ShopPage() {
                       </Text>
 
                       <Text style={[styles.cartPrice, { color: theme.text }]}>
-                        {formatPrice(item.price)}
+                        {formatCurrency(item.price, settings.language)}
                       </Text>
                     </View>
 
@@ -447,7 +443,7 @@ export default function ShopPage() {
                 </Text>
 
                 <Text style={[styles.summaryText, { color: theme.text }]}>
-                  {formatPrice(subtotal)}
+                  {formatCurrency(subtotal, settings.language)}
                 </Text>
               </View>
 
@@ -457,7 +453,7 @@ export default function ShopPage() {
                 </Text>
 
                 <Text style={styles.discountText}>
-                  - {formatPrice(discount)}
+                  - {formatCurrency(discount, settings.language)}
                 </Text>
               </View>
 
@@ -469,7 +465,7 @@ export default function ShopPage() {
                 </Text>
 
                 <Text style={[styles.totalText, { color: theme.text }]}>
-                  {formatPrice(total)}
+                  {formatCurrency(total, settings.language)}
                 </Text>
               </View>
             </View>
@@ -543,7 +539,7 @@ export default function ShopPage() {
 
             <View style={[styles.summaryBox, { backgroundColor: theme.box }]}>
               <Text style={[styles.summaryText, { color: theme.text }]}>
-                Total: {formatPrice(total)}
+                Total: {formatCurrency(total, settings.language)}
               </Text>
 
               <Text style={[styles.summaryText, { color: theme.text }]}>

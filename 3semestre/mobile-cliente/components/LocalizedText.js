@@ -40,12 +40,18 @@ export function LocalizedText({ children, style, accessibilityLabel, ...props })
 
 export function LocalizedTextInput({ placeholder, accessibilityLabel, style, ...props }) {
   const { settings } = useAccessibility();
+  const defaultAccessibilityLabel =
+    placeholder === "••••••••" ? "Senha" : placeholder;
 
   return (
     <NativeTextInput
       {...props}
       placeholder={placeholder ? translateText(placeholder, settings.language) : undefined}
-      accessibilityLabel={accessibilityLabel ? translateText(accessibilityLabel, settings.language) : undefined}
+      accessibilityLabel={
+        accessibilityLabel || defaultAccessibilityLabel
+          ? translateText(accessibilityLabel || defaultAccessibilityLabel, settings.language)
+          : undefined
+      }
       style={scaledStyle(style, settings.fontScale)}
     />
   );

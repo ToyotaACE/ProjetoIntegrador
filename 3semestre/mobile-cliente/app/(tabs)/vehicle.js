@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,7 +12,9 @@ import {
 import { LocalizedText as Text } from "../../components/LocalizedText";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { findNextReviewDate } from "../../utils/vehicleDocuments";
 
 const API_ORIGIN = (process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api").replace(/\/api\/?$/, "");
 const API_URL = `${API_ORIGIN}/api`;
@@ -100,12 +103,20 @@ function getVehiclePlate(vehicle) {
   return vehicle?.placaVeiculo || vehicle?.placa || "Não informada";
 }
 
-function getNextReview(vehicle) {
-  return (
-    vehicle?.dataProximaRevisao ||
-    vehicle?.proximaRevisao ||
-    "Não informada"
-  );
+function getNextReview(vehicle, appointments, language) {
+  const nextReview = findNextReviewDate(appointments);
+  if (nextReview) {
+    const [year, month, day] = nextReview.split("-").map(Number);
+    return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(language, {
+      timeZone: "UTC",
+    });
+  }
+
+  return vehicle?.dataProximaRevisao || vehicle?.proximaRevisao || "Não informada";
+}
+
+function getUserId(user) {
+  return user?.id || user?.clienteId || user?.usuario?.id || null;
 }
 
 function getVehicleProgress(vehicle) {
@@ -164,9 +175,12 @@ function buildTimelineByProgress(progress) {
 
 export default function VehiclePage() {
   const { user } = useAuth();
+  const { settings } = useAccessibility();
   const { theme } = useTheme();
+  const router = useRouter();
 
   const [vehicles, setVehicles] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -175,6 +189,7 @@ export default function VehiclePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const emailLogado = getUserEmail(user);
+  const clienteId = getUserId(user);
 
   const selectedVehicle = useMemo(() => {
     if (!vehicles.length) return null;
@@ -225,6 +240,21 @@ export default function VehiclePage() {
 
         setVehicles(veiculosCliente);
 
+        if (clienteId) {
+          try {
+            const responseAppointments = await fetch(
+              `${API_URL}/agendamentos/cliente/${encodeURIComponent(clienteId)}`,
+            );
+            if (!responseAppointments.ok) throw new Error("appointments");
+            const savedAppointments = await responseAppointments.json();
+            setAppointments(Array.isArray(savedAppointments) ? savedAppointments : []);
+          } catch {
+            setAppointments([]);
+          }
+        } else {
+          setAppointments([]);
+        }
+
         if (veiculosCliente.length > 0) {
           const selectedStillExists = veiculosCliente.some(
             (vehicle) => vehicle.id === selectedVehicleId
@@ -245,7 +275,7 @@ export default function VehiclePage() {
         setUpdating(false);
       }
     },
-    [emailLogado, selectedVehicleId]
+    [clienteId, emailLogado, selectedVehicleId]
   );
 
   useEffect(() => {
@@ -267,6 +297,17 @@ export default function VehiclePage() {
 
   const handleSelectVehicle = (vehicleId) => {
     setSelectedVehicleId(vehicleId);
+  };
+
+  const handleOpenDocuments = (vehicle, event) => {
+    event?.stopPropagation?.();
+    router.push({
+      pathname: "/vehicle-documents",
+      params: {
+        vehicle: JSON.stringify(vehicle),
+        vehicleId: String(vehicle.id),
+      },
+    });
   };
 
   if (loading) {
@@ -405,6 +446,18 @@ export default function VehiclePage() {
                       {status}
                     </Text>
                   </View>
+
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    onPress={(event) => handleOpenDocuments(vehicle, event)}
+                    style={[
+                      styles.documentsButton,
+                      { backgroundColor: theme.primary },
+                    ]}
+                  >
+                    <Ionicons name="document-text-outline" size={15} color="#fff" />
+                    <Text style={styles.documentsButtonText}>Documentação</Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
               );
             })}
@@ -472,7 +525,11 @@ export default function VehiclePage() {
 
               <InfoItem
                 label="Próxima revisão"
-                value={getNextReview(selectedVehicle)}
+                value={getNextReview(
+                  selectedVehicle,
+                  appointments,
+                  settings.language,
+                )}
                 theme={theme}
               />
             </View>
@@ -661,7 +718,7 @@ const styles = StyleSheet.create({
 
   vehicleCard: {
     width: 155,
-    minHeight: 122,
+    minHeight: 158,
     borderWidth: 1,
     borderRadius: 14,
     padding: 12,
@@ -711,6 +768,23 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     textTransform: "uppercase",
+  },
+
+  documentsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    marginTop: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+  },
+
+  documentsButtonText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "bold",
   },
 
   card: {

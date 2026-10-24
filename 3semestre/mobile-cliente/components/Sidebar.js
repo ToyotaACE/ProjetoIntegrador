@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  View,
   TouchableOpacity,
   StyleSheet,
   Animated
@@ -8,10 +7,13 @@ import {
 import { LocalizedText as Text } from "./LocalizedText";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
+import { useAccessibility } from "../contexts/AccessibilityContext";
+import { translateText } from "../contexts/translations";
 
 export default function Sidebar() {
   const router = useRouter();
   const { logout } = useAuth();
+  const { settings } = useAccessibility();
 
   const [open, setOpen] = useState(true);
   const width = useState(new Animated.Value(220))[0];
@@ -33,7 +35,14 @@ export default function Sidebar() {
     <Animated.View style={[styles.sidebar, { width }]}>
       
       {/* BOTÃO TOGGLE */}
-      <TouchableOpacity onPress={toggleSidebar}>
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={translateText(
+          open ? "Recolher navegação" : "Expandir navegação",
+          settings.language,
+        )}
+        onPress={toggleSidebar}
+      >
         <Text style={styles.toggle}>{open ? "←" : "→"}</Text>
       </TouchableOpacity>
 
@@ -59,7 +68,7 @@ export default function Sidebar() {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigate("/shop")}>
-        <Text style={styles.item}>👤 {open && "Shop"}</Text>
+        <Text style={styles.item}>🛍️ {open && "Loja"}</Text>
       </TouchableOpacity>
 
       {/* LOGOUT */}

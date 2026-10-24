@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { api, Cliente } from "@/services/api";
 
 interface AuthContextType {
@@ -6,6 +6,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   setUser: (user: Cliente | null) => void;
+  accessToken: string | null;
   login: (email: string, senha: string) => Promise<Cliente>;
   register: (dados: { nome: string; email: string; senha: string; cpf?: string; telefone?: string; endereco?: string }) => Promise<Cliente>;
   refreshUser: () => Promise<void>;
@@ -18,12 +19,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUserState] = useState<Cliente | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const userRef = useRef<Cliente | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        setUserState(JSON.parse(saved));
+        const savedUser = JSON.parse(saved);
+        userRef.current = savedUser;
+        setUserState(savedUser);
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
@@ -32,12 +36,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const setUser = useCallback((userData: Cliente | null) => {
-    setUserState(userData);
-    if (userData) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-    } else {
+    if (!userData) {
+      userRef.current = null;
+      setUserState(null);
       localStorage.removeItem(STORAGE_KEY);
+      return;
     }
+
+    const currentUser = userRef.current;
+    const sameUser = !!currentUser && (
+      (userData.id !== undefined && userData.id === currentUser.id) ||
+      userData.email === currentUser.email
+    );
+    const nextUser = sameUser && !userData.accessToken
+      ? { ...userData, accessToken: currentUser.accessToken }
+      : userData;
+    userRef.current = nextUser;
+    setUserState(nextUser);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
   }, []);
 
   const login = useCallback(async (email: string, senha: string) => {
@@ -47,7 +63,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [setUser]);
 
   const register = useCallback(async (dados: { nome: string; email: string; senha: string; cpf?: string; telefone?: string; endereco?: string }) => {
-    const cliente = await api.cadastrar(dados);
+    await api.cadastrar(dados);
+    const cliente = await api.login({ email: dados.email, senha: dados.senha });
     setUser(cliente);
     return cliente;
   }, [setUser]);
@@ -63,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [setUser]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, setUser, login, register, refreshUser, logout }}>
+    <AuthContext.Provider value={{ user, accessToken: user?.accessToken || null, isAuthenticated: !!user?.accessToken, isLoading, setUser, login, register, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

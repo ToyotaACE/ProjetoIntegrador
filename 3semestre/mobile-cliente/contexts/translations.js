@@ -352,6 +352,7 @@ const spanish = {
 // Fill translation gaps shared with the web application so that all screens
 // use the same terminology across English, Spanish, and Japanese.
 Object.assign(english, {
+  "Sua sessão expirou. Faça login novamente.": "Your session has expired. Please sign in again.",
   "Não foi possível alterar a senha. Tente novamente.": "Could not change the password. Please try again.",
   "Não foi possível carregar os veículos.": "Could not load vehicles.",
   "Observação": "Notes",
@@ -548,6 +549,7 @@ Object.assign(english, {
 });
 
 Object.assign(spanish, {
+  "Sua sessão expirou. Faça login novamente.": "Tu sesión ha caducado. Inicia sesión de nuevo.",
   "Não foi possível alterar a senha. Tente novamente.": "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
   "Não foi possível carregar os veículos.": "No se pudieron cargar los vehículos.",
   "Observação": "Observación",
@@ -744,6 +746,7 @@ Object.assign(spanish, {
 });
 
 Object.assign(japanese, {
+  "Sua sessão expirou. Faça login novamente.": "セッションの有効期限が切れました。もう一度ログインしてください。",
   "Não foi possível carregar os veículos.": "車両情報を読み込めませんでした。",
   "Observação": "備考",
   "Pagamento selecionado:": "選択したお支払い方法:",
@@ -993,6 +996,89 @@ Object.assign(japanese, {
 const dictionaries = { "en-US": english, "es-ES": spanish, "ja-JP": japanese };
 
 Object.assign(english, {
+  "Documentação": "Documents",
+  "Voltar": "Back",
+  "Documentação do veículo": "Vehicle documents",
+  "FICTÍCIO • DEMONSTRAÇÃO • NÃO OFICIAL": "FICTIONAL • DEMONSTRATION • UNOFFICIAL",
+  "Estes dados e o manual são exemplos criados para demonstração. Não são documentos oficiais e não possuem validade legal.": "These details and this manual are fictional examples for demonstration. They are not official documents and have no legal validity.",
+  "Dados demonstrativos": "Demonstration details",
+  "Manual do veículo (exemplo)": "Vehicle manual (sample)",
+  "Guia demonstrativo para identificação e consulta do veículo. O conteúdo é fictício e não substitui instruções do fabricante, assistência técnica ou documentação oficial.": "A demonstration guide to vehicle identification and reference information. This fictional content does not replace manufacturer instructions, technical service, or official documentation.",
+  "Visualizar PDF fictício": "View fictional PDF",
+  "Não foi possível abrir o PDF neste dispositivo. Use a visualização demonstrativa desta tela.": "The PDF could not be opened on this device. Use the demonstration view on this screen.",
+  "Motor não informado": "Engine not provided",
+  "Não informado": "Not provided",
+  "Não informada": "Not provided",
+});
+Object.assign(spanish, {
+  "Documentação": "Documentación",
+  "Voltar": "Volver",
+  "Documentação do veículo": "Documentación del vehículo",
+  "FICTÍCIO • DEMONSTRAÇÃO • NÃO OFICIAL": "FICTICIO • DEMOSTRACIÓN • NO OFICIAL",
+  "Estes dados e o manual são exemplos criados para demonstração. Não são documentos oficiais e não possuem validade legal.": "Estos datos y el manual son ejemplos ficticios para demostración. No son documentos oficiales ni tienen validez legal.",
+  "Dados demonstrativos": "Datos de demostración",
+  "Manual do veículo (exemplo)": "Manual del vehículo (ejemplo)",
+  "Guia demonstrativo para identificação e consulta do veículo. O conteúdo é fictício e não substitui instruções do fabricante, assistência técnica ou documentação oficial.": "Guía demostrativa para identificar y consultar el vehículo. Este contenido es ficticio y no sustituye las instrucciones del fabricante, el servicio técnico ni la documentación oficial.",
+  "Visualizar PDF fictício": "Ver PDF ficticio",
+  "Não foi possível abrir o PDF neste dispositivo. Use a visualização demonstrativa desta tela.": "No se pudo abrir el PDF en este dispositivo. Usa la vista de demostración de esta pantalla.",
+  "Motor não informado": "Motor no informado",
+  "Não informado": "No informado",
+  "Não informada": "No informada",
+});
+Object.assign(japanese, {
+  "Documentação": "書類",
+  "Voltar": "戻る",
+  "Documentação do veículo": "車両の書類",
+  "FICTÍCIO • DEMONSTRAÇÃO • NÃO OFICIAL": "架空 • デモ用 • 非公式",
+  "Estes dados e o manual são exemplos criados para demonstração. Não são documentos oficiais e não possuem validade legal.": "車両情報とマニュアルはデモ用の架空の例です。公式書類ではなく、法的効力もありません。",
+  "Dados demonstrativos": "デモ用の車両情報",
+  "Manual do veículo (exemplo)": "車両マニュアル（サンプル）",
+  "Guia demonstrativo para identificação e consulta do veículo. O conteúdo é fictício e não substitui instruções do fabricante, assistência técnica ou documentação oficial.": "車両の識別と情報確認のためのデモ用ガイドです。架空の内容であり、メーカーの取扱説明書、整備案内、公式書類に代わるものではありません。",
+  "Visualizar PDF fictício": "デモ用PDFを表示",
+  "Não foi possível abrir o PDF neste dispositivo. Use a visualização demonstrativa desta tela.": "この端末でPDFを開けませんでした。この画面のデモ表示をご利用ください。",
+  "Motor não informado": "エンジン情報なし",
+  "Não informado": "未登録",
+  "Não informada": "未登録",
+});
+
+Object.assign(english, { "Loja": "Store" });
+Object.assign(spanish, { "Loja": "Tienda" });
+Object.assign(japanese, { "Loja": "ショップ" });
+Object.assign(english, {
+  "Promoções especiais": "Special offers",
+  "Até 15% OFF": "Up to 15% off",
+  "A partir de R$ 189,90": "From R$ 189.90",
+});
+Object.assign(spanish, {
+  "Promoções especiais": "Ofertas especiales",
+  "Até 15% OFF": "Hasta un 15 % de descuento",
+  "A partir de R$ 189,90": "Desde R$ 189,90",
+});
+Object.assign(japanese, {
+  "Promoções especiais": "特別セール",
+  "Até 15% OFF": "最大15%割引",
+  "A partir de R$ 189,90": "189.90レアルから",
+});
+Object.assign(english, { "Financiamento:": "Financing:" });
+Object.assign(spanish, { "Financiamento:": "Financiación:" });
+Object.assign(japanese, {
+  "Financiamento:": "ローン:",
+  "CPF": "ブラジル納税者番号（CPF）",
+});
+Object.assign(english, {
+  "Recolher navegação": "Collapse navigation",
+  "Expandir navegação": "Expand navigation",
+});
+Object.assign(spanish, {
+  "Recolher navegação": "Contraer navegación",
+  "Expandir navegação": "Expandir navegación",
+});
+Object.assign(japanese, {
+  "Recolher navegação": "ナビゲーションを折りたたむ",
+  "Expandir navegação": "ナビゲーションを展開",
+});
+
+Object.assign(english, {
   "Abrir acessibilidade": "Open accessibility settings",
   "Fechar acessibilidade": "Close accessibility settings",
   "Fechar": "Close",
@@ -1106,6 +1192,163 @@ Object.assign(japanese, {
   "PIX": "PIX",
 });
 
+Object.assign(english, {
+  "Retorna à tela do veículo": "Returns to the vehicle screen",
+  "Fazer login": "Sign in",
+  "Sua sessão expirou. Faça login novamente.": "Your session expired. Please sign in again.",
+  "Não foi possível iniciar uma sessão. Tente novamente.": "Could not start a session. Please try again.",
+  "Carregando documentos...": "Loading documents...",
+  "Não foi possível identificar sua conta. Faça login novamente.": "We could not identify your account. Please sign in again.",
+  "Não foi possível identificar o veículo selecionado.": "We could not identify the selected vehicle.",
+  "Não foi possível confirmar que este veículo pertence à sua conta.": "We could not verify that this vehicle belongs to your account.",
+  "Não foi possível carregar os documentos. Tente novamente.": "Could not load the documents. Please try again.",
+  "Selecione um arquivo PDF válido.": "Select a valid PDF file.",
+  "Não foi possível enviar o arquivo. Verifique sua conexão e tente novamente.": "Could not upload the file. Check your connection and try again.",
+  "Não foi possível abrir este arquivo neste dispositivo.": "Could not open this file on this device.",
+  "Não foi possível baixar este arquivo. Tente novamente.": "Could not download this file. Please try again.",
+  "Não foi possível remover o arquivo. Tente novamente.": "Could not remove the file. Please try again.",
+  "Remover arquivo?": "Remove file?",
+  "O arquivo PDF será removido da sua conta.": "The PDF file will be removed from your account.",
+  "Remover": "Remove",
+  "Arquivos compartilhados da conta": "Account-shared files",
+  "Documentos enviados": "Uploaded documents",
+  "Manuais enviados": "Uploaded manuals",
+  "PDFs enviados ficam salvos na sua conta e podem ser acessados no aplicativo e na web.": "Uploaded PDFs are saved to your account and can be accessed in the app and on the web.",
+  "Adicionar manual": "Add manual",
+  "Adicionar documento": "Add document",
+  "Escolha um arquivo PDF para enviar": "Choose a PDF file to upload",
+  "Nenhum arquivo enviado para este veículo.": "No files have been uploaded for this vehicle.",
+  "Manual": "Manual",
+  "Documento": "Document",
+  "Documento PDF": "PDF document",
+  "bytes": "bytes",
+  "Abrir arquivo": "Open file",
+  "Abre o PDF neste dispositivo": "Opens the PDF on this device",
+  "Baixar arquivo": "Download file",
+  "Baixa o PDF neste dispositivo": "Downloads the PDF to this device",
+  "Remover arquivo": "Remove file",
+  "Remove o PDF da sua conta": "Removes the PDF from your account",
+  "Marca": "Make",
+  "Modelo": "Model",
+  "Ano": "Year",
+  "Cor": "Color",
+  "Câmbio": "Transmission",
+  "Combustível": "Fuel",
+  "Chassi": "VIN",
+  "Placa": "License plate",
+  "Próxima revisão": "Next service",
+  "Ano não informado": "Year not provided",
+  "Cor não informada": "Color not provided",
+  "Não informada": "Not provided",
+  "Veículo Toyota": "Toyota vehicle",
+  "Estes dados são exemplos criados para demonstração. Não são documentos oficiais e não possuem validade legal.": "These details are fictional examples for demonstration. They are not official documents and have no legal validity.",
+  "O manual é um exemplo criado para demonstração. Não é um documento oficial e não possui validade legal.": "This manual is a fictional example for demonstration. It is not an official document and has no legal validity.",
+});
+Object.assign(spanish, {
+  "Retorna à tela do veículo": "Vuelve a la pantalla del vehículo",
+  "Fazer login": "Iniciar sesión",
+  "Sua sessão expirou. Faça login novamente.": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+  "Não foi possível iniciar uma sessão. Tente novamente.": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+  "Carregando documentos...": "Cargando documentos...",
+  "Não foi possível identificar sua conta. Faça login novamente.": "No se pudo identificar tu cuenta. Inicia sesión de nuevo.",
+  "Não foi possível identificar o veículo selecionado.": "No se pudo identificar el vehículo seleccionado.",
+  "Não foi possível confirmar que este veículo pertence à sua conta.": "No se pudo confirmar que este vehículo pertenece a tu cuenta.",
+  "Não foi possível carregar os documentos. Tente novamente.": "No se pudieron cargar los documentos. Inténtalo de nuevo.",
+  "Selecione um arquivo PDF válido.": "Selecciona un archivo PDF válido.",
+  "Não foi possível enviar o arquivo. Verifique sua conexão e tente novamente.": "No se pudo subir el archivo. Comprueba tu conexión e inténtalo de nuevo.",
+  "Não foi possível abrir este arquivo neste dispositivo.": "No se pudo abrir este archivo en este dispositivo.",
+  "Não foi possível baixar este arquivo. Tente novamente.": "No se pudo descargar este archivo. Inténtalo de nuevo.",
+  "Não foi possível remover o arquivo. Tente novamente.": "No se pudo eliminar el archivo. Inténtalo de nuevo.",
+  "Remover arquivo?": "¿Eliminar archivo?",
+  "O arquivo PDF será removido da sua conta.": "El archivo PDF se eliminará de tu cuenta.",
+  "Remover": "Eliminar",
+  "Arquivos compartilhados da conta": "Archivos compartidos de la cuenta",
+  "Documentos enviados": "Documentos subidos",
+  "Manuais enviados": "Manuales subidos",
+  "PDFs enviados ficam salvos na sua conta e podem ser acessados no aplicativo e na web.": "Los PDF que subas se guardan en tu cuenta y puedes acceder a ellos desde la aplicación y la web.",
+  "Adicionar manual": "Añadir manual",
+  "Adicionar documento": "Añadir documento",
+  "Escolha um arquivo PDF para enviar": "Elige un archivo PDF para subir",
+  "Nenhum arquivo enviado para este veículo.": "No hay archivos subidos para este vehículo.",
+  "Manual": "Manual",
+  "Documento": "Documento",
+  "Documento PDF": "Documento PDF",
+  "bytes": "bytes",
+  "Abrir arquivo": "Abrir archivo",
+  "Abre o PDF neste dispositivo": "Abre el PDF en este dispositivo",
+  "Baixar arquivo": "Descargar archivo",
+  "Baixa o PDF neste dispositivo": "Descarga el PDF en este dispositivo",
+  "Remover arquivo": "Eliminar archivo",
+  "Remove o PDF da sua conta": "Elimina el PDF de tu cuenta",
+  "Marca": "Marca",
+  "Modelo": "Modelo",
+  "Ano": "Año",
+  "Cor": "Color",
+  "Câmbio": "Transmisión",
+  "Combustível": "Combustible",
+  "Chassi": "Número de chasis",
+  "Placa": "Matrícula",
+  "Próxima revisão": "Próxima revisión",
+  "Ano não informado": "Año no indicado",
+  "Cor não informada": "Color no indicado",
+  "Não informada": "No indicada",
+  "Veículo Toyota": "Vehículo Toyota",
+  "Estes dados são exemplos criados para demonstração. Não são documentos oficiais e não possuem validade legal.": "Estos datos son ejemplos ficticios para demostración. No son documentos oficiales ni tienen validez legal.",
+  "O manual é um exemplo criado para demonstração. Não é um documento oficial e não possui validade legal.": "Este manual es un ejemplo ficticio para demostración. No es un documento oficial ni tiene validez legal.",
+});
+Object.assign(japanese, {
+  "Retorna à tela do veículo": "車両画面に戻ります",
+  "Fazer login": "ログイン",
+  "Sua sessão expirou. Faça login novamente.": "セッションの有効期限が切れました。もう一度ログインしてください。",
+  "Não foi possível iniciar uma sessão. Tente novamente.": "セッションを開始できませんでした。もう一度お試しください。",
+  "Carregando documentos...": "書類を読み込み中...",
+  "Não foi possível identificar sua conta. Faça login novamente.": "アカウントを確認できませんでした。もう一度ログインしてください。",
+  "Não foi possível identificar o veículo selecionado.": "選択した車両を確認できませんでした。",
+  "Não foi possível confirmar que este veículo pertence à sua conta.": "この車両がアカウントに登録されていることを確認できませんでした。",
+  "Não foi possível carregar os documentos. Tente novamente.": "書類を読み込めませんでした。もう一度お試しください。",
+  "Selecione um arquivo PDF válido.": "有効なPDFファイルを選択してください。",
+  "Não foi possível enviar o arquivo. Verifique sua conexão e tente novamente.": "ファイルをアップロードできませんでした。通信を確認して、もう一度お試しください。",
+  "Não foi possível abrir este arquivo neste dispositivo.": "この端末でファイルを開けませんでした。",
+  "Não foi possível baixar este arquivo. Tente novamente.": "ファイルをダウンロードできませんでした。もう一度お試しください。",
+  "Não foi possível remover o arquivo. Tente novamente.": "ファイルを削除できませんでした。もう一度お試しください。",
+  "Remover arquivo?": "ファイルを削除しますか？",
+  "O arquivo PDF será removido da sua conta.": "このPDFファイルはアカウントから削除されます。",
+  "Remover": "削除",
+  "Arquivos compartilhados da conta": "アカウントで共有中のファイル",
+  "Documentos enviados": "アップロード済みの書類",
+  "Manuais enviados": "アップロード済みのマニュアル",
+  "PDFs enviados ficam salvos na sua conta e podem ser acessados no aplicativo e na web.": "アップロードしたPDFはアカウントに保存され、アプリとウェブの両方から利用できます。",
+  "Adicionar manual": "マニュアルを追加",
+  "Adicionar documento": "書類を追加",
+  "Escolha um arquivo PDF para enviar": "アップロードするPDFファイルを選択してください",
+  "Nenhum arquivo enviado para este veículo.": "この車両にアップロードされたファイルはありません。",
+  "Manual": "マニュアル",
+  "Documento": "書類",
+  "Documento PDF": "PDF書類",
+  "bytes": "バイト",
+  "Abrir arquivo": "ファイルを開く",
+  "Abre o PDF neste dispositivo": "この端末でPDFを開きます",
+  "Baixar arquivo": "ファイルをダウンロード",
+  "Baixa o PDF neste dispositivo": "この端末にPDFをダウンロードします",
+  "Remover arquivo": "ファイルを削除",
+  "Remove o PDF da sua conta": "PDFをアカウントから削除します",
+  "Marca": "メーカー",
+  "Modelo": "車種",
+  "Ano": "年式",
+  "Cor": "色",
+  "Câmbio": "トランスミッション",
+  "Combustível": "燃料",
+  "Chassi": "車台番号",
+  "Placa": "ナンバープレート",
+  "Próxima revisão": "次回点検",
+  "Ano não informado": "年式未登録",
+  "Cor não informada": "色未登録",
+  "Não informada": "未登録",
+  "Veículo Toyota": "Toyota車両",
+  "Estes dados são exemplos criados para demonstração. Não são documentos oficiais e não possuem validade legal.": "これらの情報はデモ用の架空の例です。公式書類ではなく、法的効力もありません。",
+  "O manual é um exemplo criado para demonstração. Não é um documento oficial e não possui validade legal.": "このマニュアルはデモ用の架空の例です。公式書類ではなく、法的効力もありません。",
+});
+
 // Keep a canonical Portuguese source for labels that are already written in a
 // translated language. This also lets the interface switch languages repeatedly.
 const sourceKeys = new Set([
@@ -1130,6 +1373,7 @@ const portugueseOverrides = {
   "Lifestyle": "Estilo de vida",
   "Toyota Shop": "Loja Toyota",
   "Email": "E-mail",
+  "Online": "On-line",
 };
 
 export function translateText(value, language) {
@@ -1355,10 +1599,33 @@ export function translateChildren(children, language) {
     return translateText(String(children), language);
   }
   if (Array.isArray(children)) {
-    if (children.every((child) => typeof child === "string" || typeof child === "number")) {
-      return translateText(children.map(String).join(""), language);
-    }
-    return children.map((child) => translateChildren(child, language));
+    const translated = [];
+    let textParts = [];
+
+    const flushText = () => {
+      if (textParts.length === 0) return;
+
+      const source = textParts.map(String).join("");
+      const localized = translateText(source, language);
+      if (localized !== source) {
+        translated.push(localized);
+      } else {
+        translated.push(...textParts.map((part) => translateText(String(part), language)));
+      }
+      textParts = [];
+    };
+
+    children.forEach((child) => {
+      if (typeof child === "string" || typeof child === "number") {
+        textParts.push(child);
+      } else {
+        flushText();
+        translated.push(translateChildren(child, language));
+      }
+    });
+
+    flushText();
+    return translated;
   }
   return children;
 }

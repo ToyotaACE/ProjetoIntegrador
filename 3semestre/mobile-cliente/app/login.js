@@ -43,7 +43,11 @@ export default function LoginPage() {
 
       router.replace("/(tabs)/dashboard");
     } catch (err) {
-      setError("E-mail ou senha incorretos.");
+      setError(
+        err?.message === "Não foi possível iniciar uma sessão. Tente novamente."
+          ? err.message
+          : "E-mail ou senha incorretos.",
+      );
     } finally {
       setLoading(false);
     }

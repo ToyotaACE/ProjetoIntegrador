@@ -23,8 +23,12 @@ services:
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: senha_segura_123
       MQTT_BROKER: tcp://host.docker.internal:1883
+      DOCUMENT_STORAGE_PATH: /app/data/documents
     ports:
       - "8083:8083"
+    volumes:
+      - documents_data:/app/data/documents
 
 volumes:
   postgres_data:
+  documents_data:

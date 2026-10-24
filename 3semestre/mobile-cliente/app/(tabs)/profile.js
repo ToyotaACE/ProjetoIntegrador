@@ -18,17 +18,9 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useLocalizedAlert } from "../../components/LocalizedAlert";
 import { useTheme } from "../../contexts/ThemeContext";
+import { formatCurrency } from "../../contexts/formatters";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
-
-function formatPrice(value) {
-  const numberValue = Number(value || 0);
-
-  return numberValue.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
 
 function formatDate(value, language = "pt-BR") {
   if (!value) return "Data não informada";
@@ -209,7 +201,10 @@ export default function ProfilePage() {
 
       await AsyncStorage.setItem(
         "@toyota_ace:user",
-        JSON.stringify(clienteAtualizado)
+        JSON.stringify({
+          ...clienteAtualizado,
+          ...(user?.accessToken ? { accessToken: user.accessToken } : {}),
+        })
       );
 
       setEditModalVisible(false);
@@ -295,7 +290,10 @@ export default function ProfilePage() {
 
       await AsyncStorage.setItem(
         "@toyota_ace:user",
-        JSON.stringify(clienteAtualizado)
+        JSON.stringify({
+          ...clienteAtualizado,
+          ...(user?.accessToken ? { accessToken: user.accessToken } : {}),
+        })
       );
 
       setFormSenha({
@@ -519,7 +517,7 @@ export default function ProfilePage() {
                   </View>
 
                   <Text style={[styles.purchaseTotal, { color: theme.primary }]}>
-                    {formatPrice(compra.valorTotal || compra.total)}
+                    {formatCurrency(compra.valorTotal || compra.total, settings.language)}
                   </Text>
                 </View>
 
