@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAccessToken } from "../utils/vehicleDocuments";
 
 const API_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
@@ -13,6 +14,7 @@ type User = {
   telefone?: string;
   endereco?: string;
   veiculos?: any[];
+  accessToken?: string;
 };
 
 type AuthContextType = {
@@ -37,12 +39,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (userSalvo) {
           const userParseado = JSON.parse(userSalvo);
-
-          setUser(userParseado);
-          setIsAuthenticated(true);
+          if (getAccessToken(userParseado)) {
+            setUser(userParseado);
+            setIsAuthenticated(true);
+          } else {
+            await AsyncStorage.removeItem("@toyota_ace:user");
+          }
         }
       } catch (error) {
         console.log("Erro ao carregar usuário salvo:", error);
+        await AsyncStorage.removeItem("@toyota_ace:user").catch(() => {});
       } finally {
         setLoadingAuth(false);
       }
@@ -71,6 +77,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const data: User = await response.json();
+    if (!getAccessToken(data)) {
+      setIsAuthenticated(false);
+      setUser(null);
+      await AsyncStorage.removeItem("@toyota_ace:user");
+      throw new Error("Não foi possível iniciar uma sessão. Tente novamente.");
+    }
 
     setUser(data);
     setIsAuthenticated(true);
@@ -83,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     setIsAuthenticated(false);
     setUser(null);
-    await AsyncStorage.removeItem("@toyota_ace:user");
+    await AsyncStorage.removeItem("@toyota_ace:user").catch(() => {});
   };
 
   return (

@@ -4,17 +4,19 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { LocalizedText as Text } from "../../components/LocalizedText";
 
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { formatCurrency } from "../../contexts/formatters";
 
 // Imagens locais dentro de app/image
 import carroToyota from "../image/carro toyota.jpg";
@@ -27,15 +29,6 @@ const API_URL = `${API_ORIGIN}/api`;
 
 function getUserEmail(user) {
   return user?.email || user?.emailCliente || user?.usuario?.email || "";
-}
-
-function formatCurrency(value) {
-  const number = Number(value || 0);
-
-  return number.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
 }
 
 function getVehicleName(vehicle) {
@@ -170,6 +163,7 @@ function getWarrantyStatus(vehicle) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { settings } = useAccessibility();
   const { theme } = useTheme();
   const router = useRouter();
 
@@ -481,7 +475,7 @@ export default function Dashboard() {
               theme={theme}
               icon="card-outline"
               title="Próxima parcela"
-              value={formatCurrency(getInstallmentValue(selectedVehicle))}
+              value={formatCurrency(getInstallmentValue(selectedVehicle), settings.language)}
               description={`${getRemainingInstallments(
                 selectedVehicle
               )} restantes`}

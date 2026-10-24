@@ -7,10 +7,10 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { LocalizedText as Text } from "../components/LocalizedText";
 
 const { width, height } = Dimensions.get("window");
 

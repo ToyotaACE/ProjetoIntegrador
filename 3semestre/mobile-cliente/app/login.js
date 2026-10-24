@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   Image,
   ImageBackground,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { LocalizedText as Text, LocalizedTextInput as TextInput } from "../components/LocalizedText";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -44,7 +43,11 @@ export default function LoginPage() {
 
       router.replace("/(tabs)/dashboard");
     } catch (err) {
-      setError("E-mail ou senha incorretos.");
+      setError(
+        err?.message === "Não foi possível iniciar uma sessão. Tente novamente."
+          ? err.message
+          : "E-mail ou senha incorretos.",
+      );
     } finally {
       setLoading(false);
     }

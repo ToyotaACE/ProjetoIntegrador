@@ -7,13 +7,15 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { LocalizedText as Text } from "../../components/LocalizedText";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { formatCurrency } from "../../contexts/formatters";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
 
@@ -52,15 +54,6 @@ const paymentMethods = [
 
 function getMesPagoKey(veiculoId) {
   return `toyota_ultimo_mes_pago_${veiculoId}`;
-}
-
-function formatCurrency(value) {
-  const numberValue = Number(value || 0);
-
-  return numberValue.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
 }
 
 function getUserEmail(user) {
@@ -141,6 +134,7 @@ function getTaxaJuros(vehicle) {
 
 export default function FinancingPage() {
   const { user } = useAuth();
+  const { settings } = useAccessibility();
   const { theme } = useTheme();
 
   const [cliente, setCliente] = useState(null);
@@ -463,7 +457,7 @@ export default function FinancingPage() {
               </View>
 
               <Text style={[styles.cardMain, { color: theme.text }]}>
-                {formatCurrency(valorTotal)}
+                {formatCurrency(valorTotal, settings.language)}
               </Text>
 
               <Text style={[styles.cardSub, { color: theme.subtext }]}>
@@ -483,7 +477,7 @@ export default function FinancingPage() {
               </View>
 
               <Text style={[styles.cardMain, { color: theme.text }]}>
-                {formatCurrency(valorEntrada)}
+                {formatCurrency(valorEntrada, settings.language)}
               </Text>
 
               <Text style={[styles.cardSub, { color: theme.subtext }]}>
@@ -507,7 +501,7 @@ export default function FinancingPage() {
               </View>
 
               <Text style={[styles.cardMain, { color: theme.text }]}>
-                {parcelasTotais}x de {formatCurrency(valorParcela)}
+                {parcelasTotais}x de {formatCurrency(valorParcela, settings.language)}
               </Text>
 
               <Text style={[styles.cardSub, { color: theme.subtext }]}>
@@ -531,7 +525,7 @@ export default function FinancingPage() {
               </View>
 
               <Text style={[styles.cardMain, { color: theme.text }]}>
-                {formatCurrency(valorFinanciado)}
+                {formatCurrency(valorFinanciado, settings.language)}
               </Text>
 
               <Text style={[styles.cardSub, { color: theme.subtext }]}>
@@ -600,7 +594,7 @@ export default function FinancingPage() {
               </Text>
 
               <Text style={[styles.paymentValue, { color: theme.text }]}>
-                {formatCurrency(valorParcela)}
+                {formatCurrency(valorParcela, settings.language)}
               </Text>
 
               <Text style={[styles.paymentDescription, { color: theme.subtext }]}>
@@ -650,7 +644,7 @@ export default function FinancingPage() {
             </Text>
 
             <Text style={[styles.modalValue, { color: theme.text }]}>
-              {formatCurrency(valorParcela)}
+              {formatCurrency(valorParcela, settings.language)}
             </Text>
 
             <Text style={[styles.modalLabel, { color: theme.subtext }]}>

@@ -169,7 +169,7 @@ const DashboardPage = () => {
                                   ? "border-red-600 bg-red-600 text-white"
                                   : "border-border hover:border-red-600"
                               }`}
-                            >
+                            > 
                               {veiculo.modeloVeiculo || "Veículo"}
                             </button>
                           );

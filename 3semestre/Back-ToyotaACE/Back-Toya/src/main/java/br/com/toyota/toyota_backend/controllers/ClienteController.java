@@ -1,8 +1,10 @@
 package br.com.toyota.toyota_backend.controllers;
 
 import br.com.toyota.toyota_backend.dto.LoginRequest;
+import br.com.toyota.toyota_backend.dto.ClienteLoginResponse;
 import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.repositories.ClienteRepository;
+import br.com.toyota.toyota_backend.services.ClienteSessionService;
 import br.com.toyota.toyota_backend.services.ClienteService;
 
 import org.springframework.http.ResponseEntity;
@@ -18,13 +20,16 @@ public class ClienteController {
     private final ClienteRepository clienteRepository;
 
     private final ClienteService clienteService;
+    private final ClienteSessionService clienteSessionService;
 
     public ClienteController(
             ClienteRepository clienteRepository,
-            ClienteService clienteService
+            ClienteService clienteService,
+            ClienteSessionService clienteSessionService
     ) {
         this.clienteRepository = clienteRepository;
         this.clienteService = clienteService;
+        this.clienteSessionService = clienteSessionService;
     }
 
     @PostMapping({"/cadastro", "/cadastrar"})
@@ -37,15 +42,14 @@ public class ClienteController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Cliente> login(
+    public ResponseEntity<ClienteLoginResponse> login(
             @RequestBody LoginRequest dadosLogin
     ) {
-        return ResponseEntity.ok(
-                clienteService.login(
-                        dadosLogin.getEmail(),
-                        dadosLogin.getSenha()
-                )
-        );
+        Cliente cliente = clienteService.login(dadosLogin.getEmail(), dadosLogin.getSenha());
+        return ResponseEntity.ok(ClienteLoginResponse.from(
+                cliente,
+                clienteSessionService.criarToken(cliente.getId())
+        ));
     }
 
     @GetMapping
@@ -87,9 +91,7 @@ public class ClienteController {
     public ResponseEntity<Void> deletar(
             @PathVariable Long id
     ) {
-        clienteRepository.delete(
-                clienteService.buscarPorId(id)
-        );
+        clienteService.deletar(id);
 
         return ResponseEntity.noContent().build();
     }

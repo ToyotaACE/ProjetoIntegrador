@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useLanguage, type Language } from "@/contexts/LanguageContext";
+import { translationSupplement } from "@/lib/translationSupplement";
 
-type Translation = Record<Exclude<Language, "pt-BR">, string>;
+type Translation = Partial<Record<Exclude<Language, "pt-BR">, string>>;
 
 const translations: Record<string, Translation> = {
   "Carregando...": { "en-US": "Loading...", "es-ES": "Cargando..." },
   "Sair": { "en-US": "Sign out", "es-ES": "Cerrar sesión" },
-  "Todos os direitos reservados": { "en-US": "All rights reserved", "es-ES": "All rights reserved" },
+  "Todos os direitos reservados": { "en-US": "All rights reserved", "es-ES": "Todos los derechos reservados" },
   "Acesse sua conta para acompanhar seu veículo": { "en-US": "Access your account to follow your vehicle", "es-ES": "Accede a tu cuenta para seguir tu vehículo" },
   "Email": { "en-US": "Email", "es-ES": "Correo electrónico" },
   "Senha": { "en-US": "Password", "es-ES": "Contraseña" },
@@ -165,7 +166,7 @@ const translations: Record<string, Translation> = {
   "Até 15% OFF": { "en-US": "Up to 15% off", "es-ES": "Hasta un 15 % de descuento" },
   "Tapete Original Toyota": { "en-US": "Genuine Toyota Floor Mat", "es-ES": "Alfombrilla original Toyota" },
   "Boné Toyota Gazoo Racing": { "en-US": "Toyota Gazoo Racing Cap", "es-ES": "Gorra Toyota Gazoo Racing" },
-  "Lifestyle": { "en-US": "Lifestyle", "es-ES": "Lifestyle" },
+  "Lifestyle": { "en-US": "Lifestyle", "es-ES": "Estilo de vida" },
   "Produtos em destaque": { "en-US": "Featured Products", "es-ES": "Productos destacados" },
   "Escolha produtos originais e acessórios Toyota.": { "en-US": "Choose genuine Toyota products and accessories.", "es-ES": "Elige productos y accesorios originales de Toyota." },
   "Adicionar ao carrinho": { "en-US": "Add to cart", "es-ES": "Añadir al carrito" },
@@ -303,64 +304,522 @@ const translations: Record<string, Translation> = {
   "Nenhum horário disponível nesta data.": { "en-US": "No time slots are available on this date.", "es-ES": "No hay horarios disponibles en esta fecha." },
   "Este horário acabou de ser reservado. Escolha outro.": { "en-US": "This time was just booked. Choose another.", "es-ES": "Este horario acaba de reservarse. Elige otro." },
   "Este horário já está reservado. Escolha outro.": { "en-US": "This time is already booked. Choose another.", "es-ES": "Este horario ya está reservado. Elige otro." },
+  "Modelos": { "en-US": "Models", "es-ES": "Modelos" },
+  "Toyota Logo": { "en-US": "Toyota logo", "es-ES": "Logotipo de Toyota" },
+  "Chat Bot": { "en-US": "Chatbot", "es-ES": "Asistente virtual" },
+  "Toyota do Brasil — Todos os direitos reservados": {
+    "en-US": "Toyota Brazil — All rights reserved",
+    "es-ES": "Toyota Brasil — Todos los derechos reservados",
+  },
+  "breadcrumb": { "en-US": "Breadcrumb navigation", "es-ES": "Navegación de ruta" },
+  "pagination": { "en-US": "Pagination", "es-ES": "Paginación" },
+  "More": { "en-US": "More", "es-ES": "Más" },
+  "Previous slide": { "en-US": "Previous slide", "es-ES": "Diapositiva anterior" },
+  "Next slide": { "en-US": "Next slide", "es-ES": "Diapositiva siguiente" },
+  "Go to previous page": { "en-US": "Go to previous page", "es-ES": "Ir a la página anterior" },
+  "Previous": { "en-US": "Previous", "es-ES": "Anterior" },
+  "Go to next page": { "en-US": "Go to next page", "es-ES": "Ir a la página siguiente" },
+  "Next": { "en-US": "Next", "es-ES": "Siguiente" },
+  "More pages": { "en-US": "More pages", "es-ES": "Más páginas" },
+};
+
+const japaneseTranslations: Record<string, string> = {
+  "Carregando...": "読み込み中...",
+  "Sair": "ログアウト",
+  "Todos os direitos reservados": "無断転載を禁じます",
+  "Acesse sua conta para acompanhar seu veículo": "ログインして車両情報を確認してください",
+  "Email": "メールアドレス",
+  "Senha": "パスワード",
+  "Esqueci minha senha": "パスワードを忘れた場合",
+  "Não tem conta?": "アカウントをお持ちでない方",
+  "Cadastre-se": "新規登録",
+  "Entrar": "ログイン",
+  "Criar Conta": "アカウントを作成",
+  "Cadastre-se para acompanhar seu veículo": "車両情報を確認するために登録してください",
+  "Nome": "氏名",
+  "Seu nome": "氏名を入力",
+  " de ": " / ",
+  " etapas concluídas": " ステップ完了",
+  "Telefone": "電話番号",
+  "Confirmar Senha": "パスワードを確認",
+  "Já tem conta?": "すでにアカウントをお持ちですか？",
+  "Dashboard": "ダッシュボード",
+  "Veículos": "車両",
+  "Financiamento": "ローン",
+  "Agendamentos": "予約",
+  "Perfil": "プロフィール",
+  "Toyota Shop": "Toyota ショップ",
+  "Carregando dashboard...": "ダッシュボードを読み込み中...",
+  "Ver veículo": "車両を見る",
+  "Ver financiamento": "ローンを確認",
+  "Central de avisos": "お知らせ",
+  "Ações rápidas": "クイックアクション",
+  "Dados Pessoais": "個人情報",
+  "Segurança da Conta": "アカウントのセキュリティ",
+  "Editar Perfil": "プロフィールを編集",
+  "Alterar senha": "パスワードを変更",
+  "Senha de acesso": "ログインパスワード",
+  "Compras Toyota Shop": "Toyota ショップの購入履歴",
+  "Ir para Toyota Shop": "Toyota ショップへ",
+  "Carregando financiamento...": "ローン情報を読み込み中...",
+  "Pagamento simulado": "お支払いのシミュレーション",
+  "Próxima parcela": "次回のお支払い",
+  "Pagamento da parcela": "分割払いのお支払い",
+  "Cartão de crédito": "クレジットカード",
+  "Cartão de débito": "デビットカード",
+  "Boleto": "請求書払い",
+  "Novo agendamento": "新しい予約",
+  "Excluir agendamento": "予約を削除",
+  "Horário": "時間",
+  "Cliente": "お客様",
+  "Tipo": "種類",
+  "Observação": "備考",
+  "Revisão": "点検",
+  "Retirada": "お車の受け取り",
+  "Outros": "その他",
+  "Carrinho": "カート",
+  "Carrinho de compras": "ショッピングカート",
+  "Subtotal": "小計",
+  "Desconto": "割引",
+  "Total": "合計",
+  "Forma de pagamento": "お支払い方法",
+  "Novo veículo": "新しい車両",
+  "Marca": "メーカー",
+  "Modelo": "モデル",
+  "Ano": "年式",
+  "Motor": "エンジン",
+  "Cor": "色",
+  "Câmbio": "トランスミッション",
+  "Combustível": "燃料",
+  "Chassi": "車台番号",
+  "Próxima revisão": "次回点検",
+  "Timeline de Fabricação": "製造工程",
+  "Progresso": "進捗状況",
+  "Acessibilidade": "アクセシビリティ",
+  "Conectividade": "コネクティビティ",
+  "Experiência": "体験",
+  "Explorar agora": "今すぐ見る",
+  "Digite sua mensagem...": "メッセージを入力...",
+  "seu@email.com": "メールアドレス",
+  "Nome do cliente": "お客様の氏名",
+  "Selecione o tipo": "種類を選択",
+  "Selecione uma forma de pagamento": "お支払い方法を選択",
+  "Veículo": "車両",
+  "Agendamento": "予約",
+  "Bem-vindo ao seu portal Toyota ACE.": "Toyota ACE ポータルへようこそ。",
+  "Veículo principal": "メインの車両",
+  "Nenhum veículo vinculado": "登録車両はありません",
+  "Ano não informado": "年式未登録",
+  "Cor não informada": "色未登録",
+  "Quando um veículo for atribuído, ele aparecerá aqui.": "車両が登録されると、ここに表示されます。",
+  "Escolher veículo principal": "メイン車両を選択",
+  "Etapa atual": "現在の段階",
+  "Pronto para retirada": "お車をお受け取りいただけます",
+  "Concessionária": "販売店",
+  "Transporte": "輸送中",
+  "Inspeção": "検査",
+  "Linha de produção": "生産ライン",
+  "Pedido realizado": "ご注文済み",
+  "Aguardando atualização": "更新待ち",
+  "veículo(s) vinculado(s)": "台の登録車両",
+  "Não informada": "未登録",
+  "mantenha sua garantia ativa": "保証を有効に保ちましょう",
+  "Acessórios": "アクセサリー",
+  "produtos exclusivos Toyota": "Toyota 限定商品",
+  "Acompanhamento do veículo": "車両の状況",
+  "Nenhum veículo vinculado ao seu cadastro.": "お客様のアカウントに車両が登録されていません。",
+  "Nenhum financiamento pendente informado.": "未払いのローンはありません。",
+  "Garantia": "保証",
+  "Status de garantia não informado.": "保証状況は未登録です。",
+  "Agendar serviço": "サービスを予約",
+  "Pagar parcela": "分割払いを支払う",
+  "Ver timeline": "工程を確認",
+  "Comprar acessórios": "アクセサリーを購入",
+  "Meus Veículos": "マイカー",
+  "Selecione um veículo para acompanhar ficha técnica e fabricação.": "車両を選択して仕様と製造状況を確認してください。",
+  "Carregando veículos...": "車両情報を読み込み中...",
+  "Não foi possível carregar os veículos.": "車両情報を読み込めませんでした。",
+  "Nenhum veículo vinculado ao seu cadastro ainda.": "お客様のアカウントに車両はまだ登録されていません。",
+  "Veículo sem modelo": "モデル未登録",
+  "Aguardando status": "状況確認中",
+  "Não informado": "未登録",
+  "Cegonha": "陸送中",
+  "Seu pedido foi registrado no sistema da concessionária.": "ご注文は販売店のシステムに登録されました。",
+  "O veículo entrou na linha de produção da fábrica.": "車両は工場の生産ラインに入りました。",
+  "São realizados testes de qualidade e segurança.": "品質と安全性の検査を行っています。",
+  "O veículo está em transporte para a concessionária.": "車両は販売店へ輸送中です。",
+  "O veículo chegou à concessionária e está em preparação.": "車両は販売店に到着し、納車準備中です。",
+  "Seu veículo está pronto para ser retirado.": "お車をお受け取りいただけます。",
+  "Agenda": "予約",
+  "Compromissos ·": "予約 ·",
+  "Carregando agendamentos...": "予約を読み込み中...",
+  "Nenhum compromisso neste dia.": "この日の予約はありません。",
+  "Sem observação": "備考なし",
+  "Agende um compromisso para": "予約日時を選択してください",
+  "Detalhes do compromisso": "予約の詳細",
+  "Recall": "リコール",
+  "Cancelar": "キャンセル",
+  "Salvando...": "保存中...",
+  "Salvar": "保存",
+  "Salvar alterações": "変更を保存",
+  "Excluir": "削除",
+  "Tem certeza que deseja remover este compromisso?": "この予約を削除してもよろしいですか？",
+  "Não foi possível carregar os agendamentos.": "予約を読み込めませんでした。",
+  "Preencha horário e cliente": "時間とお客様を入力してください",
+  "Informe a observação para o tipo Outros": "「その他」の予約内容を入力してください",
+  "Agendamento criado!": "予約が完了しました。",
+  "Não foi possível confirmar o agendamento.": "予約を確定できませんでした。",
+  "Agendamento removido!": "予約を削除しました。",
+  "Não foi possível remover o agendamento.": "予約を削除できませんでした。",
+  "Produtos, acessórios e promoções exclusivas Toyota.": "Toyota の商品、アクセサリー、お得なキャンペーン。",
+  "Promoção Especial": "特別キャンペーン",
+  "Kit Revisão Toyota": "Toyota 点検キット",
+  "Até 20% OFF em kits selecionados de manutenção.": "対象のメンテナンスキットが最大20%割引。",
+  "A partir de R$ 189,90": "189.90レアルから",
+  "Acessórios Originais": "純正アクセサリー",
+  "Tapetes, protetores e itens exclusivos Toyota.": "フロアマット、プロテクターなどToyota限定商品。",
+  "Promoções especiais": "特別価格",
+  "Linha Lifestyle": "ライフスタイルコレクション",
+  "Bonés, camisetas, garrafas e produtos oficiais.": "キャップ、Tシャツ、ボトルなどの公式商品。",
+  "Até 15% OFF": "最大15%割引",
+  "Tapete Original Toyota": "Toyota 純正フロアマット",
+  "Boné Toyota Gazoo Racing": "Toyota Gazoo Racing キャップ",
+  "Lifestyle": "ライフスタイル",
+  "Produtos em destaque": "おすすめ商品",
+  "Escolha produtos originais e acessórios Toyota.": "Toyota 純正商品とアクセサリーをお選びください。",
+  "Adicionar ao carrinho": "カートに追加",
+  "Finalize sua compra de produtos Toyota.": "Toyota 商品の購入手続きを完了してください。",
+  "Seu carrinho está vazio.": "カートは空です。",
+  "Continuar comprando": "買い物を続ける",
+  "Pagamento selecionado:": "選択したお支払い方法:",
+  "Faça login para finalizar a compra.": "ログインして購入を完了してください。",
+  "Selecione uma forma de pagamento.": "お支払い方法を選択してください。",
+  "Produto removido do carrinho.": "商品をカートから削除しました。",
+  "adicionado ao carrinho!": "をカートに追加しました。",
+  "Compra registrada com sucesso!": "ご注文を登録しました。",
+  "Erro ao registrar compra.": "注文を登録できませんでした。",
+  "Perfil do Cliente": "お客様プロフィール",
+  "Gerencie suas informações pessoais e segurança da conta.": "個人情報とアカウントのセキュリティを管理します。",
+  "Alterar Senha": "パスワードを変更",
+  "Conta protegida": "アカウントは保護されています",
+  "Seu acesso está ativo e protegido por senha.": "アカウントは有効で、パスワードにより保護されています。",
+  "Altere sua senha periodicamente para manter sua conta segura.": "安全のため、定期的にパスワードを変更してください。",
+  "Limpar histórico": "履歴を削除",
+  "Nenhuma compra realizada": "購入履歴はありません",
+  "Explore acessórios e produtos exclusivos Toyota.": "Toyota 限定アクセサリーや商品をご覧ください。",
+  "Pedido #": "注文番号 #",
+  "Editar perfil": "プロフィールを編集",
+  "Atualize suas informações pessoais.": "個人情報を更新してください。",
+  "Endereço": "住所",
+  "Informe sua senha atual e escolha uma nova senha.": "現在のパスワードを入力し、新しいパスワードを設定してください。",
+  "Senha atual": "現在のパスワード",
+  "Nova senha": "新しいパスワード",
+  "Confirmar nova senha": "新しいパスワードを確認",
+  "Cliente inválido.": "お客様情報が無効です。",
+  "Preencha nome e telefone.": "氏名と電話番号を入力してください。",
+  "Perfil atualizado!": "プロフィールを更新しました。",
+  "Erro ao atualizar perfil.": "プロフィールを更新できませんでした。",
+  "Preencha a senha atual e a nova senha.": "現在と新しいパスワードを入力してください。",
+  "Senha atual incorreta.": "現在のパスワードが正しくありません。",
+  "As senhas não coincidem.": "パスワードが一致しません。",
+  "A nova senha deve ter pelo menos 6 caracteres.": "新しいパスワードは6文字以上で入力してください。",
+  "Senha alterada com sucesso!": "パスワードを変更しました。",
+  "Erro ao alterar senha.": "パスワードを変更できませんでした。",
+  "Histórico de compras apagado.": "購入履歴を削除しました。",
+  "Erro ao limpar histórico.": "履歴を削除できませんでした。",
+  "Valor Total": "合計金額",
+  "Entrada": "頭金",
+  "Parcelas": "分割回数",
+  "Valor Pendente": "未払い金額",
+  "Taxa de Juros": "金利",
+  "Veja e simule o pagamento das parcelas por veículo.": "車両ごとの分割払いを確認・シミュレーションできます。",
+  "Nenhum veículo com financiamento encontrado.": "ローン契約のある車両はありません。",
+  "% do valor": "%",
+  " restantes": " 残り",
+  " pagas · ": " 回支払い済み · ",
+  "Último mês pago:": "前回のお支払い月:",
+  " ao ano": " 年率",
+  " a.m.": " 月利",
+  "Escolha a forma de pagamento e confirme para dar baixa na parcela.": "お支払い方法を選択し、確定してください。",
+  "Financiamento quitado": "ローン完済",
+  "Valor da parcela:": "分割払い金額:",
+  "Nome impresso no cartão": "カード名義",
+  "Número do cartão": "カード番号",
+  "Validade": "有効期限",
+  "CPF do titular": "カード名義人のCPF",
+  "Selecione um veículo.": "車両を選択してください。",
+  "Financiamento já quitado!": "ローンはすでに完済しています。",
+  "Parcela paga com sucesso!": "お支払いが完了しました。",
+  "Erro ao pagar parcela.": "お支払いを処理できませんでした。",
+  "Preencha todos os dados do cartão.": "カード情報をすべて入力してください。",
+  "Informe o CPF para gerar o PIX.": "PIXを発行するにはCPFを入力してください。",
+  "Nova experiência Toyota": "新しいToyota体験",
+  "Garantia Toyota 10": "Toyota 10年保証",
+  "Começar": "始める",
+  "Role para explorar": "スクロールしてご覧ください",
+  "Escolha sua experiência": "お好みの体験をお選びください",
+  "Experiência digital": "デジタル体験",
+  "Por que usar o Toyota ACE?": "Toyota ACEを使う理由",
+  "Informações importantes do seu veículo em poucos cliques, com navegação simples e intuitiva.": "簡単な操作で、車両の大切な情報をすぐに確認できます。",
+  "Acompanhe pedidos, revisões, atualizações e serviços em tempo real, direto pela plataforma.": "注文、点検、更新情報、サービスをリアルタイムで確認できます。",
+  "Uma jornada digital moderna, prática e pensada para deixar o cliente mais próximo da marca.": "お客様とブランドをつなぐ、便利で快適なデジタル体験をお届けします。",
+  "Tradição": "伝統",
+  "A história da Toyota": "Toyotaの歩み",
+  "Fundada em 1937, a Toyota revolucionou a indústria automotiva com inovação, qualidade e tecnologia sustentável.": "1937年の創業以来、Toyotaは革新、品質、持続可能な技術で自動車産業を変革してきました。",
+  "Dos modelos clássicos aos veículos híbridos e elétricos, a marca segue transformando o futuro da mobilidade com responsabilidade, confiança e excelência.": "名車からハイブリッド車、電気自動車まで、Toyotaは信頼と責任をもってモビリティの未来を切り拓きます。",
+  "Sua jornada Toyota começa aqui.": "Toyotaとの新しい毎日をここから。",
+  "Crie sua conta e acompanhe tudo sobre seu veículo de forma simples, rápida e conectada.": "アカウントを作成して、車両情報をいつでも簡単に確認しましょう。",
+  "Começar agora": "今すぐ始める",
+  "Login": "ログイン",
+  "O CPF deve conter exatamente 11 números.": "CPFは11桁で入力してください。",
+  "A senha deve ter 8 ou mais caracteres, com maiúscula, minúscula, número e símbolo.": "パスワードは8文字以上で、大文字、小文字、数字、記号を含めてください。",
+  "Preencha nome, CPF, email e senha.": "氏名、CPF、メールアドレス、パスワードを入力してください。",
+  "Não foi possível criar sua conta.": "アカウントを作成できませんでした。",
+  "Criando conta...": "アカウントを作成中...",
+  "Mínimo de 8 caracteres, com maiúscula, minúscula, número e símbolo.": "8文字以上で、大文字、小文字、数字、記号を含めてください。",
+  "Digite seu email.": "メールアドレスを入力してください。",
+  "Se o email existir, enviaremos instruções para recuperação.": "登録済みの場合、再設定方法をメールでお送りします。",
+  "Recuperar Senha": "パスワードを再設定",
+  "Informe seu email para receber instruções de recuperação": "再設定方法を受け取るメールアドレスを入力してください",
+  "Enviar instruções": "案内を送信",
+  "Lembrou a senha?": "パスワードを思い出しましたか？",
+  "Voltar ao login": "ログインに戻る",
+  "Entrando...": "ログイン中...",
+  "Preencha todos os campos.": "すべての項目を入力してください。",
+  "E-mail ou senha inválidos.": "メールアドレスまたはパスワードが正しくありません。",
+  "Assistente virtual online": "オンラインアシスタント",
+  "Online": "オンライン",
+  "Digitando...": "入力中...",
+  "Erro na resposta do servidor": "サーバーからの応答にエラーが発生しました。",
+  "Não consegui entender sua pergunta.": "ご質問を理解できませんでした。",
+  "Erro ao conectar com o chatbot. Verifique se o Flask está rodando na porta 5000.": "アシスタントに接続できません。Flaskがポート5000で起動しているか確認してください。",
+  "Diminuir tamanho do texto": "文字を小さくする",
+  "Aumentar tamanho do texto": "文字を大きくする",
+  "Olá! 👋 Bem-vindo ao Toyota ACE. Como posso ajudar você hoje?": "こんにちは。Toyota ACEへようこそ。どのようなお手伝いができますか？",
+  "🛡️ Garantia": "🛡️ 保証",
+  "💰 Financiamento": "💰 ローン",
+  "📅 Retirada": "📅 お車の受け取り",
+  "Selecione um horário disponível": "空いている時間を選択してください",
+  "Nenhum horário disponível nesta data.": "この日に空いている時間はありません。",
+  "Este horário acabou de ser reservado. Escolha outro.": "この時間は予約されました。別の時間を選択してください。",
+  "Este horário já está reservado. Escolha outro.": "この時間はすでに予約済みです。別の時間を選択してください。",
+};
+
+Object.assign(translations, {
+  "Shop": { "en-US": "Shop", "es-ES": "Tienda" },
+  "PIX": { "en-US": "PIX", "es-ES": "PIX" },
+  "CVV": { "en-US": "CVV", "es-ES": "CVV" },
+  "Finalizar": { "en-US": "Close", "es-ES": "Cerrar" },
+  "Nenhum veículo vinculado": { "en-US": "No vehicle linked", "es-ES": "Ningún vehículo vinculado" },
+  "Não encontramos veículos vinculados ao seu perfil.": { "en-US": "No vehicles are linked to your profile.", "es-ES": "No hay vehículos vinculados a tu perfil." },
+  "Quando um veículo for atribuído, ele aparecerá aqui.": { "en-US": "When a vehicle is assigned, it will appear here.", "es-ES": "Cuando se asigne un vehículo, aparecerá aquí." },
+  "Escolher veículo principal": { "en-US": "Choose main vehicle", "es-ES": "Elegir vehículo principal" },
+  "Nenhum veículo com financiamento encontrado.": { "en-US": "No financed vehicles found.", "es-ES": "No se encontraron vehículos financiados." },
+  "Nenhum horário disponível nesta data.": { "en-US": "No time slots are available on this date.", "es-ES": "No hay horarios disponibles en esta fecha." },
+  "Nome impresso no cartão": { "en-US": "Name on card", "es-ES": "Nombre del titular" },
+  "Número do cartão": { "en-US": "Card number", "es-ES": "Número de tarjeta" },
+  "Validade": { "en-US": "Expiry date", "es-ES": "Vencimiento" },
+  "CPF para gerar PIX": { "en-US": "Tax ID to generate PIX", "es-ES": "Documento para generar PIX" },
+});
+
+Object.assign(japaneseTranslations, {
+  "Shop": "ショップ",
+  "PIX": "PIX",
+  "CVV": "セキュリティコード",
+  "Finalizar": "閉じる",
+  "Nenhum veículo vinculado": "登録車両はありません",
+  "Não encontramos veículos vinculados ao seu perfil.": "プロフィールに登録された車両はありません。",
+  "Quando um veículo for atribuído, ele aparecerá aqui.": "車両が登録されると、ここに表示されます。",
+  "Escolher veículo principal": "メイン車両を選択",
+  "Nenhum veículo com financiamento encontrado.": "ローン契約のある車両はありません。",
+  "Nenhum horário disponível nesta data.": "この日に空いている時間はありません。",
+  "Nome impresso no cartão": "カード名義",
+  "Número do cartão": "カード番号",
+  "Validade": "有効期限",
+  "CPF para gerar PIX": "PIXを発行するにはCPFを入力してください",
+  "Modelos": "車種",
+  "Toyota Logo": "トヨタのロゴ",
+  "Chat Bot": "チャットボット",
+  "Toyota do Brasil — Todos os direitos reservados": "トヨタ・ブラジル — 無断転載を禁じます",
+  "breadcrumb": "パンくずリスト",
+  "pagination": "ページ移動",
+  "More": "その他",
+  "Previous slide": "前のスライド",
+  "Next slide": "次のスライド",
+  "Go to previous page": "前のページへ",
+  "Previous": "前へ",
+  "Go to next page": "次のページへ",
+  "Next": "次へ",
+  "More pages": "他のページ",
+});
+
+// Complete the dictionaries with labels shared with the mobile application.
+Object.entries(translationSupplement).forEach(([source, values]) => {
+  const current = translations[source] || {};
+  translations[source] = {
+    ...current,
+    "en-US": current["en-US"] || values["en-US"],
+    "es-ES": current["es-ES"] || values["es-ES"],
+  } as Translation;
+
+  if (!japaneseTranslations[source]) {
+    japaneseTranslations[source] = values["ja-JP"];
+  }
+});
+
+const portugueseOverrides: Record<string, string> = {
+  "Oops! Page not found": "Ops! Página não encontrada",
+  "Return to Home": "Voltar para a página inicial",
+  "Toggle Sidebar": "Alternar barra lateral",
+  "Dashboard": "Painel",
+  "Lifestyle": "Estilo de vida",
+  "Toyota Shop": "Loja Toyota",
+  "Email": "E-mail",
+  "Modelos": "Modelos",
+  "Toyota Logo": "Logo Toyota",
+  "Chat Bot": "Assistente virtual",
+  "Toyota do Brasil — Todos os direitos reservados": "Toyota do Brasil — Todos os direitos reservados",
+  "breadcrumb": "Navegação estrutural",
+  "pagination": "Paginação",
+  "More": "Mais",
+  "Previous slide": "Slide anterior",
+  "Next slide": "Próximo slide",
+  "Go to previous page": "Ir para a página anterior",
+  "Previous": "Anterior",
+  "Go to next page": "Ir para a próxima página",
+  "Next": "Próximo",
+  "More pages": "Mais páginas",
 };
 
 const reverse: Record<string, string> = Object.fromEntries(
-  Object.entries(translations).flatMap(([source, values]) => Object.values(values).map((value) => [value, source])),
+  [
+    ...Object.entries(translations).flatMap(([source, values]) =>
+      Object.values(values).filter((value) => value.length > 0).map((value) => [value, source]),
+    ),
+    ...Object.entries(japaneseTranslations)
+      .filter(([, value]) => value.length > 0)
+      .map(([source, value]) => [value, source]),
+  ],
 );
 
 const originalText = new WeakMap<Text, string>();
 const translatedText = new WeakMap<Text, string>();
+const originalAttributes = new WeakMap<Element, Map<string, string>>();
+const translatedAttributes = new WeakMap<Element, Map<string, string>>();
+
+function translateAttribute(element: Element, attribute: string, language: Language) {
+  const current = element.getAttribute(attribute);
+  if (current === null) return;
+
+  let originals = originalAttributes.get(element);
+  let translated = translatedAttributes.get(element);
+  if (!originals) {
+    originals = new Map<string, string>();
+    originalAttributes.set(element, originals);
+  }
+  if (!translated) {
+    translated = new Map<string, string>();
+    translatedAttributes.set(element, translated);
+  }
+
+  if (!originals.has(attribute) || current !== translated.get(attribute)) {
+    originals.set(attribute, current);
+  }
+
+  const source = originals.get(attribute) || current;
+  const result = translate(source, language);
+  if (result !== current) element.setAttribute(attribute, result);
+  translated.set(attribute, result);
+}
 
 function translateDynamic(value: string, language: Language) {
   const match = value.match(/^Olá, (.+) 👋$/);
-  if (match) return `${language === "en-US" ? "Hello" : "Hola"}, ${match[1]} 👋`;
+  if (match) {
+    if (language === "ja-JP") return `こんにちは、${match[1]} 👋`;
+    return `${language === "en-US" ? "Hello" : "Hola"}, ${match[1]} 👋`;
+  }
 
   const appointmentCount = value.match(/^Compromissos · (\d+)$/);
   if (appointmentCount) {
-    const label = language === "en-US" ? "Appointments" : "Citas";
+    const label = language === "en-US" ? "Appointments" : language === "ja-JP" ? "予約" : "Citas";
     return `${label} · ${appointmentCount[1]}`;
   }
 
   const completedSteps = value.match(/^(\d+) de (\d+) etapas concluídas$/);
   if (completedSteps) {
+    if (language === "ja-JP") return `${completedSteps[1]} / ${completedSteps[2]} ステップ完了`;
     return language === "en-US"
       ? `${completedSteps[1]} of ${completedSteps[2]} steps completed`
       : `${completedSteps[1]} de ${completedSteps[2]} etapas completadas`;
   }
 
+  const currentStepCount = value.match(/^(.+) de (\d+) etapas concluídas$/);
+  if (currentStepCount) {
+    const step = language === "ja-JP"
+      ? japaneseTranslations[currentStepCount[1]] || currentStepCount[1]
+      : translations[currentStepCount[1]]?.[language] || currentStepCount[1];
+    if (language === "ja-JP") return `${step}: ${currentStepCount[2]} ステップ完了`;
+    return language === "en-US"
+      ? `${step}: ${currentStepCount[2]} steps completed`
+      : `${step}: ${currentStepCount[2]} etapas completadas`;
+  }
+
+  const vehicleNotice = value.match(/^Seu (.+) está na etapa: (.+)\.$/);
+  if (vehicleNotice) {
+    const step = language === "ja-JP"
+      ? japaneseTranslations[vehicleNotice[2]] || vehicleNotice[2]
+      : translations[vehicleNotice[2]]?.[language] || vehicleNotice[2];
+    if (language === "ja-JP") return `${vehicleNotice[1]}の現在の段階: ${step}。`;
+    return language === "en-US"
+      ? `Your ${vehicleNotice[1]} is at this stage: ${step}.`
+      : `Tu ${vehicleNotice[1]} está en la etapa: ${step}.`;
+  }
+
   const remainingPayments = value.match(/^Você possui (\d+) parcela\(s\) restante\(s\)\.$/);
   if (remainingPayments) {
+    if (language === "ja-JP") return `残り${remainingPayments[1]}回のお支払いです。`;
     return language === "en-US"
       ? `You have ${remainingPayments[1]} installment(s) remaining.`
       : `Te quedan ${remainingPayments[1]} cuota(s).`;
   }
 
   const warranty = value.match(/^Garantia: (.+)\.$/);
-  if (warranty) return `${language === "en-US" ? "Warranty" : "Garantía"}: ${warranty[1]}.`;
+  if (warranty) {
+    const label = language === "en-US" ? "Warranty" : language === "ja-JP" ? "保証" : "Garantía";
+    return `${label}: ${warranty[1]}.`;
+  }
 
   const financingStatus = value.match(/^Financiamento: (.+)$/);
-  if (financingStatus) return `${language === "en-US" ? "Financing" : "Financiación"}: ${financingStatus[1]}`;
+  if (financingStatus) {
+    const label = language === "en-US" ? "Financing" : language === "ja-JP" ? "ローン" : "Financiación";
+    return `${label}: ${financingStatus[1]}`;
+  }
 
   const selectedPayment = value.match(/^Pagamento selecionado: (.+)$/);
   if (selectedPayment) {
-    const label = language === "en-US" ? "Selected payment method" : "Método de pago seleccionado";
+    const label = language === "en-US" ? "Selected payment method" : language === "ja-JP" ? "選択したお支払い方法" : "Método de pago seleccionado";
     return `${label}: ${selectedPayment[1]}`;
   }
 
   const purchaseOrder = value.match(/^Pedido #(\d+)$/);
-  if (purchaseOrder) return `${language === "en-US" ? "Order" : "Pedido n.º"} ${purchaseOrder[1]}`;
+  if (purchaseOrder) {
+    const label = language === "en-US" ? "Order" : language === "ja-JP" ? "注文番号" : "Pedido n.º";
+    return `${label} ${purchaseOrder[1]}`;
+  }
 
   const lastPaidMonth = value.match(/^Último mês pago: (.+)$/);
   if (lastPaidMonth) {
-    const prefix = language === "en-US" ? "Last month paid" : "Último mes pagado";
-    const month = translations[lastPaidMonth[1]]?.[language] || lastPaidMonth[1];
+    const prefix = language === "en-US" ? "Last month paid" : language === "ja-JP" ? "前回のお支払い月" : "Último mes pagado";
+    const month = language === "ja-JP"
+      ? japaneseTranslations[lastPaidMonth[1]] || lastPaidMonth[1]
+      : translations[lastPaidMonth[1]]?.[language] || lastPaidMonth[1];
     return `${prefix}: ${month}`;
   }
 
   const addedProduct = value.match(/^(.+) adicionado ao carrinho!$/);
   if (addedProduct) {
     const product = translations[addedProduct[1]]?.[language] || addedProduct[1];
+    if (language === "ja-JP") return `${product}をカートに追加しました。`;
     return language === "en-US" ? `${product} added to cart!` : `¡${product} añadido al carrito!`;
   }
 
@@ -368,12 +827,26 @@ function translateDynamic(value: string, language: Language) {
 }
 
 function translate(value: string, language: Language) {
-  const normalized = value.trim();
-  const source = reverse[normalized] || normalized;
+  // JSX line wrapping should not prevent a sentence from matching its dictionary key.
+  const normalized = value.replace(/\s+/g, " ").trim();
+  const directSource =
+    Object.prototype.hasOwnProperty.call(translations, value)
+    || Object.prototype.hasOwnProperty.call(japaneseTranslations, value)
+    || Object.prototype.hasOwnProperty.call(translations, normalized)
+    || Object.prototype.hasOwnProperty.call(japaneseTranslations, normalized);
+  const source = directSource ? (Object.prototype.hasOwnProperty.call(translations, value)
+    || Object.prototype.hasOwnProperty.call(japaneseTranslations, value) ? value : normalized)
+    : reverse[value] || reverse[normalized] || normalized;
   const result = language === "pt-BR"
-    ? source
-    : translations[source]?.[language] || translateDynamic(source, language);
-  return result ? value.replace(value.trim(), result) : value;
+    ? portugueseOverrides[source] || source
+    : language === "ja-JP"
+      ? japaneseTranslations[source] ?? translateDynamic(source, language)
+      : translations[source]?.[language] ?? translateDynamic(source, language);
+  if (result === undefined || result === null) return value;
+  if (normalized === value) return result;
+  const leadingWhitespace = value.match(/^\s*/)?.[0] || "";
+  const trailingWhitespace = value.match(/\s*$/)?.[0] || "";
+  return `${leadingWhitespace}${result}${trailingWhitespace}`;
 }
 
 function translateTextNode(node: Text, language: Language) {
@@ -405,12 +878,25 @@ export default function PageTranslation() {
         if (node.parentElement?.closest("script, style")) return;
         translateTextNode(node, language);
       });
-      if (root instanceof Element) root.querySelectorAll<HTMLElement>("[placeholder], [title], [aria-label]").forEach((element) => {
-        ["placeholder", "title", "aria-label"].forEach((attribute) => {
-          const value = element.getAttribute(attribute);
-          if (value) element.setAttribute(attribute, translate(value, language));
+      if (root instanceof Element) {
+        const attributeSelector = [
+          "[placeholder]", "[title]", "[aria-label]", "[aria-description]",
+          "[alt]", "[data-tooltip]", "input[type='submit'][value]",
+          "input[type='button'][value]", "input[type='reset'][value]",
+        ].join(", ");
+        const elements: HTMLElement[] = [];
+        if (root.matches?.(attributeSelector)) elements.push(root as HTMLElement);
+        elements.push(...Array.from(root.querySelectorAll<HTMLElement>(attributeSelector)));
+
+        elements.forEach((element) => {
+          ["placeholder", "title", "aria-label", "aria-description", "alt", "data-tooltip"].forEach((attribute) => {
+            if (element.hasAttribute(attribute)) translateAttribute(element, attribute, language);
+          });
+          if (element instanceof HTMLInputElement && ["submit", "button", "reset"].includes(element.type)) {
+            translateAttribute(element, "value", language);
+          }
         });
-      });
+      }
     };
 
     translateTree(document.body);
@@ -426,7 +912,15 @@ export default function PageTranslation() {
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ["placeholder", "title", "aria-label"],
+      attributeFilter: [
+        "placeholder",
+        "title",
+        "aria-label",
+        "aria-description",
+        "alt",
+        "data-tooltip",
+        "value",
+      ],
     });
     return () => observer.disconnect();
   }, [language]);

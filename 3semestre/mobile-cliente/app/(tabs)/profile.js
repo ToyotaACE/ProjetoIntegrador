@@ -1,15 +1,13 @@
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { LocalizedText as Text, LocalizedTextInput as TextInput } from "../../components/LocalizedText";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,20 +15,14 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useAccessibility } from "../../contexts/AccessibilityContext";
+import { useLocalizedAlert } from "../../components/LocalizedAlert";
 import { useTheme } from "../../contexts/ThemeContext";
+import { formatCurrency } from "../../contexts/formatters";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
 
-function formatPrice(value) {
-  const numberValue = Number(value || 0);
-
-  return numberValue.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
-
-function formatDate(value) {
+function formatDate(value, language = "pt-BR") {
   if (!value) return "Data não informada";
 
   const date = new Date(value);
@@ -39,7 +31,7 @@ function formatDate(value) {
     return value;
   }
 
-  return date.toLocaleDateString("pt-BR");
+  return date.toLocaleDateString(language);
 }
 
 function getUserEmail(user) {
@@ -52,6 +44,8 @@ function getUserName(user) {
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
+  const { settings } = useAccessibility();
+  const Alert = useLocalizedAlert();
   const { theme } = useTheme();
   const router = useRouter();
 
@@ -122,7 +116,7 @@ export default function ProfilePage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [emailLogado, user]);
+  }, [Alert, emailLogado, user]);
 
   useEffect(() => {
     carregarPerfil();
@@ -207,7 +201,10 @@ export default function ProfilePage() {
 
       await AsyncStorage.setItem(
         "@toyota_ace:user",
-        JSON.stringify(clienteAtualizado)
+        JSON.stringify({
+          ...clienteAtualizado,
+          ...(user?.accessToken ? { accessToken: user.accessToken } : {}),
+        })
       );
 
       setEditModalVisible(false);
@@ -293,7 +290,10 @@ export default function ProfilePage() {
 
       await AsyncStorage.setItem(
         "@toyota_ace:user",
-        JSON.stringify(clienteAtualizado)
+        JSON.stringify({
+          ...clienteAtualizado,
+          ...(user?.accessToken ? { accessToken: user.accessToken } : {}),
+        })
       );
 
       setFormSenha({
@@ -512,12 +512,12 @@ export default function ProfilePage() {
                     </Text>
 
                     <Text style={[styles.subinfo, { color: theme.subtext }]}>
-                      Data: {formatDate(compra.dataCompra || compra.date)}
+                      Data: {formatDate(compra.dataCompra || compra.date, settings.language)}
                     </Text>
                   </View>
 
                   <Text style={[styles.purchaseTotal, { color: theme.primary }]}>
-                    {formatPrice(compra.valorTotal || compra.total)}
+                    {formatCurrency(compra.valorTotal || compra.total, settings.language)}
                   </Text>
                 </View>
 

@@ -20,6 +20,11 @@ const copy = {
     colors: "Filtro de color", language: "Idioma", reset: "Restablecer preferencias",
     filters: ["Sin filtro", "Alto contraste", "Protanopía", "Deuteranopía", "Tritanopía"],
   },
+  "ja-JP": {
+    title: "アクセシビリティ", read: "ページを読み上げる", stop: "読み上げを停止", font: "文字サイズ",
+    colors: "色覚フィルター", language: "言語", reset: "設定をリセット",
+    filters: ["フィルターなし", "高コントラスト", "1型色覚", "2型色覚", "3型色覚"],
+  },
 } as const;
 
 const filterOptions: ColorFilter[] = ["none", "high-contrast", "protanopia", "deuteranopia", "tritanopia"];
@@ -124,6 +129,7 @@ export default function AccessibilityMenu() {
               <option value="pt-BR">Português (Brasil)</option>
               <option value="en-US">English</option>
               <option value="es-ES">Español</option>
+              <option value="ja-JP">日本語</option>
             </select>
           </label>
 

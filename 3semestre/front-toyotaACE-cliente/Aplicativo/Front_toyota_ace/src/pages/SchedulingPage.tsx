@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 import { format } from "date-fns";
-import { enUS, es, ptBR } from "date-fns/locale";
+import { enUS, es, ja, ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -96,7 +96,7 @@ const mapTipoServico = (tipoServico?: string): AppointmentType => {
 const SchedulingPage = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const dateLocale = language === "en-US" ? enUS : language === "es-ES" ? es : ptBR;
+  const dateLocale = language === "en-US" ? enUS : language === "es-ES" ? es : language === "ja-JP" ? ja : ptBR;
 
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialAppointmentDate);
   const [month, setMonth] = useState<Date>(new Date());
@@ -121,7 +121,11 @@ const SchedulingPage = () => {
 
   const formattedDate = format(
     selectedDate,
-    language === "en-US" ? "MMMM d, yyyy" : "d 'de' MMMM 'de' yyyy",
+    language === "en-US"
+      ? "MMMM d, yyyy"
+      : language === "ja-JP"
+        ? "yyyy年M月d日"
+        : "d 'de' MMMM 'de' yyyy",
     { locale: dateLocale },
   );
 

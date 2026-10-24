@@ -2,6 +2,7 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8083/ap
 
 export type Cliente = {
   id?: number;
+  accessToken?: string;
   nome: string;
   email: string;
   senha?: string;
@@ -81,6 +82,7 @@ export type Agendamento = {
   data: string;
   horario: string;
   tipoServico?: string;
+  tipoServicio?: string;
   observacao?: string;
   cliente?: { nome?: string };
 };

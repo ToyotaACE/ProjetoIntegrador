@@ -4,12 +4,15 @@ import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { PurchasesProvider } from "../contexts/PurchasesContext";
+import { AccessibilityProvider, useAccessibility } from "../contexts/AccessibilityContext";
+import AccessibilityMenu from "../components/AccessibilityMenu";
 
 function RootNavigator() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loadingAuth } = useAuth();
+  const { hydrated } = useAccessibility();
   const { theme } = useTheme();
 
-  if (loading) {
+  if (loadingAuth || !hydrated) {
     return (
       <View
         style={{
@@ -41,20 +44,31 @@ function RootNavigator() {
           <Stack.Screen name="forgot-password" />
         </>
       ) : (
-        <Stack.Screen name="(tabs)" />
+        <>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="vehicle-documents" />
+        </>
       )}
     </Stack>
   );
 }
 
+function AccessibilityControls() {
+  const { hydrated } = useAccessibility();
+  return hydrated ? <AccessibilityMenu /> : null;
+}
+
 export default function Layout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <PurchasesProvider>
-          <RootNavigator />
-        </PurchasesProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <AccessibilityProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <PurchasesProvider>
+            <RootNavigator />
+            <AccessibilityControls />
+          </PurchasesProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </AccessibilityProvider>
   );
 }

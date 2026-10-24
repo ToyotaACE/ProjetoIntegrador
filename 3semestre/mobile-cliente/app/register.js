@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   Image,
   ImageBackground,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { LocalizedText as Text, LocalizedTextInput as TextInput } from "../components/LocalizedText";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 

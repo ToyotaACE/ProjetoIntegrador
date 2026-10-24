@@ -7,12 +7,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Check, Circle, Car } from "lucide-react";
+import { Check, Circle, Car, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, type Veiculo } from "@/services/api";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { format } from "date-fns";
+import { enUS, es, ja, ptBR } from "date-fns/locale";
+import { getNextReviewDate } from "@/lib/vehicleMaintenance";
+
+const vehiclePageText = {
+  "pt-BR": { documentation: "Documentação", nextReview: "Próxima revisão", noReview: "Não informada" },
+  "en-US": { documentation: "Documentation", nextReview: "Next service", noReview: "Not scheduled" },
+  "es-ES": { documentation: "Documentación", nextReview: "Próxima revisión", noReview: "No programada" },
+  "ja-JP": { documentation: "書類・マニュアル", nextReview: "次回点検", noReview: "未登録" },
+} as const;
 
 const VehiclePage = () => {
   const { user } = useAuth();
+  const { language } = useLanguage();
 
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(
@@ -20,6 +32,7 @@ const VehiclePage = () => {
   );
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
+  const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
 
   const carregarVeiculos = async () => {
     if (!user?.id) {
@@ -67,6 +80,25 @@ const VehiclePage = () => {
   }, [user?.id]);
 
   useEffect(() => {
+    let active = true;
+    if (!user?.id) {
+      setNextReviewDate(null);
+      return () => { active = false; };
+    }
+
+    api.buscarAgendamentosCliente(user.id)
+      .then((appointments) => {
+        if (active) setNextReviewDate(getNextReviewDate(appointments));
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar revisões agendadas:", error);
+        if (active) setNextReviewDate(null);
+      });
+
+    return () => { active = false; };
+  }, [user?.id]);
+
+  useEffect(() => {
     carregarVeiculoSelecionado();
 
     const interval = setInterval(() => {
@@ -85,6 +117,24 @@ const VehiclePage = () => {
   }, [veiculos, selectedVehicleId]);
 
   const progress = selectedVehicle?.progressoVeiculo || 0;
+
+  const abrirDocumentacao = (veiculo: Veiculo) => {
+    const vehicleDetails = {
+      marcaVeiculo: veiculo.marcaVeiculo,
+      modeloVeiculo: veiculo.modeloVeiculo,
+      anoVeiculo: veiculo.anoVeiculo,
+      corVeiculo: veiculo.corVeiculo,
+      motorVeiculo: veiculo.motorVeiculo,
+      cambioVeiculo: veiculo.cambioVeiculo,
+      combustivelVeiculo: veiculo.combustivelVeiculo,
+    };
+    const query = new URLSearchParams({
+      vehicle: JSON.stringify(vehicleDetails),
+      lang: language,
+      ...(veiculo.id ? { vehicleId: String(veiculo.id) } : {}),
+    });
+    window.open(`/documentacao?${query.toString()}`, "_blank", "noopener,noreferrer");
+  };
 
   const steps = [
     {
@@ -204,42 +254,56 @@ const VehiclePage = () => {
                   const active = veiculo.id === selectedVehicle?.id;
 
                   return (
-                    <button
+                    <article
                       key={veiculo.id}
-                      onClick={() => setSelectedVehicleId(veiculo.id || null)}
-                      className={`min-w-[220px] max-w-[220px] flex-shrink-0 snap-start text-left rounded-xl border overflow-hidden bg-white dark:bg-zinc-900 transition-all ${
+                      className={`min-w-[220px] max-w-[220px] flex-shrink-0 snap-start rounded-xl border overflow-hidden bg-white dark:bg-zinc-900 transition-all ${
                         active
                           ? "border-zinc-900 ring-2 ring-zinc-400/30"
                           : "border-border hover:border-zinc-400"
                       }`}
                     >
-                      {veiculo.fotoCarroUrl ? (
-                        <img
-                          src={veiculo.fotoCarroUrl}
-                          alt={veiculo.modeloVeiculo || "Veículo"}
-                          className="w-full h-36 object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-36 bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
-                          <Car className="h-10 w-10 text-gray-400" />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedVehicleId(veiculo.id || null)}
+                        aria-pressed={active}
+                        className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        {veiculo.fotoCarroUrl ? (
+                          <img
+                            src={veiculo.fotoCarroUrl}
+                            alt={veiculo.modeloVeiculo || "Veículo"}
+                            className="w-full h-36 object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-36 bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
+                            <Car className="h-10 w-10 text-gray-400" />
+                          </div>
+                        )}
+
+                        <div className="p-4">
+                          <p className="font-semibold">
+                            {veiculo.modeloVeiculo || "Veículo sem modelo"}
+                          </p>
+
+                          <p className="text-sm text-gray-500">
+                            {veiculo.anoVeiculo || "Ano não informado"} ·{" "}
+                            {veiculo.corVeiculo || "Cor não informada"}
+                          </p>
+
+                          <Badge className="mt-2">
+                            {veiculo.statusVeiculo || "Aguardando status"}
+                          </Badge>
                         </div>
-                      )}
-
-                      <div className="p-4">
-                        <p className="font-semibold">
-                          {veiculo.modeloVeiculo || "Veículo sem modelo"}
-                        </p>
-
-                        <p className="text-sm text-gray-500">
-                          {veiculo.anoVeiculo || "Ano não informado"} ·{" "}
-                          {veiculo.corVeiculo || "Cor não informada"}
-                        </p>
-
-                        <Badge className="mt-2">
-                          {veiculo.statusVeiculo || "Aguardando status"}
-                        </Badge>
-                      </div>
-                    </button>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => abrirDocumentacao(veiculo)}
+                        className="mx-4 mb-4 inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <FileText className="h-4 w-4" />
+                        {vehiclePageText[language].documentation}
+                      </button>
+                    </article>
                   );
                 })}
               </div>
@@ -314,10 +378,19 @@ const VehiclePage = () => {
                       </div>
 
                       <div>
-                        <span className="text-gray-500">Próxima revisão</span>
+                        <span className="text-gray-500">{vehiclePageText[language].nextReview}</span>
                         <p className="font-medium">
-                          {selectedVehicle.dataProximaRevisao ||
-                            "Não informado"}
+                        {nextReviewDate
+                          ? format(
+                              nextReviewDate,
+                              language === "ja-JP"
+                                ? "yyyy年M月d日"
+                                : language === "en-US"
+                                  ? "MMM d, yyyy"
+                                  : "d MMM yyyy",
+                              { locale: language === "en-US" ? enUS : language === "es-ES" ? es : language === "ja-JP" ? ja : ptBR },
+                            )
+                          : vehiclePageText[language].noReview}
                         </p>
                       </div>
                     </div>

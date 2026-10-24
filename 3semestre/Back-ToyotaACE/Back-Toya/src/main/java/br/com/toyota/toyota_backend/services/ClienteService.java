@@ -27,6 +27,7 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VehicleDocumentService vehicleDocumentService;
 
     // ============================================================
     // VALIDAÇÃO DO E-MAIL
@@ -52,12 +53,14 @@ public class ClienteService {
             ClienteRepository clienteRepository,
             VeiculoRepository veiculoRepository,
             MqttPedidoSimulatorService mqttPedidoSimulatorService,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            VehicleDocumentService vehicleDocumentService
     ) {
         this.clienteRepository = clienteRepository;
         this.veiculoRepository = veiculoRepository;
         this.mqttPedidoSimulatorService = mqttPedidoSimulatorService;
         this.passwordEncoder = passwordEncoder;
+        this.vehicleDocumentService = vehicleDocumentService;
     }
 
     // ============================================================
@@ -336,7 +339,14 @@ public class ClienteService {
 
         Veiculo veiculo = buscarVeiculoPorId(id);
 
+        vehicleDocumentService.excluirTodosDoVeiculo(id);
         veiculoRepository.delete(veiculo);
+    }
+
+    public void deletar(Long id) {
+        Cliente cliente = buscarPorId(id);
+        cliente.getVeiculos().forEach(veiculo -> vehicleDocumentService.excluirTodosDoVeiculo(veiculo.getId()));
+        clienteRepository.delete(cliente);
     }
 
     // ============================================================
