@@ -2,27 +2,31 @@
 
 <h3>4º Semestre</h3> 
 
-### 📲 1. Desenvolvimento Mobile 
+### 📲 1. Desenvolvimento Mobile
 #### Foca na criação e manutenção de aplicativos para dispositivos móveis, garantindo boa usabilidade, performance e consumo eficiente de APIs.
 No projeto Toyota ACE, é a frente responsável por criar a interface nativa ou multiplataforma que permite ao cliente (ou gestor) acompanhar o processo de fabricação, logística e entrega do veículo na palma da mão.
+##### Docente: Glauco Todesco
 
 <br>
 
 ### 💻 2. Desenvolvimento Web
 #### Aborda a construção de sistemas para navegadores, envolvendo o desenvolvimento Front-end e Back-end, responsividade e integração de sistemas.
 No projeto Toyota ACE, engloba os painéis administrativos e os dashboards de visualização do chão de fábrica e logística, permitindo que a equipe interna gerencie os dados com eficiência através do navegador.
+##### Docente: Glauco Todesco
 
 <br>
 
 ### 🛡️ 3. Cybersegurança
 #### Estuda a proteção de sistemas, redes e dados contra ataques cibernéticos. Envolve criptografia, autenticação segura, testes de vulnerabilidade e adequação à LGPD.
 No projeto Toyota ACE, garante que as informações dos clientes, os dados de telemetria da fábrica e o acesso às aplicações (Web e Mobile) estejam protegidos contra interceptações e acessos não autorizados.
+##### Docente: Cainã Antunes
 
 <br>
 
 ### 📊 4. Gestão de Projetos
 #### Foca no planejamento, execução e monitoramento do projeto utilizando metodologias ágeis (como Scrum e Kanban). Envolve a delegação de tarefas, controle de prazos e alinhamento da equipe.
 No projeto Toyota ACE, assegura a entrega contínua de valor por meio do acompanhamento rigoroso dos cards e sprints, garantindo que o desenvolvimento Web, Mobile e de Segurança andem em sincronia.
+##### Docente: Deivison Takatu
 
 <br>
 
