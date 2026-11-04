@@ -1,40 +1,37 @@
 # Repositório dedicado ao **Projeto Integrador** "**Toyota ACE**" | Curso Superior em Análise e Desenvolvimento de Sistemas
 
-<h3>3º Semestre</h3> 
+<h3>4º Semestre</h3> 
 
-### 🏭 1. Interfaces Industriais
-#### Estuda a comunicação entre sistemas e máquinas no ambiente industrial. Envolve o desenvolvimento de interfaces homem-máquina (IHM), integração de dados do chão de fábrica e visualização de informações em tempo real.
-No projeto Toyota ACE, permite acompanhar o status da produção e dos dispositivos industriais. Integração entre interface e lógica de 
-
-<br>
-
-### 📲 2. Desenvolvimento Mobile 
-#### Foca na criação de aplicativos para dispositivos móveis, utilizando tecnologias como React Native. Envolve interface do usuário, consumo de APIs e usabilidade.
-No projeto Toyota ACE, é responsável pela interface que permite ao cliente acompanhar o processo de fabricação, logística e entrega do veículo. As páginas Web também estão envolvidas nessa disciplina.
+### 📲 1. Desenvolvimento Mobile 
+#### Foca na criação e manutenção de aplicativos para dispositivos móveis, garantindo boa usabilidade, performance e consumo eficiente de APIs.
+No projeto Toyota ACE, é a frente responsável por criar a interface nativa ou multiplataforma que permite ao cliente (ou gestor) acompanhar o processo de fabricação, logística e entrega do veículo na palma da mão.
 
 <br>
 
-### 💭 3. Planejamento Estratégico de TI
-#### Aborda o alinhamento da Tecnologia da Informação com os objetivos do negócio. Inclui análise de cenários, definição de estratégias e uso de frameworks como SWOT e as forças competitivas de Porter e outros autores.
-No projeto Toyota ACE, garante que a solução Toyota ACE esteja alinhada com a estratégia da empresa.
+### 💻 2. Desenvolvimento Web
+#### Aborda a construção de sistemas para navegadores, envolvendo o desenvolvimento Front-end e Back-end, responsividade e integração de sistemas.
+No projeto Toyota ACE, engloba os painéis administrativos e os dashboards de visualização do chão de fábrica e logística, permitindo que a equipe interna gerencie os dados com eficiência através do navegador.
 
 <br>
 
-### ☁️ 4. Cloud Computing
-#### Trata do uso de serviços em nuvem para armazenamento, processamento e disponibilização de aplicações. Envolve conceitos como escalabilidade, alta disponibilidade e segurança de dados, utilizando provedores como AWS.
-No projeto Toyota ACE, possibilita hospedar a aplicação, armazenar os dados da produção e garantir acesso remoto em tempo real para clientes e gestores, além de permitir integração com APIs e serviços distribuídos.
+### 🛡️ 3. Cyber Segurança
+#### Estuda a proteção de sistemas, redes e dados contra ataques cibernéticos. Envolve criptografia, autenticação segura, testes de vulnerabilidade e adequação à LGPD.
+No projeto Toyota ACE, garante que as informações dos clientes, os dados de telemetria da fábrica e o acesso às aplicações (Web e Mobile) estejam protegidos contra interceptações e acessos não autorizados.
 
 <br>
 
-### 🦟 5. IoT
-#### Refere-se à Internet das Coisas, conectando dispositivos físicos à internet para coleta e troca de dados. Inclui sensores, atuadores e sistemas embarcados que monitoram o ambiente industrial. Focado principalmente na parte de MQTT com tecnologias como Node-RED, InfluxDB e Grafana.
-No projeto Toyota ACE, a IoT é responsável por capturar informações diretamente do chão de fábrica, como status das máquinas e andamento da produção, permitindo maior automação, rastreabilidade e tomada de decisão baseada em dados.
+### 📊 4. Gestão de Projetos
+#### Foca no planejamento, execução e monitoramento do projeto utilizando metodologias ágeis (como Scrum e Kanban). Envolve a delegação de tarefas, controle de prazos e alinhamento da equipe.
+No projeto Toyota ACE, assegura a entrega contínua de valor por meio do acompanhamento rigoroso dos cards e sprints, garantindo que o desenvolvimento Web, Mobile e de Segurança andem em sincronia.
 
 <br>
 
-### 🏛️ 6. Integração Vertical e Horizontal
-#### Aborda a conexão entre diferentes níveis e setores de uma organização. A integração vertical conecta sistemas do chão de fábrica (nível operacional) aos sistemas gerenciais (ERP), enquanto a integração horizontal conecta diferentes áreas e processos ao longo da cadeia produtiva.
-No projeto Toyota ACE, garante que todas as etapas — desde o pedido do cliente até a entrega do veículo — estejam interligadas, promovendo eficiência, transparência e comunicação entre setores.
+### 📋 Quadro de Tarefas (Kanban)
+O acompanhamento do desenvolvimento e a delegação das atividades de cada disciplina são realizados através do nosso quadro ágil:
+
+🔗 **[[View 1 · KANBAN - Toyota ACE 4° Semestre](#)](https://github.com/orgs/ToyotaACE/projects/2/views/1)**  
+
+Neste quadro, os tickets/cards estão organizados para refletir a delegação clara de responsabilidades nas áreas de **Mobile**, **Web**, **Cyber Segurança** e **Gestão de Projetos**, permitindo rastreabilidade e organização do fluxo de trabalho da equipe.
 
 <br>
 
