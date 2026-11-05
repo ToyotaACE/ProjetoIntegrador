@@ -4,13 +4,21 @@ import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+  const { t } = useLanguage();
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      labels={{
+        labelPrevious: () => t("Mês anterior"),
+        labelNext: () => t("Próximo mês"),
+        ...props.labels,
+      }}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",

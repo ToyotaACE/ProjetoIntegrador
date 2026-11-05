@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Edit,
   Plus,
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 import { api, PerfilUsuario, UsuarioInterno } from "@/services/api";
 import { useAppContext } from "@/contexts/AppContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,12 +37,14 @@ const emptyForm: FormState = {
   ativo: true,
 };
 
-function formatDate(date?: string) {
+function formatDate(date?: string, language: "pt" | "en" | "es" | "ja" = "pt") {
   if (!date) return "Sem data";
 
   if (date.includes("-")) {
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
+    const [year, month, day] = date.split("-").map(Number);
+    const locale =
+      language === "pt" ? "pt-BR" : language === "ja" ? "ja-JP" : language;
+    return new Date(year, month - 1, day).toLocaleDateString(locale);
   }
 
   return date;
@@ -58,6 +61,7 @@ function initials(name: string) {
 
 const Usuarios = () => {
   const { isAdmin, user } = useAppContext();
+  const { t, language } = useLanguage();
 
   const [usuarios, setUsuarios] = useState<UsuarioInterno[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,9 +73,23 @@ const Usuarios = () => {
 
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  const loadUsuarios = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.listarUsuarios();
+      setUsuarios(response);
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : t("Erro ao carregar usuários")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
   useEffect(() => {
-    loadUsuarios();
-  }, []);
+    void loadUsuarios();
+  }, [loadUsuarios]);
 
   const filteredUsuarios = useMemo(() => {
     const query = search.toLowerCase();
@@ -84,18 +102,6 @@ const Usuarios = () => {
       );
     });
   }, [usuarios, search]);
-
-  async function loadUsuarios() {
-    try {
-      setLoading(true);
-      const response = await api.listarUsuarios();
-      setUsuarios(response);
-    } catch (error: any) {
-      toast.error(error?.message || "Erro ao carregar usuários");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function openCreateModal() {
     setEditingUser(null);
@@ -125,12 +131,12 @@ const Usuarios = () => {
     const senha = form.senha.trim();
 
     if (!nome || !email) {
-      toast.error("Nome e e-mail são obrigatórios");
+      toast.error(t("Nome e e-mail são obrigatórios"));
       return;
     }
 
     if (!editingUser && !senha) {
-      toast.error("Senha é obrigatória para novo usuário");
+      toast.error(t("Senha é obrigatória para novo usuário"));
       return;
     }
 
@@ -147,10 +153,10 @@ const Usuarios = () => {
 
       if (editingUser?.id) {
         await api.atualizarUsuario(editingUser.id, payload);
-        toast.success("Usuário atualizado com sucesso");
+        toast.success(t("Usuário atualizado com sucesso"));
       } else {
         await api.criarUsuario(payload);
-        toast.success("Usuário criado com sucesso");
+        toast.success(t("Usuário criado com sucesso"));
       }
 
       setModalOpen(false);
@@ -158,8 +164,10 @@ const Usuarios = () => {
       setForm(emptyForm);
 
       await loadUsuarios();
-    } catch (error: any) {
-      toast.error(error?.message || "Erro ao salvar usuário");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : t("Erro ao salvar usuário")
+      );
     } finally {
       setSaving(false);
     }
@@ -167,7 +175,7 @@ const Usuarios = () => {
 
   async function toggleStatus(usuario: UsuarioInterno) {
     if (user?.id === usuario.id && usuario.ativo) {
-      toast.error("Você não pode desativar o próprio usuário logado");
+      toast.error(t("Você não pode desativar o próprio usuário logado"));
       return;
     }
 
@@ -181,34 +189,38 @@ const Usuarios = () => {
 
       toast.success(
         !usuario.ativo
-          ? "Usuário ativado com sucesso"
-          : "Usuário desativado com sucesso"
+          ? t("Usuário ativado com sucesso")
+          : t("Usuário desativado com sucesso")
       );
 
       await loadUsuarios();
-    } catch (error: any) {
-      toast.error(error?.message || "Erro ao alterar status");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : t("Erro ao alterar status")
+      );
     }
   }
 
   async function disableUsuario(usuario: UsuarioInterno) {
     if (user?.id === usuario.id) {
-      toast.error("Você não pode desativar o próprio usuário logado");
+      toast.error(t("Você não pode desativar o próprio usuário logado"));
       return;
     }
 
     const confirmar = window.confirm(
-      `Deseja realmente desativar ${usuario.nome}?`
+      t("Deseja realmente desativar {name}?", { name: usuario.nome })
     );
 
     if (!confirmar) return;
 
     try {
       await api.desativarUsuario(usuario.id!);
-      toast.success("Usuário desativado com sucesso");
+      toast.success(t("Usuário desativado com sucesso"));
       await loadUsuarios();
-    } catch (error: any) {
-      toast.error(error?.message || "Erro ao desativar usuário");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : t("Erro ao desativar usuário")
+      );
     }
   }
 
@@ -219,10 +231,10 @@ const Usuarios = () => {
           <CardContent className="pt-8 pb-8">
             <ShieldCheck className="h-12 w-12 text-primary mx-auto mb-4" />
 
-            <h1 className="text-xl font-bold">Acesso restrito</h1>
+            <h1 className="text-xl font-bold">{t("Acesso restrito")}</h1>
 
             <p className="text-sm text-muted-foreground mt-2">
-              Apenas administradores podem gerenciar usuários internos.
+              {t("Apenas administradores podem gerenciar usuários internos.")}
             </p>
           </CardContent>
         </Card>
@@ -234,22 +246,22 @@ const Usuarios = () => {
     <div className="space-y-6 animate-reveal-up">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Gerenciar Usuários</h1>
+          <h1 className="text-2xl font-bold">{t("Gerenciar Usuários")}</h1>
 
           <p className="text-sm text-muted-foreground">
-            Controle administradores e vendedores do ACE Vendedor.
+            {t("Controle administradores e vendedores do ACE Vendedor.")}
           </p>
         </div>
 
         <Button onClick={openCreateModal}>
           <Plus className="h-4 w-4 mr-2" />
-          Novo usuário
+          {t("Novo usuário")}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Usuários internos</CardTitle>
+          <CardTitle className="text-base">{t("Usuários internos")}</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -259,18 +271,18 @@ const Usuarios = () => {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar usuário..."
+              placeholder={t("Buscar usuário...")}
               className="pl-9"
             />
           </div>
 
           {loading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              Carregando usuários...
+              {t("Carregando usuários...")}
             </div>
           ) : filteredUsuarios.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              Nenhum usuário encontrado.
+              {t("Nenhum usuário encontrado.")}
             </div>
           ) : (
             <div className="grid gap-3">
@@ -296,7 +308,7 @@ const Usuarios = () => {
                           </h2>
 
                           {isCurrentUser && (
-                            <Badge variant="secondary">Você</Badge>
+                            <Badge variant="secondary">{t("Você")}</Badge>
                           )}
                         </div>
 
@@ -305,7 +317,7 @@ const Usuarios = () => {
                         </p>
 
                         <p className="text-xs text-muted-foreground mt-1">
-                          Criado em {formatDate(usuario.createdAt)}
+                          {t("Criado em")} {formatDate(usuario.createdAt, language)}
                         </p>
                       </div>
                     </div>
@@ -323,7 +335,7 @@ const Usuarios = () => {
                         ) : (
                           <User className="h-3 w-3 mr-1" />
                         )}
-                        {usuario.perfil}
+                        {t(usuario.perfil)}
                       </Badge>
 
                       <Badge
@@ -333,7 +345,7 @@ const Usuarios = () => {
                             : "bg-red-500/15 text-red-400 hover:bg-red-500/15"
                         }
                       >
-                        {usuario.ativo ? "ATIVO" : "INATIVO"}
+                        {t(usuario.ativo ? "Ativo" : "Inativo")}
                       </Badge>
                     </div>
 
@@ -350,7 +362,7 @@ const Usuarios = () => {
                         variant="secondary"
                         size="icon"
                         onClick={() => toggleStatus(usuario)}
-                        title={usuario.ativo ? "Desativar" : "Ativar"}
+                        title={t(usuario.ativo ? "Desativar" : "Ativar")}
                       >
                         {usuario.ativo ? (
                           <XCircle className="h-4 w-4 text-red-500" />
@@ -366,7 +378,7 @@ const Usuarios = () => {
                         disabled={!usuario.ativo}
                         className="text-red-500"
                       >
-                        Desativar
+                        {t("Desativar")}
                       </Button>
                     </div>
                   </div>
@@ -383,11 +395,11 @@ const Usuarios = () => {
             <div className="p-5 border-b border-border flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold">
-                  {editingUser ? "Editar usuário" : "Novo usuário"}
+                  {editingUser ? t("Editar usuário") : t("Novo usuário")}
                 </h2>
 
                 <p className="text-sm text-muted-foreground mt-1">
-                  Defina os dados de acesso e o perfil do usuário.
+                  {t("Defina os dados de acesso e o perfil do usuário.")}
                 </p>
               </div>
 
@@ -402,17 +414,17 @@ const Usuarios = () => {
 
             <form onSubmit={saveUsuario} className="p-5 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Nome</label>
+                <label className="text-sm font-medium">{t("Nome")}</label>
 
                 <Input
                   value={form.nome}
                   onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                  placeholder="Nome completo"
+                  placeholder={t("Nome completo")}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">E-mail</label>
+                <label className="text-sm font-medium">{t("E-mail")}</label>
 
                 <Input
                   value={form.email}
@@ -430,8 +442,8 @@ const Usuarios = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   {editingUser
-                    ? "Nova senha — deixe vazio para manter"
-                    : "Senha"}
+                    ? t("Nova senha — deixe vazio para manter")
+                    : t("Senha")}
                 </label>
 
                 <Input
@@ -440,8 +452,8 @@ const Usuarios = () => {
                   onChange={(e) => setForm({ ...form, senha: e.target.value })}
                   placeholder={
                     editingUser
-                      ? "Deixe vazio para não alterar"
-                      : "Senha de acesso"
+                      ? t("Deixe vazio para não alterar")
+                      : t("Senha de acesso")
                   }
                 />
               </div>
@@ -457,7 +469,7 @@ const Usuarios = () => {
                   }`}
                 >
                   <ShieldCheck className="h-5 w-5" />
-                  <span className="text-sm font-bold">ADMIN</span>
+                  <span className="text-sm font-bold">{t("ADMIN")}</span>
                 </button>
 
                 <button
@@ -470,16 +482,16 @@ const Usuarios = () => {
                   }`}
                 >
                   <UserCog className="h-5 w-5" />
-                  <span className="text-sm font-bold">VENDEDOR</span>
+                  <span className="text-sm font-bold">{t("VENDEDOR")}</span>
                 </button>
               </div>
 
               <div className="rounded-xl border border-border bg-secondary/30 p-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-medium">Usuário ativo</p>
+                  <p className="font-medium">{t("Usuário ativo")}</p>
 
                   <p className="text-sm text-muted-foreground">
-                    Usuários inativos não conseguem acessar o sistema.
+                    {t("Usuários inativos não conseguem acessar o sistema.")}
                   </p>
                 </div>
 
@@ -497,15 +509,15 @@ const Usuarios = () => {
                   variant="secondary"
                   onClick={() => setModalOpen(false)}
                 >
-                  Cancelar
+                  {t("Cancelar")}
                 </Button>
 
                 <Button type="submit" disabled={saving}>
                   {saving
-                    ? "Salvando..."
+                    ? t("Salvando...")
                     : editingUser
-                    ? "Salvar alterações"
-                    : "Criar usuário"}
+                    ? t("Salvar alterações")
+                    : t("Criar usuário")}
                 </Button>
               </div>
             </form>

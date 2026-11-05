@@ -1,660 +1,127 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
 import { vehicles } from "@/lib/mock-data";
-import { api, type Cliente } from "@/services/api";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import { Palette, Save, Settings } from "lucide-react";
-import { toast } from "sonner";
-
-const vehicleVersions = {
-  hibrido: [
-    { id: "altis-hybrid", label: "Altis Hybrid", price: 189990 },
-    { id: "altis-premium", label: "Altis Premium Hybrid", price: 199990 },
-  ],
-  combustao: [
-    { id: "xr", label: "XR", price: 149990 },
-    { id: "xei", label: "XEI", price: 164990 },
-  ],
-  grsport: [{ id: "gr-s", label: "GR-Sport", price: 182990 }],
-};
-
-const accessories = [
-  { id: "camera-re", label: "Câmera de ré", price: 900 },
-  { id: "sensor-est", label: "Sensor de estacionamento", price: 1200 },
-  { id: "camera-360", label: "Câmera 360°", price: 2500 },
-  { id: "teto-solar", label: "Teto solar", price: 8000 },
-  { id: "tapetes", label: "Tapetes de borracha", price: 300 },
-  { id: "rack", label: "Rack de teto", price: 1500 },
-  { id: "engate", label: "Engate de reboque", price: 1800 },
-  { id: "pelicula", label: "Película", price: 600 },
-  { id: "alarme", label: "Alarme", price: 1300 },
-  { id: "som", label: "Som premium", price: 3200 },
-];
-
-const vehicleColors = [
-  { id: "branco", label: "Branco", hex: "#ffffff" },
-  { id: "preto", label: "Preto", hex: "#000000" },
-  { id: "prata", label: "Prata", hex: "#c0c0c0" },
-  { id: "vermelho", label: "Vermelho", hex: "#ef4444" },
-];
-
-type AccessorizeState = {
-  seatMaterial: "tecido" | "couro" | "couro-sintetico";
-  selectedAccessories: string[];
-  selectedColor: string;
-};
-
-const defaultState: AccessorizeState = {
-  seatMaterial: "tecido",
-  selectedAccessories: [],
-  selectedColor: "branco",
-};
-
-const formatPrice = (value: number) =>
-  value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-
-const parsePrice = (price: string) =>
-  Number(
-    price
-      .replace("R$", "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim()
-  );
+const categories = ["Todos", "SUV", "Sedan", "Hatch", "Picape"] as const;
 
 const Vehicles = () => {
-  const [clients, setClients] = useState<Cliente[]>([]);
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<(typeof categories)[number]>("Todos");
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [versionDialogOpen, setVersionDialogOpen] = useState(false);
-
-  const [selectedVehicle, setSelectedVehicle] = useState<
-    (typeof vehicles)[0] | null
-  >(null);
-
-  const [config, setConfig] = useState(defaultState);
-
-  const [selectedType, setSelectedType] =
-    useState<keyof typeof vehicleVersions>("combustao");
-
-  const [selectedVersion, setSelectedVersion] = useState("");
-
-  const [vehiclePrices, setVehiclePrices] = useState<Record<number, number>>(
-    {}
-  );
-
-  const [selectedClientId, setSelectedClientId] = useState<string>(
-    localStorage.getItem("toyota_selected_client_id") || ""
-  );
-
-  const [finance, setFinance] = useState({
-    valorEntrada: "20000",
-    parcelasTotais: "48",
-    parcelasPagas: "0",
-    taxaJuros: "1.49",
-    statusFinanciamento: "ATIVO",
-    statusGarantia: "ATIVA",
-    dataProximaRevisao: "2026-12-20",
-    statusVeiculo: "Pedido realizado",
-    progressoVeiculo: "25"
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const carregarClientes = async () => {
-      try {
-        const data = await api.listarClientes();
-        setClients(data);
-      } catch (error) {
-        console.error("Erro ao carregar clientes:", error);
-        toast.error("Erro ao carregar clientes.");
-      }
-    };
-
-    carregarClientes();
-  }, []);
-
-  const openAccessorize = (v: (typeof vehicles)[0]) => {
-    setSelectedVehicle(v);
-    setConfig(defaultState);
-    setDialogOpen(true);
-  };
-
-  const openVersionSelector = (v: (typeof vehicles)[0]) => {
-    setSelectedVehicle(v);
-    setSelectedType("combustao");
-    setSelectedVersion("");
-    setVersionDialogOpen(true);
-  };
-
-  const toggleAccessory = (id: string) => {
-    setConfig((prev) => ({
-      ...prev,
-      selectedAccessories: prev.selectedAccessories.includes(id)
-        ? prev.selectedAccessories.filter((a) => a !== id)
-        : [...prev.selectedAccessories, id],
-    }));
-  };
-
-  const getVehiclePrice = (id: number, defaultPrice: string) =>
-    vehiclePrices[id] ? formatPrice(vehiclePrices[id]) : defaultPrice;
-
-  const totalAccessories = accessories
-    .filter((a) => config.selectedAccessories.includes(a.id))
-    .reduce((sum, a) => sum + a.price, 0);
-
-  const baseVehiclePrice = selectedVehicle
-    ? vehiclePrices[selectedVehicle.id]
-      ? vehiclePrices[selectedVehicle.id]
-      : parsePrice(selectedVehicle.price)
-    : 0;
-
-  const totalFinal = baseVehiclePrice + totalAccessories;
-
-  const selectedColorLabel =
-    vehicleColors.find((c) => c.id === config.selectedColor)?.label || "Branco";
-
-  const selectedVersionLabel =
-    Object.values(vehicleVersions)
-      .flat()
-      .find((v) => v.price === baseVehiclePrice)?.label || "Versão padrão";
-
-  const acessoriosSelecionados = accessories
-    .filter((a) => config.selectedAccessories.includes(a.id))
-    .map((a) => a.label)
-    .join(", ");
-
-  const calcularFinanciamento = () => {
-    const valorTotal = totalFinal;
-    const entrada = Number(finance.valorEntrada || 0);
-    const parcelasTotais = Number(finance.parcelasTotais || 0);
-    const parcelasPagas = Number(finance.parcelasPagas || 0);
-    const taxaJuros = Number(finance.taxaJuros || 0);
-
-    const valorFinanciado = Math.max(valorTotal - entrada, 0);
-    const parcelasRestantes = Math.max(parcelasTotais - parcelasPagas, 0);
-
-    const valorParcela =
-      parcelasTotais > 0
-        ? (valorFinanciado * (1 + taxaJuros / 100)) / parcelasTotais
-        : 0;
-
-    return {
-      valorTotal,
-      valorEntrada: entrada,
-      valorFinanciado,
-      parcelasTotais,
-      parcelasPagas,
-      parcelasRestantes,
-      valorParcela,
-      taxaJuros,
-    };
-  };
-
-  const handleSalvarConfiguracao = async () => {
-    if (!selectedVehicle) {
-      toast.error("Selecione um veículo.");
-      return;
-    }
-
-    if (!selectedClientId) {
-      toast.error("Selecione um cliente para atribuir o veículo.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const calculo = calcularFinanciamento();
-
-      await api.cadastrarVeiculo({
-        clienteId: Number(selectedClientId),
-        modeloVeiculo: selectedVehicle.name,
-        marcaVeiculo: "Toyota",
-        anoVeiculo: String(selectedVehicle.year || "2026"),
-        corVeiculo: selectedColorLabel,
-        motorVeiculo:
-          selectedType === "hibrido"
-            ? "Motor híbrido Toyota"
-            : "Motor 2.0 Flex",
-        combustivelVeiculo:
-          selectedType === "hibrido" ? "Híbrido/Flex" : "Flex",
-        cambioVeiculo: "Automático",
-        fotoCarroUrl: selectedVehicle.image,
-        statusVeiculo: finance.statusVeiculo,
-        progressoVeiculo: Number(finance.progressoVeiculo || 0),
-
-        valorTotal: calculo.valorTotal,
-        valorEntrada: calculo.valorEntrada,
-        valorFinanciado: calculo.valorFinanciado,
-        parcelasTotais: calculo.parcelasTotais,
-        parcelasPagas: calculo.parcelasPagas,
-        parcelasRestantes: calculo.parcelasRestantes,
-        valorParcela: calculo.valorParcela,
-        taxaJuros: calculo.taxaJuros,
-        statusFinanciamento: finance.statusFinanciamento,
-        statusGarantia: finance.statusGarantia,
-        dataProximaRevisao: finance.dataProximaRevisao,
-
-        acessorios: acessoriosSelecionados,
-        
-      });
-
-      toast.success("Novo veículo cadastrado para o cliente!");
-      setDialogOpen(false);
-      localStorage.removeItem("toyota_selected_client_id");
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Erro ao salvar veículo no backend."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculo = calcularFinanciamento();
+  const filteredVehicles = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase();
+    return vehicles.filter((vehicle) => {
+      const matchesCategory = category === "Todos" || vehicle.category === category;
+      const matchesSearch = `${vehicle.name} ${vehicle.category}`
+        .toLocaleLowerCase()
+        .includes(normalizedSearch);
+      return matchesCategory && matchesSearch;
+    });
+  }, [category, search]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Catálogo de Veículos</h1>
+    <div className="mx-auto max-w-7xl space-y-8">
+      <header className="space-y-2">
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+          {t("Catálogo Toyota")}
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {t("Encontre o Toyota ideal")}
+        </h1>
+        <p className="max-w-2xl text-muted-foreground">
+          {t("Explore os modelos disponíveis e inicie uma configuração de pedido para o seu cliente.")}
+        </p>
+      </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {vehicles.map((v) => (
-          <div key={v.id} className="rounded-lg border bg-card overflow-hidden">
-            <img
-              src={v.image}
-              alt={v.name}
-              className="w-full h-48 object-cover"
-            />
-
-            <div className="p-4">
-              <div className="flex justify-between items-start gap-2">
-                <div>
-                  <h3 className="text-sm font-medium">{v.name}</h3>
-                  <p className="text-xs text-muted-foreground">{v.year}</p>
-                </div>
-
-                <Badge>{v.category}</Badge>
-              </div>
-
-              <p className="text-lg font-bold text-primary mt-3">
-                {getVehiclePrice(v.id, v.price)}
-              </p>
-
-              <div className="flex gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => openVersionSelector(v)}
-                >
-                  <Settings className="h-4 w-4 mr-1" />
-                  Versão
-                </Button>
-
-                <Button className="flex-1" onClick={() => openAccessorize(v)}>
-                  <Palette className="h-4 w-4 mr-1" />
-                  Configurar
-                </Button>
-              </div>
-            </div>
+      <section className="rounded-2xl border bg-card p-5 shadow-sm md:p-7">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">{t("Modelos Toyota")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("{count} modelos disponíveis", { count: filteredVehicles.length })}
+            </p>
           </div>
-        ))}
-      </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>🚗 Configurar veículo · {selectedVehicle?.name}</DialogTitle>
-            <DialogDescription>
-              Cadastre mais um veículo para um cliente e salve o financiamento
-              individual deste carro.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label>Cliente responsável</Label>
-
-              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um cliente" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {clients
-                    .filter((client) => client.id)
-                    .map((client) => (
-                      <SelectItem key={client.id} value={String(client.id)}>
-                        {client.nome} · {client.telefone || client.email}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative min-w-0 sm:w-72">
+              <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={t("Buscar modelo...")}
+                aria-label={t("Buscar modelo...")}
+                className="pl-9"
+              />
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Cor do veículo</Label>
-
-                <div className="flex gap-3 flex-wrap">
-                  {vehicleColors.map((c) => {
-                    const isSelected = config.selectedColor === c.id;
-
-                    return (
-                      <button
-                        key={c.id}
-                        onClick={() =>
-                          setConfig((p) => ({
-                            ...p,
-                            selectedColor: c.id,
-                          }))
-                        }
-                        className={`w-10 h-10 rounded-full border-2 ${
-                          isSelected ? "border-primary" : "border-border"
-                        }`}
-                        style={{ backgroundColor: c.hex }}
-                        title={c.label}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Material do banco</Label>
-
-                <Select
-                  value={config.seatMaterial}
-                  onValueChange={(v) =>
-                    setConfig((p) => ({
-                      ...p,
-                      seatMaterial: v as any,
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="tecido">Tecido</SelectItem>
-                    <SelectItem value="couro">Couro</SelectItem>
-                    <SelectItem value="couro-sintetico">
-                      Couro sintético
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Acessórios</Label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {accessories.map((a) => {
-                  const selected = config.selectedAccessories.includes(a.id);
-
-                  return (
-                    <button
-                      key={a.id}
-                      onClick={() => toggleAccessory(a.id)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        selected
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/40"
-                      }`}
-                    >
-                      <p className="text-sm font-medium">{a.label}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatPrice(a.price)}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
-              <div className="space-y-2">
-                <Label>Valor de entrada</Label>
-
-                <Input
-                  type="number"
-                  value={finance.valorEntrada}
-                  onChange={(e) =>
-                    setFinance({ ...finance, valorEntrada: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Parcelas totais</Label>
-
-                <Input
-                  type="number"
-                  value={finance.parcelasTotais}
-                  onChange={(e) =>
-                    setFinance({ ...finance, parcelasTotais: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Parcelas pagas</Label>
-
-                <Input
-                  type="number"
-                  value={finance.parcelasPagas}
-                  onChange={(e) =>
-                    setFinance({ ...finance, parcelasPagas: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Taxa de juros (%)</Label>
-
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={finance.taxaJuros}
-                  onChange={(e) =>
-                    setFinance({ ...finance, taxaJuros: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status financiamento</Label>
-
-                <Select
-                  value={finance.statusFinanciamento}
-                  onValueChange={(value) =>
-                    setFinance({ ...finance, statusFinanciamento: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="ATIVO">Ativo</SelectItem>
-                    <SelectItem value="QUITADO">Quitado</SelectItem>
-                    <SelectItem value="PENDENTE">Pendente</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status garantia</Label>
-
-                <Select
-                  value={finance.statusGarantia}
-                  onValueChange={(value) =>
-                    setFinance({ ...finance, statusGarantia: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="ATIVA">Ativa</SelectItem>
-                    <SelectItem value="EXPIRADA">Expirada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="rounded-lg border p-4 bg-muted/40 text-sm space-y-1">
-              <p>
-                <strong>Valor do veículo:</strong> {formatPrice(baseVehiclePrice)}
-              </p>
-              <p>
-                <strong>Acessórios:</strong> {formatPrice(totalAccessories)}
-              </p>
-              <p>
-                <strong>Total:</strong> {formatPrice(calculo.valorTotal)}
-              </p>
-              <p>
-                <strong>Valor financiado:</strong>{" "}
-                {formatPrice(calculo.valorFinanciado)}
-              </p>
-              <p>
-                <strong>Valor da parcela:</strong>{" "}
-                {formatPrice(calculo.valorParcela)}
-              </p>
-              <p>
-                <strong>Parcelas restantes:</strong>{" "}
-                {calculo.parcelasRestantes}
-              </p>
-              <p>
-                <strong>Versão:</strong> {selectedVersionLabel}
-              </p>
-              <p>
-                <strong>Acessórios escolhidos:</strong>{" "}
-                {acessoriosSelecionados || "Nenhum"}
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancelar
+            <Button onClick={() => navigate("/pedidos/novo")}>
+              {t("Novo pedido")} <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
             </Button>
-
-            <Button onClick={handleSalvarConfiguracao} disabled={loading}>
-              <Save className="h-4 w-4 mr-1" />
-              {loading ? "Salvando..." : "Salvar novo veículo"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={versionDialogOpen} onOpenChange={setVersionDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-xl rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Escolher versão · {selectedVehicle?.name}</DialogTitle>
-
-            <DialogDescription>
-              Escolha o tipo e a versão do veículo.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-5">
-            <div className="flex gap-2 flex-wrap">
-              {Object.keys(vehicleVersions).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => {
-                    setSelectedType(type as keyof typeof vehicleVersions);
-                    setSelectedVersion("");
-                  }}
-                  className={`px-4 py-2 rounded-lg border transition-all capitalize ${
-                    selectedType === type
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {vehicleVersions[selectedType].map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => setSelectedVersion(v.id)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    selectedVersion === v.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                >
-                  <p className="font-semibold">{v.label}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {formatPrice(v.price)}
-                  </p>
-                </button>
-              ))}
-            </div>
           </div>
+        </div>
 
-          <DialogFooter>
+        <div className="mt-5 flex flex-wrap gap-2" aria-label={t("Categorias")}>
+          {categories.map((item) => (
             <Button
-              onClick={() => {
-                const selected = vehicleVersions[selectedType].find(
-                  (v) => v.id === selectedVersion
-                );
-
-                if (!selected || !selectedVehicle) {
-                  toast.error("Escolha uma versão.");
-                  return;
-                }
-
-                setVehiclePrices((prev) => ({
-                  ...prev,
-                  [selectedVehicle.id]: selected.price,
-                }));
-
-                toast.success("Versão escolhida");
-                setVersionDialogOpen(false);
-              }}
+              key={item}
+              variant={category === item ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategory(item)}
+              aria-pressed={category === item}
             >
-              Confirmar
+              {item === "Todos" ? <SlidersHorizontal aria-hidden="true" className="mr-1.5 h-3.5 w-3.5" /> : null}
+              {t(item)}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          ))}
+        </div>
+
+        {filteredVehicles.length === 0 ? (
+          <p className="py-14 text-center text-sm text-muted-foreground">
+            {t("Nenhum modelo encontrado.")}
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredVehicles.map((vehicle) => (
+              <article key={vehicle.id} className="group overflow-hidden rounded-xl border bg-background transition-shadow hover:shadow-md">
+                <div className="flex aspect-[16/10] items-center justify-center overflow-hidden bg-muted p-3">
+                  <img
+                    src={vehicle.image}
+                    alt={t(vehicle.name)}
+                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold">{t(vehicle.name)}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {vehicle.year} · {t(vehicle.category)}
+                      </p>
+                    </div>
+                    <Badge variant="secondary">{t("Disponível")}</Badge>
+                  </div>
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">{t("A partir de")}</p>
+                      <p className="text-lg font-semibold">{vehicle.price}</p>
+                    </div>
+                    <Button asChild size="sm">
+                      <Link to={`/pedidos/novo?modelo=${vehicle.id}`}>
+                        {t("Configurar")} <ArrowRight aria-hidden="true" className="ml-1.5 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

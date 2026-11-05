@@ -3,30 +3,36 @@ import { branches } from "@/lib/mock-data";
 import { useAppContext } from "@/contexts/AppContext";
 import { MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { AccessibilityControls } from "@/components/AccessibilityControls";
 
 const BranchSelect = () => {
   const navigate = useNavigate();
   const { selectBranch } = useAppContext();
+  const { t } = useLanguage();
 
   const handleSelect = (name: string) => {
     selectBranch(name);
-    toast.success(`Filial ${name} selecionada`);
+    toast.success(t("Filial {name} selecionada", { name }));
     navigate("/dashboard");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="absolute top-4 right-4 flex items-center gap-1">
+        <AccessibilityControls />
+      </div>
       <div className="w-full max-w-lg animate-reveal-up">
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center font-bold text-primary-foreground mx-auto mb-4">      
   <img 
     src="/toyota_logo.png" 
-    alt="Logo Toyota" 
+    alt={t("Logo Toyota")}
     className="w-full h-full object-contain"
   />
 </div>
-          <h1 className="text-xl font-semibold text-balance">Selecione sua filial</h1>
-          <p className="text-sm text-muted-foreground mt-1">Escolha a unidade para iniciar o dia</p>
+          <h1 className="text-xl font-semibold text-balance">{t("Selecione sua filial")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("Escolha a unidade para iniciar o dia")}</p>
         </div>
         <div className="space-y-3">
           {branches.map((branch, i) => (

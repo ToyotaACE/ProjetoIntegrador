@@ -20,7 +20,7 @@ export default function dadosPessoais(){
     useEffect(()=>{ // atalho
 
         /* const requisicao = async ()=>{
-            await fetch('http://localhost:8083/api/veiculos').then((res)=>{
+            await fetch('localhost:8080/carros').then((res)=>{
                 res.json()
             }).then((json:any)=>{
                 if(json.body.usuario != null ){

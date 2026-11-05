@@ -1,10 +1,14 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccessibilityControls } from "@/components/AccessibilityControls";
 import { Outlet } from "react-router-dom";
 import ChatbotScreen from "@/pages/ChatbotScreen";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function AppLayout() {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -15,10 +19,11 @@ export function AppLayout() {
             <SidebarTrigger />
 
             <span className="ml-3 text-sm text-muted-foreground">
-              Toyota ACE Vendedor
+              {t("Toyota ACE Vendedor")}
             </span>
 
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
+              <AccessibilityControls />
               <ThemeToggle />
             </div>
           </header>

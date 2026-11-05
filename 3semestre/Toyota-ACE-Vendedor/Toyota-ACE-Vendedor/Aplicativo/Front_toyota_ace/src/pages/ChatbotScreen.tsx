@@ -2,6 +2,7 @@
 
 import { X, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Message = {
   type: "bot" | "user";
@@ -9,6 +10,7 @@ type Message = {
 };
 
 export default function ChatbotScreen() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,11 +18,28 @@ export default function ChatbotScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       type: "bot",
-      text: "Olá! 👋 Bem-vindo ao Toyota ACE. Como posso ajudar você hoje?",
+      text: t("Olá! 👋 Bem-vindo ao Toyota ACE. Como posso ajudar você hoje?"),
     },
   ]);
 
   const chatRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMessages((currentMessages) => {
+      if (
+        currentMessages.length === 1 &&
+        currentMessages[0].type === "bot"
+      ) {
+        return [
+          {
+            type: "bot",
+            text: t("Olá! 👋 Bem-vindo ao Toyota ACE. Como posso ajudar você hoje?"),
+          },
+        ];
+      }
+      return currentMessages;
+    });
+  }, [t]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -56,7 +75,7 @@ export default function ChatbotScreen() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/chat", {
+      const response = await fetch("https://le42wmnr99.execute-api.us-east-1.amazonaws.com/prod/chatbot/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,6 +130,8 @@ export default function ChatbotScreen() {
     <>
       <button
         onClick={() => setOpen(!open)}
+        aria-label={t(open ? "Fechar chat" : "Abrir chat")}
+        title={t(open ? "Fechar chat" : "Abrir chat")}
         className="fixed bottom-6 right-6 z-50 bg-red-700 hover:bg-red-600 transition-all shadow-2xl rounded-full p-4 text-white"
       >
         {open ? (
@@ -118,7 +139,7 @@ export default function ChatbotScreen() {
         ) : (
           <img
             src="/favicon.ico"
-            alt="Chat Bot"
+            alt={t("Chat Bot")}
             className="w-10 h-10 object-contain scale-125"
           />
         )}
@@ -134,7 +155,7 @@ export default function ChatbotScreen() {
               <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-red-700 font-bold text-lg">
                 <img
                   src="/favicon.ico"
-                  alt="Chat Bot"
+                  alt={t("Chat Bot")}
                   className="w-10 h-10 object-contain scale-125"
                 />
               </div>
@@ -145,7 +166,7 @@ export default function ChatbotScreen() {
                 </h1>
 
                 <p className="text-red-100 text-xs">
-                  Assistente virtual online
+                  {t("Assistente virtual online")}
                 </p>
               </div>
             </div>
@@ -154,7 +175,7 @@ export default function ChatbotScreen() {
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
 
               <span className="text-white text-xs">
-                Online
+                {t("Online")}
               </span>
             </div>
           </div>
@@ -184,7 +205,7 @@ export default function ChatbotScreen() {
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-zinc-800 text-zinc-100 border border-zinc-700 px-4 py-3 rounded-2xl rounded-bl-sm text-sm shadow-lg">
-                  Digitando...
+                  {t("Digitando")}...
                 </div>
               </div>
             )}
@@ -195,14 +216,14 @@ export default function ChatbotScreen() {
               onClick={() => sendSuggestion("garantia")}
               className="px-3 py-2 bg-zinc-800 hover:bg-red-700 transition rounded-full text-xs text-white border border-zinc-700"
             >
-              🛡️ Garantia
+              🛡️ {t("Garantia")}
             </button>
 
             <button
               onClick={() => sendSuggestion("financeiro")}
               className="px-3 py-2 bg-zinc-800 hover:bg-red-700 transition rounded-full text-xs text-white border border-zinc-700"
             >
-              💰 Financiamento
+              💰 {t("Financiamento")}
             </button>
 
             <button
@@ -219,7 +240,7 @@ export default function ChatbotScreen() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Digite sua mensagem..."
+              placeholder={t("Digite sua mensagem...")}
               className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-red-600"
             />
 

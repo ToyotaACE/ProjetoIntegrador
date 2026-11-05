@@ -179,10 +179,10 @@ export const appointments = [
 ========================= */
 
 export const salesData = [
-  { month: "Out", vendas: 8 },
-  { month: "Nov", vendas: 12 },
-  { month: "Dez", vendas: 15 },
-  { month: "Jan", vendas: 10 },
-  { month: "Fev", vendas: 14 },
-  { month: "Mar", vendas: 11 },
+  { month: "Out", vendas: 9800 },
+  { month: "Nov", vendas: 14200 },
+  { month: "Dez", vendas: 17100 },
+  { month: "Jan", vendas: 10800 },
+  { month: "Fev", vendas: 15000 },
+  { month: "Mar", vendas: 12900 },
 ];
