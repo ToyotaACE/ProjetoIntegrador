@@ -56,9 +56,7 @@ export default function TabsLayout() {
         name="financing"
         options={{
           title: tabLabels[2],
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cash" size={size} color={color} />
-          ),
+          href: null,
         }}
       />
 

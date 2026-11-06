@@ -75,6 +75,28 @@ test("Japanese uses natural kanji and kana for vehicle status", () => {
   assert.match(translated, /車両/);
 });
 
+test("appointment vehicle details are localized in every supported language", () => {
+  assert.deepEqual(
+    ["pt-BR", "en-US", "es-ES", "ja-JP"].map((language) =>
+      translateText("Nenhum veículo cadastrado. Cadastre um veículo antes de agendar.", language),
+    ),
+    [
+      "Nenhum veículo cadastrado. Cadastre um veículo antes de agendar.",
+      "No vehicles are registered. Add a vehicle before scheduling.",
+      "No hay vehículos registrados. Registra uno antes de programar la cita.",
+      "車両が登録されていません。予約の前に車両を登録してください。",
+    ],
+  );
+  assert.equal(translateText("Status do financiamento", "en-US"), "Financing status");
+  assert.equal(translateText("Parcelas totais", "es-ES"), "Cuotas totales");
+  assert.deepEqual(
+    ["pt-BR", "en-US", "es-ES", "ja-JP"].map((language) =>
+      translateText("Concessionária", language),
+    ),
+    ["Concessionária", "Dealership", "Concesionario", "販売店"],
+  );
+});
+
 test("vehicle documentation labels and disclaimers are localized in every supported language", () => {
   assert.deepEqual(
     ["pt-BR", "en-US", "es-ES", "ja-JP"].map((language) =>

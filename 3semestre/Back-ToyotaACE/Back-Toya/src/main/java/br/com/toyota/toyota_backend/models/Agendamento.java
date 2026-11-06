@@ -22,6 +22,13 @@ public class Agendamento {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "veiculo_id")
+    private Veiculo veiculo;
+
+    @Column(length = 255)
+    private String concessionaria;
+
     @Column(nullable = false)
     private LocalDate data;
 

@@ -5,9 +5,11 @@ import br.com.toyota.toyota_backend.dto.AgendamentoDisponibilidade;
 import br.com.toyota.toyota_backend.models.Agendamento;
 import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.repositories.AgendamentoRepository;
+import br.com.toyota.toyota_backend.repositories.VeiculoRepository;
 import br.com.toyota.toyota_backend.services.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,13 +22,16 @@ public class AgendamentoController {
 
     private final AgendamentoRepository agendamentoRepository;
     private final ClienteService clienteService;
+    private final VeiculoRepository veiculoRepository;
 
     public AgendamentoController(
             AgendamentoRepository agendamentoRepository,
-            ClienteService clienteService
+            ClienteService clienteService,
+            VeiculoRepository veiculoRepository
     ) {
         this.agendamentoRepository = agendamentoRepository;
         this.clienteService = clienteService;
+        this.veiculoRepository = veiculoRepository;
     }
 
     @PostMapping
@@ -46,8 +51,17 @@ public class AgendamentoController {
 
         Agendamento agendamento = new Agendamento();
         agendamento.setCliente(cliente);
+        if (request.getVeiculoId() != null) {
+            agendamento.setVeiculo(veiculoRepository
+                    .findByIdAndClienteId(request.getVeiculoId(), cliente.getId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "O veículo selecionado não pertence ao cliente."
+                    )));
+        }
         agendamento.setData(request.getData());
         agendamento.setHorario(request.getHorario());
+        agendamento.setConcessionaria(request.getConcessionaria());
         agendamento.setTipoServico(request.getTipoServico());
         agendamento.setObservacao(request.getObservacao());
         agendamento.setStatus("AGENDADO");

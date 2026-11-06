@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -133,11 +134,16 @@ function getTaxaJuros(vehicle) {
 }
 
 export default function FinancingPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const { settings } = useAccessibility();
   const { theme } = useTheme();
+  const { vehicleId: requestedVehicleId } = useLocalSearchParams();
+  const requestedVehicleIdString = Array.isArray(requestedVehicleId)
+    ? requestedVehicleId[0]
+    : requestedVehicleId;
+  const requestedVehicleIdNumber = Number(requestedVehicleIdString);
 
-  const [cliente, setCliente] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
@@ -161,9 +167,9 @@ export default function FinancingPage() {
 
     return (
       vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ||
-      vehicles[0]
+      (!requestedVehicleIdString ? vehicles[0] : null)
     );
-  }, [vehicles, selectedVehicleId]);
+  }, [vehicles, selectedVehicleId, requestedVehicleIdString]);
 
   const valorTotal = getValorTotal(selectedVehicle);
   const valorEntrada = getValorEntrada(selectedVehicle);
@@ -216,16 +222,20 @@ export default function FinancingPage() {
 
       const clienteData = await responseCliente.json();
 
-      setCliente(clienteData);
-
       const veiculosCliente = Array.isArray(clienteData?.veiculos)
         ? clienteData.veiculos
         : [];
 
       setVehicles(veiculosCliente);
 
-      if (veiculosCliente.length > 0 && !selectedVehicleId) {
-        setSelectedVehicleId(veiculosCliente[0].id);
+      if (veiculosCliente.length > 0) {
+        const initialVehicle =
+          veiculosCliente.find(
+            (vehicle) => vehicle.id === requestedVehicleIdNumber
+          ) || (!requestedVehicleIdString ? veiculosCliente[0] : null);
+        setSelectedVehicleId(initialVehicle?.id || null);
+      } else {
+        setSelectedVehicleId(null);
       }
     } catch (error) {
       console.log("Erro ao carregar financiamento:", error);
@@ -233,7 +243,11 @@ export default function FinancingPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [emailLogado, selectedVehicleId]);
+  }, [
+    emailLogado,
+    requestedVehicleIdNumber,
+    requestedVehicleIdString,
+  ]);
 
   useEffect(() => {
     carregarFinanciamento();
@@ -365,6 +379,15 @@ export default function FinancingPage() {
       }
     >
       <View style={styles.header}>
+        <TouchableOpacity
+          style={[styles.backButton, { borderColor: theme.box }]}
+          onPress={() => router.replace("/(tabs)/vehicle")}
+        >
+          <Ionicons name="arrow-back" size={18} color={theme.text} />
+          <Text style={[styles.backButtonText, { color: theme.text }]}>
+            Voltar para meus veículos
+          </Text>
+        </TouchableOpacity>
         <Text style={[styles.title, { color: theme.text }]}>
           Financiamento
         </Text>
@@ -774,6 +797,23 @@ const styles = StyleSheet.create({
 
   header: {
     marginBottom: 18,
+  },
+
+  backButton: {
+    alignSelf: "flex-start",
+    minHeight: 40,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 9,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+
+  backButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
   },
 
   title: {

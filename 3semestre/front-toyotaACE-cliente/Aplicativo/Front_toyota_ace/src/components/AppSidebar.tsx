@@ -2,7 +2,6 @@ import React from "react";
 import {
   Home,
   Car,
-  DollarSign,
   CalendarDays,
   User,
   ShoppingBag,
@@ -31,7 +30,6 @@ import {
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Veículo", url: "/veiculo", icon: Car },
-  { title: "Financiamento", url: "/financiamento", icon: DollarSign },
   { title: "Agendamento", url: "/agendamento", icon: CalendarDays },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
   { title: "Perfil", url: "/perfil", icon: User },
@@ -75,7 +73,10 @@ const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const active = location.pathname === item.url;
+                const active =
+                  location.pathname === item.url ||
+                  (item.url === "/veiculo" &&
+                    location.pathname.startsWith("/veiculo/"));
 
                 return (
                   <SidebarMenuItem key={item.title}>

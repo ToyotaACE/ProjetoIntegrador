@@ -19,45 +19,6 @@ import { findNextReviewDate } from "../../utils/vehicleDocuments";
 const API_ORIGIN = (process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api").replace(/\/api\/?$/, "");
 const API_URL = `${API_ORIGIN}/api`;
 
-const timelineSteps = [
-  {
-    id: "pedido",
-    label: "Pedido Realizado",
-    progress: 17,
-    icon: "checkmark-outline",
-  },
-  {
-    id: "linha",
-    label: "Linha de Produção",
-    progress: 33,
-    icon: "construct-outline",
-  },
-  {
-    id: "inspecao",
-    label: "Inspeção",
-    progress: 50,
-    icon: "search-outline",
-  },
-  {
-    id: "cegonha",
-    label: "Cegonha",
-    progress: 67,
-    icon: "bus-outline",
-  },
-  {
-    id: "concessionaria",
-    label: "Concessionária",
-    progress: 83,
-    icon: "storefront-outline",
-  },
-  {
-    id: "retirada",
-    label: "Pronto para Retirada",
-    progress: 100,
-    icon: "flag-outline",
-  },
-];
-
 function getUserEmail(user) {
   return user?.email || user?.emailCliente || user?.usuario?.email || "";
 }
@@ -166,13 +127,6 @@ function getStatusColorByProgress(progress, theme) {
   return theme.primary;
 }
 
-function buildTimelineByProgress(progress) {
-  return timelineSteps.map((step) => ({
-    ...step,
-    completed: progress >= step.progress,
-  }));
-}
-
 export default function VehiclePage() {
   const { user } = useAuth();
   const { settings } = useAccessibility();
@@ -194,20 +148,8 @@ export default function VehiclePage() {
   const selectedVehicle = useMemo(() => {
     if (!vehicles.length) return null;
 
-    return (
-      vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ||
-      vehicles[0]
-    );
+    return vehicles.find((vehicle) => vehicle.id === selectedVehicleId) || null;
   }, [vehicles, selectedVehicleId]);
-
-  const selectedProgress = getVehicleProgress(selectedVehicle);
-  const selectedStatusColor = getStatusColorByProgress(selectedProgress, theme);
-
-  const timeline = useMemo(() => {
-    return buildTimelineByProgress(selectedProgress);
-  }, [selectedProgress]);
-
-  const completedSteps = timeline.filter((step) => step.completed).length;
 
   const carregarVeiculos = useCallback(
     async (silent = false) => {
@@ -255,15 +197,15 @@ export default function VehiclePage() {
           setAppointments([]);
         }
 
-        if (veiculosCliente.length > 0) {
+        if (selectedVehicleId && veiculosCliente.length > 0) {
           const selectedStillExists = veiculosCliente.some(
             (vehicle) => vehicle.id === selectedVehicleId
           );
 
-          if (!selectedVehicleId || !selectedStillExists) {
-            setSelectedVehicleId(veiculosCliente[0].id);
+          if (!selectedStillExists) {
+            setSelectedVehicleId(null);
           }
-        } else {
+        } else if (veiculosCliente.length === 0) {
           setSelectedVehicleId(null);
         }
       } catch (error) {
@@ -347,7 +289,7 @@ export default function VehiclePage() {
             </Text>
 
             <Text style={[styles.subtitle, { color: theme.subtext }]}>
-              Selecione um veículo para acompanhar ficha técnica e fabricação.
+              Selecione um veículo para ver suas informações e opções.
             </Text>
           </View>
 
@@ -535,119 +477,37 @@ export default function VehiclePage() {
             </View>
           </View>
 
-          <View style={[styles.card, { backgroundColor: theme.card }]}>
-            <View style={styles.timelineHeader}>
-              <View>
-                <Text style={[styles.cardTitle, { color: theme.text }]}>
-                  Timeline de Fabricação
-                </Text>
-
-                <Text style={[styles.timelineSub, { color: theme.subtext }]}>
-                  {completedSteps} de {timelineSteps.length} etapas concluídas
-                </Text>
-              </View>
-
-              {updating ? (
-                <ActivityIndicator size="small" color={theme.primary} />
-              ) : null}
-            </View>
-
-            <Text style={[styles.progressLabel, { color: theme.subtext }]}>
-              Progresso
-            </Text>
-
-            <View style={styles.progressHeader}>
-              <View
-                style={[styles.progressTrack, { backgroundColor: theme.box }]}
-              >
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${selectedProgress}%`,
-                      backgroundColor: selectedStatusColor,
-                    },
-                  ]}
-                />
-              </View>
-
-              <Text
-                style={[
-                  styles.progressText,
-                  {
-                    color: selectedStatusColor,
-                  },
-                ]}
-              >
-                {selectedProgress}%
+          <View style={styles.vehicleActions}>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.primary }]}
+              onPress={() =>
+                router.push({
+                  pathname: "/vehicle-financing",
+                  params: { vehicleId: String(selectedVehicle.id) },
+                })
+              }
+            >
+              <Ionicons name="card-outline" size={18} color="#fff" />
+              <Text style={styles.actionButtonText}>Ver financiamento</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                styles.secondaryActionButton,
+                { borderColor: theme.box },
+              ]}
+              onPress={() =>
+                router.push({
+                  pathname: "/vehicle-timeline",
+                  params: { vehicleId: String(selectedVehicle.id) },
+                })
+              }
+            >
+              <Ionicons name="git-branch-outline" size={18} color={theme.text} />
+              <Text style={[styles.secondaryActionText, { color: theme.text }]}>
+                Acompanhar timeline
               </Text>
-            </View>
-
-            <View style={styles.timeline}>
-              {timeline.map((step, index) => {
-                const isLast = index === timeline.length - 1;
-
-                return (
-                  <View key={step.id} style={styles.timelineItem}>
-                    <View style={styles.timelineMarkerColumn}>
-                      <View
-                        style={[
-                          styles.timelineCircle,
-                          {
-                            backgroundColor: step.completed
-                              ? selectedStatusColor
-                              : theme.box,
-                          },
-                        ]}
-                      >
-                        <Ionicons
-                          name={step.completed ? "checkmark-outline" : step.icon}
-                          size={15}
-                          color={step.completed ? "#fff" : theme.subtext}
-                        />
-                      </View>
-
-                      {!isLast && (
-                        <View
-                          style={[
-                            styles.timelineLine,
-                            {
-                              backgroundColor: step.completed
-                                ? selectedStatusColor
-                                : theme.box,
-                            },
-                          ]}
-                        />
-                      )}
-                    </View>
-
-                    <View style={styles.timelineContent}>
-                      <Text
-                        style={[
-                          styles.timelineTitle,
-                          {
-                            color: step.completed ? theme.text : theme.subtext,
-                          },
-                        ]}
-                      >
-                        {step.label}
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.timelineDescription,
-                          { color: theme.subtext },
-                        ]}
-                      >
-                        {step.completed
-                          ? "Etapa concluída"
-                          : "Aguardando atualização via IoT"}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
+            </TouchableOpacity>
           </View>
         </>
       )}
@@ -821,91 +681,35 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  timelineHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 12,
-  },
-
-  timelineSub: {
-    marginTop: 5,
-    fontSize: 13,
-  },
-
-  progressLabel: {
-    fontSize: 12,
-    marginTop: 16,
-    marginBottom: 6,
-  },
-
-  progressHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+  vehicleActions: {
     gap: 10,
+    marginBottom: 14,
   },
 
-  progressTrack: {
-    flex: 1,
-    height: 8,
-    borderRadius: 999,
-    overflow: "hidden",
-  },
-
-  progressFill: {
-    height: "100%",
-    borderRadius: 999,
-  },
-
-  progressText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    minWidth: 36,
-    textAlign: "right",
-  },
-
-  timeline: {
-    marginTop: 18,
-  },
-
-  timelineItem: {
+  actionButton: {
+    minHeight: 48,
+    borderRadius: 10,
+    paddingHorizontal: 14,
     flexDirection: "row",
-    minHeight: 62,
-  },
-
-  timelineMarkerColumn: {
-    width: 32,
-    alignItems: "center",
-  },
-
-  timelineCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
   },
 
-  timelineLine: {
-    width: 2,
-    flex: 1,
-    marginTop: 4,
+  secondaryActionButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
   },
 
-  timelineContent: {
-    flex: 1,
-    paddingLeft: 10,
-    paddingBottom: 18,
-  },
-
-  timelineTitle: {
+  actionButtonText: {
+    color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
   },
 
-  timelineDescription: {
-    fontSize: 12,
-    marginTop: 3,
+  secondaryActionText: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
 
   emptyCard: {

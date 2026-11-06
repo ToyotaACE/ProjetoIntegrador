@@ -440,7 +440,12 @@ export default function Dashboard() {
 
                 <TouchableOpacity
                   style={[styles.secondaryAction, { borderColor: theme.box }]}
-                  onPress={() => router.push("/financing")}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/vehicle-financing",
+                      params: { vehicleId: String(selectedVehicle?.id || "") },
+                    })
+                  }
                 >
                   <Text
                     style={[
