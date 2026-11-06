@@ -18,6 +18,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import DashboardPage from "@/pages/DashboardPage";
 import VehiclePage from "@/pages/VehiclePage";
+import VehicleTimelinePage from "@/pages/VehicleTimelinePage";
 import VehicleDocumentationPage from "@/pages/VehicleDocumentationPage";
 import FinancingPage from "@/pages/FinancingPage";
 import SchedulingPage from "@/pages/SchedulingPage";
@@ -52,6 +53,10 @@ const App = () => (
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/veiculo" element={<VehiclePage />} />
+                <Route
+                  path="/veiculo/:vehicleId/timeline"
+                  element={<VehicleTimelinePage />}
+                />
                 <Route path="/financiamento" element={<FinancingPage />} />
                 <Route path="/agendamento" element={<SchedulingPage />} />
                 <Route path="/shop" element={<ShopPage />} />

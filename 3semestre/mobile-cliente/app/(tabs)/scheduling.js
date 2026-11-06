@@ -46,6 +46,13 @@ const serviceTypes = [
   },
 ];
 
+const dealerships = [
+  "Toyota Centro — Av. Paulista, 1500 - São Paulo",
+  "Toyota Zona Sul — Av. Santo Amaro, 3200 - São Paulo",
+  "Toyota Campinas — Rod. Anhanguera, km 95 - Campinas",
+  "Toyota ABC — Av. Industrial, 800 - Santo André",
+];
+
 function getUserId(user) {
   return user?.id || user?.clienteId || user?.usuario?.id || null;
 }
@@ -112,7 +119,38 @@ function normalizeAppointment(item, user) {
       item.descricao ||
       `Agendamento de ${service?.label || "atendimento"} realizado pelo app Toyota ACE`,
     client: item.cliente?.nome || getUserName(user),
+    vehicle: item.veiculo || null,
+    dealership: item.concessionaria || "",
   };
+}
+
+function getVehicleDetails(vehicle) {
+  return [
+    ["Marca", vehicle.marcaVeiculo],
+    ["Modelo", vehicle.modeloVeiculo],
+    ["Ano", vehicle.anoVeiculo],
+    ["Cor", vehicle.corVeiculo],
+    ["Placa", vehicle.placaVeiculo],
+    ["Chassi", vehicle.chassiVeiculo],
+    ["Motor", vehicle.motorVeiculo],
+    ["Combustível", vehicle.combustivelVeiculo],
+    ["Câmbio", vehicle.cambioVeiculo],
+    ["Status", vehicle.statusVeiculo],
+    ["Progresso", vehicle.progressoVeiculo == null ? null : `${vehicle.progressoVeiculo}%`],
+    ["Próxima revisão", vehicle.dataProximaRevisao],
+    ["Valor Total", vehicle.valorTotal],
+    ["Entrada", vehicle.valorEntrada],
+    ["Valor Financiado", vehicle.valorFinanciado],
+    ["Parcelas totais", vehicle.parcelasTotais],
+    ["Parcelas pagas", vehicle.parcelasPagas],
+    ["Parcelas restantes", vehicle.parcelasRestantes],
+    ["Valor da parcela", vehicle.valorParcela],
+    ["Taxa de juros", vehicle.taxaJuros],
+    ["Status do financiamento", vehicle.statusFinanciamento],
+    ["Garantia", vehicle.statusGarantia],
+    ["Acessórios", vehicle.acessorios],
+    ["VIN IoT", vehicle.vinIot],
+  ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "");
 }
 
 export default function SchedulingPage() {
@@ -125,6 +163,9 @@ export default function SchedulingPage() {
   const [time, setTime] = useState("");
   const [serviceType, setServiceType] = useState("retirada");
   const [appointments, setAppointments] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  const [selectedVehicleId, setSelectedVehicleId] = useState(null);
+  const [selectedDealership, setSelectedDealership] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -137,6 +178,8 @@ export default function SchedulingPage() {
   const dates = useMemo(() => createNextDates(5, settings.language), [settings.language]);
 
   const selectedService = serviceTypes.find((item) => item.id === serviceType);
+  const selectedVehicle =
+    vehicles.find((vehicle) => vehicle.id === selectedVehicleId) || null;
 
   const appointmentsByDate = appointments
     .filter((item) => item.date === selectedDate)
@@ -152,19 +195,35 @@ export default function SchedulingPage() {
         return;
       }
 
-      const response = await fetch(`${API_URL}/agendamentos/cliente/${clienteId}`);
+      const [response, vehiclesResponse] = await Promise.all([
+        fetch(`${API_URL}/agendamentos/cliente/${clienteId}`),
+        fetch(`${API_URL}/veiculos/cliente/${clienteId}`),
+      ]);
 
       if (!response.ok) {
         throw new Error("Não foi possível carregar os agendamentos.");
       }
+      if (!vehiclesResponse.ok) {
+        throw new Error("Não foi possível carregar seus veículos.");
+      }
 
-      const data = await response.json();
+      const [data, vehiclesData] = await Promise.all([
+        response.json(),
+        vehiclesResponse.json(),
+      ]);
 
       const formattedAppointments = Array.isArray(data)
         ? data.map((item) => normalizeAppointment(item, user))
         : [];
+      const customerVehicles = Array.isArray(vehiclesData) ? vehiclesData : [];
 
       setAppointments(formattedAppointments);
+      setVehicles(customerVehicles);
+      setSelectedVehicleId((current) =>
+        current && customerVehicles.some((vehicle) => vehicle.id === current)
+          ? current
+          : customerVehicles[0]?.id || null
+      );
     } catch (error) {
       console.log("Erro ao carregar agendamentos:", error);
       setErrorMessage("Não foi possível carregar seus agendamentos.");
@@ -197,6 +256,11 @@ export default function SchedulingPage() {
         return;
       }
 
+      if (!selectedVehicle || !selectedDealership) {
+        setErrorMessage("Selecione o veículo e a concessionária para este agendamento.");
+        return;
+      }
+
       const alreadyExists = appointments.some(
         (item) => item.date === selectedDate && item.time === time
       );
@@ -215,6 +279,8 @@ export default function SchedulingPage() {
         },
         body: JSON.stringify({
           clienteId,
+          veiculoId: selectedVehicle.id,
+          concessionaria: selectedDealership,
           email,
           data: selectedDate,
           horario: `${time}:00`,
@@ -229,15 +295,31 @@ export default function SchedulingPage() {
         throw new Error("Não foi possível confirmar o agendamento.");
       }
 
+      const createdAppointment = await response.json();
+      if (
+        Number(createdAppointment?.veiculo?.id) !== Number(selectedVehicle.id) ||
+        createdAppointment?.concessionaria !== selectedDealership
+      ) {
+        await carregarAgendamentos();
+        throw new Error(
+          "O servidor não confirmou os dados do agendamento. Atualize e reinicie o backend antes de criar um novo agendamento."
+        );
+      }
+
       await carregarAgendamentos();
 
       setTime("");
+      setSelectedDealership("");
       setErrorMessage("");
 
       Alert.alert("Sucesso", "Agendamento confirmado!");
     } catch (error) {
       console.log("Erro ao confirmar agendamento:", error);
-      setErrorMessage("Não foi possível confirmar o agendamento.");
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível confirmar o agendamento."
+      );
     } finally {
       setSaving(false);
     }
@@ -315,6 +397,85 @@ export default function SchedulingPage() {
         <Text style={[styles.cardTitle, { color: theme.text }]}>
           Novo agendamento
         </Text>
+
+        <Text style={[styles.label, { color: theme.text }]}>Veículo</Text>
+
+        {vehicles.length === 0 ? (
+          <Text style={[styles.noVehiclesText, { color: theme.subtext }]}>
+            Nenhum veículo cadastrado. Cadastre um veículo antes de agendar.
+          </Text>
+        ) : (
+          <View style={styles.vehicleOptions}>
+            {vehicles.map((vehicle) => {
+              const selected = selectedVehicleId === vehicle.id;
+              const vehicleName = [
+                vehicle.marcaVeiculo || "Toyota",
+                vehicle.modeloVeiculo || "Veículo",
+                vehicle.anoVeiculo,
+                vehicle.placaVeiculo,
+              ].filter(Boolean).join(" · ");
+
+              return (
+                <TouchableOpacity
+                  key={vehicle.id}
+                  style={[
+                    styles.vehicleOption,
+                    { backgroundColor: theme.box },
+                    selected && { borderColor: theme.primary },
+                  ]}
+                  onPress={() => {
+                    setSelectedVehicleId(vehicle.id);
+                    setErrorMessage("");
+                  }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                >
+                  <Ionicons
+                    name={selected ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={theme.primary}
+                  />
+                  <Text style={[styles.vehicleOptionText, { color: theme.text }]}>
+                    {vehicleName}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        <Text style={[styles.label, { color: theme.text }]}>Concessionária</Text>
+
+        <View style={styles.vehicleOptions}>
+          {dealerships.map((dealership) => {
+            const selected = selectedDealership === dealership;
+            return (
+              <TouchableOpacity
+                key={dealership}
+                style={[
+                  styles.vehicleOption,
+                  { backgroundColor: theme.box },
+                  selected && { borderColor: theme.primary },
+                ]}
+                onPress={() => {
+                  setSelectedDealership(dealership);
+                  setErrorMessage("");
+                }}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+              >
+                <Ionicons
+                  name={selected ? "radio-button-on" : "radio-button-off"}
+                  size={20}
+                  color={theme.primary}
+                />
+                <Text style={[styles.vehicleOptionText, { color: theme.text }]}>
+                  {dealership}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         <Text style={[styles.label, { color: theme.text }]}>Tipo de serviço</Text>
 
@@ -446,10 +607,10 @@ export default function SchedulingPage() {
           style={[
             styles.button,
             { backgroundColor: theme.primary },
-            (!selectedDate || !time || saving) && styles.buttonDisabled,
+            (!selectedDate || !time || !selectedVehicle || !selectedDealership || saving) && styles.buttonDisabled,
           ]}
           onPress={handleConfirm}
-          disabled={!selectedDate || !time || saving}
+          disabled={!selectedDate || !time || !selectedVehicle || !selectedDealership || saving}
         >
           {saving ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -511,6 +672,38 @@ export default function SchedulingPage() {
               <Text style={[styles.description, { color: theme.subtext }]}>
                 {appointment.description}
               </Text>
+
+              {appointment.dealership ? (
+                <View style={styles.dealershipRow}>
+                  <Ionicons name="location-outline" size={15} color={theme.primary} />
+                  <Text style={[styles.dealershipText, { color: theme.text }]}>
+                    {appointment.dealership}
+                  </Text>
+                </View>
+              ) : null}
+
+              {appointment.vehicle ? (
+                <View style={[styles.vehicleDetails, { backgroundColor: theme.box }]}>
+                  <Text style={[styles.vehicleDetailsTitle, { color: theme.text }]}>
+                    {appointment.vehicle.marcaVeiculo || "Toyota"}{" "}
+                    {appointment.vehicle.modeloVeiculo || "Veículo"}
+                  </Text>
+                  {getVehicleDetails(appointment.vehicle).map(([label, value]) => (
+                    <View key={label} style={styles.vehicleDetailRow}>
+                      <Text style={[styles.vehicleDetailLabel, { color: theme.subtext }]}>
+                        {label}:
+                      </Text>
+                      <Text style={[styles.vehicleDetailValue, { color: theme.text }]}>
+                        {String(value)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={[styles.description, { color: theme.subtext }]}>
+                  Veículo não informado neste agendamento.
+                </Text>
+              )}
             </View>
 
             <TouchableOpacity
@@ -588,6 +781,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
+  },
+
+  vehicleOptions: {
+    gap: 8,
+  },
+
+  vehicleOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+
+  vehicleOptionText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  noVehiclesText: {
+    fontSize: 13,
+    marginBottom: 8,
+  },
+
+  dealershipRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 5,
+    marginTop: 8,
+  },
+
+  dealershipText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "600",
   },
 
   serviceOption: {
@@ -705,7 +936,7 @@ const styles = StyleSheet.create({
 
   appointmentCard: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
@@ -723,6 +954,7 @@ const styles = StyleSheet.create({
 
   appointmentInfo: {
     flex: 1,
+    minWidth: 0,
   },
 
   badge: {
@@ -741,8 +973,38 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+  vehicleDetails: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+  },
+
+  vehicleDetailsTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  vehicleDetailRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 3,
+  },
+
+  vehicleDetailLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginRight: 4,
+  },
+
+  vehicleDetailValue: {
+    flexShrink: 1,
+    fontSize: 12,
+  },
+
   deleteButton: {
     padding: 8,
+    alignSelf: "flex-start",
   },
 
   footer: {

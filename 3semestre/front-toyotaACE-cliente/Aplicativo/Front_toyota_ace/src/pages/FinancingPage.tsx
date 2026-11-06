@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, type Veiculo } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   ShieldCheck,
   Car,
   Wallet,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +42,9 @@ const getMesPagoKey = (veiculoId?: number) =>
 
 const FinancingPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedVehicleId = Number(searchParams.get("vehicleId"));
 
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(
@@ -74,10 +79,12 @@ const FinancingPage = () => {
         setVeiculos(resposta);
 
         if (resposta.length > 0) {
-          const primeiro = resposta[0];
-          setSelectedVehicleId(primeiro.id || null);
+          const veiculoInicial =
+            resposta.find((vehicle) => vehicle.id === requestedVehicleId) ||
+            resposta[0];
+          setSelectedVehicleId(veiculoInicial.id || null);
 
-          const mesSalvo = localStorage.getItem(getMesPagoKey(primeiro.id));
+          const mesSalvo = localStorage.getItem(getMesPagoKey(veiculoInicial.id));
           setUltimoMesPago(mesSalvo || "Janeiro");
         }
       } catch (err) {
@@ -92,7 +99,7 @@ const FinancingPage = () => {
     }
 
     carregarFinanciamento();
-  }, [user?.id]);
+  }, [user?.id, requestedVehicleId]);
 
   const veiculoSelecionado = useMemo(() => {
     return (
@@ -216,6 +223,14 @@ const FinancingPage = () => {
       <main className="flex-1">
         <div className="space-y-8 max-w-7xl mx-auto px-4 py-6">
           <div>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/veiculo")}
+              className="mb-4"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar para meus veículos
+            </Button>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Financiamento
             </h1>

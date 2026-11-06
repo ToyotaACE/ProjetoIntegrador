@@ -81,7 +81,7 @@ const LoginPage = () => {
             </p>
 
             <p className="text-center text-white text-sm">
-              Não tem conta? <Link to="/cadastro" className="text-primary hover:underline font-medium">Cadastre-se</Link>
+              Não tem conta? <Link to="/cadastro" className="text-red-600 hover:underline font-medium">Cadastre-se</Link>
             </p>
           </form>
         </CardContent>

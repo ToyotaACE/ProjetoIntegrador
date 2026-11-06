@@ -1,13 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Check, Circle, Car, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Car, CreditCard, FileText, Route } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, type Veiculo } from "@/services/api";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,6 +21,7 @@ const vehiclePageText = {
 const VehiclePage = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const navigate = useNavigate();
 
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(
@@ -34,7 +31,7 @@ const VehiclePage = () => {
   const [erro, setErro] = useState("");
   const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
 
-  const carregarVeiculos = async () => {
+  const carregarVeiculos = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
       return;
@@ -47,19 +44,20 @@ const VehiclePage = () => {
       const data = await api.listarVeiculosCliente(user.id);
 
       setVeiculos(data);
-
-      if (data.length > 0 && !selectedVehicleId) {
-        setSelectedVehicleId(data[0].id || null);
-      }
+      setSelectedVehicleId((currentId) =>
+        currentId && data.some((vehicle) => vehicle.id === currentId)
+          ? currentId
+          : null,
+      );
     } catch (error) {
       console.error("Erro ao carregar veículos:", error);
       setErro("Não foi possível carregar os veículos.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
-  const carregarVeiculoSelecionado = async () => {
+  const carregarVeiculoSelecionado = useCallback(async () => {
     if (!selectedVehicleId) return;
 
     try {
@@ -73,11 +71,21 @@ const VehiclePage = () => {
     } catch (error) {
       console.error("Erro ao atualizar veículo selecionado:", error);
     }
-  };
+  }, [selectedVehicleId]);
 
   useEffect(() => {
     carregarVeiculos();
-  }, [user?.id]);
+  }, [carregarVeiculos]);
+
+  useEffect(() => {
+    carregarVeiculoSelecionado();
+
+    const interval = setInterval(() => {
+      carregarVeiculoSelecionado();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [carregarVeiculoSelecionado]);
 
   useEffect(() => {
     let active = true;
@@ -98,25 +106,9 @@ const VehiclePage = () => {
     return () => { active = false; };
   }, [user?.id]);
 
-  useEffect(() => {
-    carregarVeiculoSelecionado();
-
-    const interval = setInterval(() => {
-      carregarVeiculoSelecionado();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [selectedVehicleId]);
-
   const selectedVehicle = useMemo(() => {
-    return (
-      veiculos.find((veiculo) => veiculo.id === selectedVehicleId) ||
-      veiculos[0] ||
-      null
-    );
+    return veiculos.find((veiculo) => veiculo.id === selectedVehicleId) || null;
   }, [veiculos, selectedVehicleId]);
-
-  const progress = selectedVehicle?.progressoVeiculo || 0;
 
   const abrirDocumentacao = (veiculo: Veiculo) => {
     const vehicleDetails = {
@@ -135,48 +127,6 @@ const VehiclePage = () => {
     });
     window.open(`/documentacao?${query.toString()}`, "_blank", "noopener,noreferrer");
   };
-
-  const steps = [
-    {
-      label: "Pedido Realizado",
-      done: progress >= 16,
-      color: "bg-blue-500",
-      description: "Seu pedido foi registrado no sistema da concessionária.",
-    },
-    {
-      label: "Linha de Produção",
-      done: progress >= 33,
-      color: "bg-yellow-500",
-      description: "O veículo entrou na linha de produção da fábrica.",
-    },
-    {
-      label: "Inspeção",
-      done: progress >= 50,
-      color: "bg-orange-500",
-      description: "São realizados testes de qualidade e segurança.",
-    },
-    {
-      label: "Cegonha",
-      done: progress >= 66,
-      color: "bg-purple-500",
-      description: "O veículo está em transporte para a concessionária.",
-    },
-    {
-      label: "Concessionária",
-      done: progress >= 83,
-      color: "bg-red-500",
-      description:
-        "O veículo chegou à concessionária e está em preparação.",
-    },
-    {
-      label: "Pronto para Retirada",
-      done: progress >= 100,
-      color: "bg-green-500",
-      description: "Seu veículo está pronto para ser retirado.",
-    },
-  ];
-
-  const currentStep = steps.filter((step) => step.done).length;
 
   if (loading) {
     return (
@@ -203,7 +153,6 @@ const VehiclePage = () => {
   }
 
   return (
-    <TooltipProvider>
       <div className="min-h-screen flex flex-col">
         <main className="flex-1">
           <div className="space-y-8 max-w-7xl mx-auto px-4 py-6">
@@ -213,7 +162,7 @@ const VehiclePage = () => {
               </h1>
 
               <p className="text-gray-500 mt-2">
-                Selecione um veículo para acompanhar ficha técnica e fabricação.
+                Selecione um veículo para ver suas informações e opções.
               </p>
             </div>
 
@@ -397,92 +346,31 @@ const VehiclePage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white dark:bg-zinc-900 border shadow-sm">
-                  <CardHeader>
-                    <CardTitle>Timeline de Fabricação</CardTitle>
-
-                    <p className="text-sm text-gray-500">
-                      {currentStep} de {steps.length} etapas concluídas
-                    </p>
-
-                    <div className="mt-4">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-500">Progresso</span>
-
-                        <span className="font-medium text-green-600">
-                          {progress}%
-                        </span>
-                      </div>
-
-                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-green-500 transition-all duration-700 ease-in-out"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="space-y-4">
-                      {steps.map((step, i) => (
-                        <Tooltip key={step.label}>
-                          <TooltipTrigger asChild>
-                            <div className="flex items-start gap-4 cursor-pointer">
-                              <div className="flex flex-col items-center">
-                                <div
-                                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                    step.done
-                                      ? `${step.color} text-white`
-                                      : "border-2 border-gray-300 text-gray-400"
-                                  }`}
-                                >
-                                  {step.done ? (
-                                    <Check className="h-4 w-4" />
-                                  ) : (
-                                    <Circle className="h-3 w-3" />
-                                  )}
-                                </div>
-
-                                {i < steps.length - 1 && (
-                                  <div
-                                    className={`w-0.5 h-12 ${
-                                      step.done ? step.color : "bg-gray-200"
-                                    }`}
-                                  />
-                                )}
-                              </div>
-
-                              <div className="pt-1">
-                                <p
-                                  className={`text-sm font-medium ${
-                                    step.done
-                                      ? "text-gray-900 dark:text-white"
-                                      : "text-gray-500"
-                                  }`}
-                                >
-                                  {step.label}
-                                </p>
-                              </div>
-                            </div>
-                          </TooltipTrigger>
-
-                          <TooltipContent>
-                            <p className="text-sm max-w-xs">
-                              {step.description}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    onClick={() =>
+                      navigate(`/financiamento?vehicleId=${selectedVehicle.id}`)
+                    }
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Ver financiamento
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      navigate(`/veiculo/${selectedVehicle.id}/timeline`)
+                    }
+                  >
+                    <Route className="mr-2 h-4 w-4" />
+                    Acompanhar timeline
+                  </Button>
+                </div>
               </>
             )}
           </div>
         </main>
       </div>
-    </TooltipProvider>
   );
 };
 

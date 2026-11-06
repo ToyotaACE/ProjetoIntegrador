@@ -70,6 +70,8 @@ export type CadastroRequest = {
 
 export type AgendamentoRequest = {
   clienteId?: number;
+  veiculoId?: number;
+  concessionaria?: string;
   email?: string;
   data: string;
   horario: string;
@@ -84,7 +86,9 @@ export type Agendamento = {
   tipoServico?: string;
   tipoServicio?: string;
   observacao?: string;
+  concessionaria?: string;
   cliente?: { nome?: string };
+  veiculo?: Veiculo;
 };
 
 export type HorarioAgendamento = {
@@ -182,7 +186,7 @@ export const api = {
     }),
     
   agendar: (dados: AgendamentoRequest) =>
-    request("/agendamentos", {
+    request<Agendamento>("/agendamentos", {
       method: "POST",
       body: JSON.stringify(dados),
     }),

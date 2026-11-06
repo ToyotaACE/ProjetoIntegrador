@@ -47,6 +47,8 @@ function RootNavigator() {
         <>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="vehicle-documents" />
+          <Stack.Screen name="vehicle-timeline" options={{ headerShown: false }} />
+          <Stack.Screen name="vehicle-financing" options={{ headerShown: false }} />
         </>
       )}
     </Stack>
