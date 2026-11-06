@@ -1,4 +1,9 @@
-# Repositório dedicado ao **Projeto Integrador** "**Toyota ACE**" | Curso Superior em Análise e Desenvolvimento de Sistemas
+# ✨Repositório dedicado ao **Projeto Integrador** "**Toyota ACE**" | Curso Superior em Análise e Desenvolvimento de Sistemas
+
+<h3>Funcionamento da Aplicação: </h3> 
+<img width="1536" height="1024" alt="Guia Rápido Toyota ACE no Windows" src="https://github.com/user-attachments/assets/46aead41-3e14-4b48-b803-4610591b036c" />
+
+<br>
 
 <h3>4º Semestre</h3> 
 
