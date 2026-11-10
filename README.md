@@ -1,6 +1,47 @@
 # ✨Repositório dedicado ao **Projeto Integrador** "**Toyota ACE**" | Curso Superior em Análise e Desenvolvimento de Sistemas
 
-<h3>Funcionamento da Aplicação: </h3> 
+<h3>Comandos - Guia Rápido Toyota ACE no Windows </h3> 
+
+## 1. Baixar o Código
+Abra o terminal e clone o projeto:
+```bash
+git clone https://github.com/ToyotaACE/ProjetoIntegrador
+```
+
+## 2. Iniciar o Banco de Dados (PostgreSQL)
+Abra um terminal (PowerShell), navegue até a pasta do back-end e suba o banco de dados:
+```powershell
+cd 3semestre\Back-ToyotaACE\Back-Toya
+docker compose up -d postgres
+```
+
+## 3. Iniciar o Back-end (Spring Boot)
+No mesmo terminal, rode o comando abaixo para baixar as dependências e subir a API:
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+## 4. Iniciar o Front-end (React/Vite)
+Abra um **novo terminal**, navegue até a pasta do front-end, instale as dependências e inicie o projeto:
+```powershell
+cd 3semestre\front-toyotaACE-cliente\Aplicativo\Front_toyota_ace
+npm install
+npm run dev
+```
+
+## 5. Primeiro Acesso e Dados de Teste
+Após criar sua conta na interface (http://localhost:8080/cadastro), abra um **terceiro terminal (PowerShell)** e rode o script abaixo para cadastrar um veículo via API e vincular à sua conta (assumindo que seu `clienteId` é 1):
+```powershell
+$body = @{
+    clienteId = 1; marcaVeiculo = "Toyota"; modeloVeiculo = "Corolla Cross"; anoVeiculo = "2025"
+    corVeiculo = "Prata"; placaVeiculo = "ABC1023"; motorVeiculo = "2.0 Hybrid"; combustivelVeiculo = "Flex"
+    cambioVeiculo = "CVT"; statusVeiculo = "PEDIDO REALIZADO"; progressoVeiculo = 0; valorTotal = 183000
+    valorEntrada = 100000; valorFinanciado = 83000; parcelasTotais = 48; parcelasPagas = 0; parcelasRestantes = 48
+    valorParcela = 2200; taxaJuros = 1.5; statusFinanciamento = "ATIVO"; statusGarantia = "ATIVA"
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:8083/api/veiculos -ContentType "application/json" -Body $body
+```
+
 <img width="1536" height="1024" alt="Guia Rápido Toyota ACE no Windows" src="https://github.com/user-attachments/assets/46aead41-3e14-4b48-b803-4610591b036c" />
 
 <br>
