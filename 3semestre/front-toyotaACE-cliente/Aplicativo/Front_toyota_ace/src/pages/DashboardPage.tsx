@@ -125,12 +125,12 @@ const DashboardPage = () => {
             {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}
           </div>
 
-          <Card className="overflow-hidden bg-white dark:bg-red-600 border shadow-sm">
+          <Card className="overflow-hidden bg-white dark:bg-zinc-800 border shadow-sm">
             <CardContent className="p-0">
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <div className="p-8 space-y-6">
                   <div>
-                    <p className="text-sm text-red-600 font-semibold">
+                    <p className="text-sm text-red-600 font-semibold dark:text-zinc-300">
                       Veículo principal
                     </p>
 
@@ -150,7 +150,7 @@ const DashboardPage = () => {
 
                   {veiculos.length > 1 && (
                     <div>
-                      <p className="text-sm text-red-600 mb-2">
+                      <p className="text-sm text-red-600 mb-2 dark:text-zinc-300">
                         Escolher veículo principal
                       </p>
 

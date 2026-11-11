@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { LocalizedText as Text, LocalizedTextInput as TextInput } from "./LocalizedText";
 import { useAccessibility } from "../contexts/AccessibilityContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { translateText } from "../contexts/translations";
 
 const CHAT_URL = process.env.EXPO_PUBLIC_CHATBOT_URL || "http://localhost:5000/chat";
@@ -20,6 +21,7 @@ const suggestions = ["garantia", "financiamento", "retirada"];
 
 export default function Chatbot() {
   const { settings } = useAccessibility();
+  const { theme } = useTheme();
   const [visible, setVisible] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -84,10 +86,11 @@ export default function Chatbot() {
     <>
       <TouchableOpacity
         accessibilityLabel={translateText(visible ? "Fechar assistente Toyota ACE" : "Abrir assistente Toyota ACE", settings.language)}
-        onPress={() => setVisible(true)}
-        style={styles.floatingButton}
+        accessibilityRole="button"
+        onPress={() => setVisible((current) => !current)}
+        style={[styles.headerButton, { backgroundColor: theme.box }]}
       >
-        <Ionicons name="chatbubble-ellipses" size={25} color="#fff" />
+        <Ionicons name="chatbubble-ellipses" size={20} color={theme.text} />
       </TouchableOpacity>
 
       <Modal
@@ -204,21 +207,13 @@ export default function Chatbot() {
 const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
-  floatingButton: {
-    position: "absolute",
-    right: 18,
-    bottom: 84,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: "#d71920",
+  headerButton: {
+    width: 36,
+    height: 36,
+    marginLeft: 5,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
   },
   modalRoot: {
     flex: 1,

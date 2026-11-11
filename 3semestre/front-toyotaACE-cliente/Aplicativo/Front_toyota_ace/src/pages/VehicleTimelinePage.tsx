@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { api, type Veiculo } from "@/services/api";
 
 const stages = [
@@ -60,7 +61,7 @@ const stages = [
   },
 ];
 
-function formatOrderDate(vehicle: Veiculo) {
+function formatOrderDate(vehicle: Veiculo, language: string) {
   const dateValue =
     (vehicle as Veiculo & { dataPedido?: string; dataCompra?: string }).dataPedido ||
     (vehicle as Veiculo & { dataCompra?: string }).dataCompra;
@@ -68,7 +69,7 @@ function formatOrderDate(vehicle: Veiculo) {
 
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return "Data não informada";
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat(language, {
     dateStyle: "short",
     timeStyle: "short",
   }).format(date);
@@ -76,6 +77,7 @@ function formatOrderDate(vehicle: Veiculo) {
 
 export default function VehicleTimelinePage() {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const { vehicleId = "" } = useParams();
   const parsedVehicleId = Number(vehicleId);
@@ -239,7 +241,7 @@ export default function VehicleTimelinePage() {
                         {done ? (
                           <span className="hidden items-center gap-2 rounded-full bg-red-100 px-3 py-2 text-xs font-medium text-red-700 sm:flex dark:bg-red-900/50 dark:text-red-200">
                             <CalendarDays className="h-4 w-4" />
-                            {index === 0 ? formatOrderDate(vehicle) : "Concluído"}
+                            {index === 0 ? formatOrderDate(vehicle, language) : "Concluído"}
                           </span>
                         ) : (
                           <ChevronRight className="h-5 w-5 shrink-0 text-slate-500" />
@@ -296,7 +298,7 @@ export default function VehicleTimelinePage() {
                       <p className="text-xs text-slate-500 dark:text-zinc-400">
                         Data do Pedido
                       </p>
-                      <p className="font-semibold">{formatOrderDate(vehicle)}</p>
+                      <p className="font-semibold">{formatOrderDate(vehicle, language)}</p>
                     </div>
                   </div>
                 </div>

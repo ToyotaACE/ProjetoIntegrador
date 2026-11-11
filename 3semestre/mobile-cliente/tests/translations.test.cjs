@@ -56,6 +56,55 @@ test("sidebar accessibility labels are available in all translated locales", () 
   assert.equal(translateText("Expandir navegação", "ja-JP"), "ナビゲーションを展開");
 });
 
+test("landing carousel content is localized in every supported language", () => {
+  const carouselLabels = [
+    "Sua jornada Toyota, mais conectada",
+    "Acompanhe seu veículo",
+    "Veja as atualizações e etapas do seu Toyota em um só lugar.",
+    "Agende seus serviços",
+    "Escolha a concessionária e o melhor horário para você.",
+    "Acesse seus documentos",
+    "Consulte as informações e os documentos do seu veículo.",
+    "Escolha sua experiência",
+    "Por que usar o Toyota ACE?",
+    "Informações importantes do seu veículo em poucos cliques.",
+    "Acompanhe pedidos, revisões e atualizações em tempo real.",
+    "Uma jornada digital moderna, prática e conectada.",
+    "A história da Toyota",
+    "Fundada em 1937, a Toyota revolucionou a indústria automotiva com inovação, qualidade e tecnologia sustentável.",
+    "Dos clássicos aos híbridos e elétricos, a marca segue transformando o futuro da mobilidade.",
+    "Sua jornada Toyota começa aqui.",
+    "Crie sua conta e acompanhe tudo sobre seu veículo de forma simples.",
+    "Todos os direitos reservados",
+  ];
+
+  for (const language of ["en-US", "es-ES", "ja-JP"]) {
+    for (const label of carouselLabels) {
+      assert.notEqual(
+        translateText(label, language),
+        label,
+        `${label} should be translated to ${language}`,
+      );
+    }
+  }
+});
+
+test("landing carousel groups the presentation into exactly four slides", () => {
+  const landingSource = fs.readFileSync(
+    path.join(__dirname, "..", "app", "index.js"),
+    "utf8",
+  );
+  const slides = landingSource.match(/const slides = \[([\s\S]*?)\n\];/)?.[1];
+
+  assert.ok(slides, "landing carousel slides should be defined");
+  assert.deepEqual(
+    [...slides.matchAll(/kind: "(welcome|models|benefits|tradition)"/g)].map(
+      ([, kind]) => kind,
+    ),
+    ["welcome", "models", "benefits", "tradition"],
+  );
+});
+
 test("promotion labels and prices are localized", () => {
   assert.equal(translateText("Online", "pt-BR"), "On-line");
   assert.equal(translateText("Promoções especiais", "en-US"), "Special offers");
@@ -73,6 +122,60 @@ test("Japanese uses natural kanji and kana for vehicle status", () => {
   const translated = translateText("Carregando veículos...", "ja-JP");
   assert.equal(translated, "車両情報を読み込み中...");
   assert.match(translated, /車両/);
+});
+
+test("vehicle screen instructions are localized in every supported language", () => {
+  assert.deepEqual(
+    ["pt-BR", "en-US", "es-ES", "ja-JP"].map((language) =>
+      translateText("Selecione um veículo para ver suas informações e opções.", language),
+    ),
+    [
+      "Selecione um veículo para ver suas informações e opções.",
+      "Select a vehicle to view its information and options.",
+      "Selecciona un vehículo para ver su información y opciones.",
+      "車両の情報とオプションを確認するには、車両を選択してください。",
+    ],
+  );
+});
+
+test("vehicle timeline labels and vehicle specifications are localized", () => {
+  const timelineLabels = [
+    "Progresso Geral",
+    "Seu pedido foi registrado com sucesso.",
+    "Produto em processo de fabricação.",
+    "Qualidade sendo verificada.",
+    "Produto em processo de acabamento.",
+    "Enviado para a concessionária.",
+    "Seu pedido está pronto para ser retirado.",
+    "Você será notificado em todas as atualizações do seu pedido.",
+    "Seu Pedido",
+    "Número do pedido",
+    "Data do Pedido",
+    "Atualizar Status",
+    "Vermelho",
+    "Prata",
+  ];
+
+  for (const language of ["en-US", "es-ES", "ja-JP"]) {
+    for (const label of timelineLabels) {
+      assert.notEqual(
+        translateText(label, language),
+        label,
+        `${label} should be translated to ${language}`,
+      );
+    }
+  }
+
+  assert.equal(translateText("Progresso Geral", "en-US"), "Overall progress");
+  assert.equal(translateText("Data do Pedido", "ja-JP"), "注文日");
+  assert.equal(translateText("Vermelho", "es-ES"), "Rojo");
+  assert.equal(translateText("Automático", "en-US"), "Automatic");
+  assert.equal(translateText("Automático", "ja-JP"), "オートマチック");
+  assert.equal(translateText("Flex", "en-US"), "Flex-fuel");
+  assert.equal(translateText("Flex", "ja-JP"), "フレックス燃料");
+  assert.equal(translateText("Motor 2.0 Flex", "es-ES"), "Motor 2.0 Flex");
+  assert.equal(translateText("Motor 2.0 Flex", "en-US"), "2.0 Flex-fuel engine");
+  assert.equal(translateText("Motor 2.0 Flex", "ja-JP"), "2.0 フレックス燃料エンジン");
 });
 
 test("appointment vehicle details are localized in every supported language", () => {

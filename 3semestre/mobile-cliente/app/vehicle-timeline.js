@@ -7,13 +7,15 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { LocalizedText as Text } from "../components/LocalizedText";
 import { useAuth } from "../contexts/AuthContext";
+import { useAccessibility } from "../contexts/AccessibilityContext";
 import { useTheme } from "../contexts/ThemeContext";
 
-import carroToyota from "./image/carro toyota.jpg";
+import corolla from "../assets/corolla.png";
 import yarisHatch from "./image/yaris.png";
 import yarisCross from "./image/yarisseda.png";
 import sw4 from "./image/sw4.png";
@@ -75,15 +77,19 @@ function getVehicleImage(vehicle) {
   if (model.includes("yaris cross")) return yarisCross;
   if (model.includes("yaris hatch") || model === "yaris") return yarisHatch;
   if (model.includes("hilux") || model.includes("sw4")) return sw4;
-  return carroToyota;
+  return corolla;
 }
 
-function formatOrderDate(vehicle) {
+function formatOrderDate(vehicle, language) {
   const dateValue = vehicle?.dataPedido || vehicle?.dataCompra;
   if (!dateValue) return "Data não informada";
-  const date = new Date(dateValue);
+  const date = new Date(
+    typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
+      ? `${dateValue}T00:00:00`
+      : dateValue,
+  );
   if (Number.isNaN(date.getTime())) return "Data não informada";
-  return date.toLocaleString("pt-BR", {
+  return date.toLocaleString(language, {
     dateStyle: "short",
     timeStyle: "short",
   });
@@ -91,7 +97,10 @@ function formatOrderDate(vehicle) {
 
 export default function VehicleTimelinePage() {
   const { user } = useAuth();
+  const { settings } = useAccessibility();
   const { theme, dark } = useTheme();
+  const { width } = useWindowDimensions();
+  const compact = width < 400;
   const router = useRouter();
   const params = useLocalSearchParams();
   const vehicleId = Array.isArray(params.vehicleId)
@@ -160,22 +169,31 @@ export default function VehicleTimelinePage() {
 
   return (
     <View style={[styles.page, { backgroundColor: theme.background }]}>
-      <View style={styles.topBar}>
-        <View style={styles.heading}>
+      <View
+        style={[
+          styles.topBar,
+          {
+            flexDirection: compact ? "column" : "row",
+            alignItems: compact ? "stretch" : "center",
+            borderBottomColor: theme.box,
+          },
+        ]}
+      >
+        <View style={[styles.heading, { flex: compact ? 0 : 1 }]}>
           <View style={styles.factoryIcon}>
             <Ionicons name="business" size={30} color="#fff" />
           </View>
           <View style={styles.headingDivider} />
           <View style={styles.headingText}>
-            <Text style={[styles.title, { color: theme.text }]}>
+            <Text style={[styles.title, { color: theme.text, fontSize: compact ? 18 : 20 }]}>
               Timeline de Fabricação
             </Text>
-            <Text style={[styles.subtitle, { color: theme.subtext }]}>
+            <Text style={[styles.subtitle, { color: theme.subtext, fontSize: compact ? 11 : 12 }]}>
               Acompanhe o progresso das etapas de produção em tempo real
             </Text>
           </View>
         </View>
-        <View style={styles.completionPill}>
+        <View style={[styles.completionPill, compact && styles.completionPillCompact]}>
           <Ionicons name="checkmark-circle" size={19} color="#15803d" />
           <Text style={styles.completionText}>{progress}% do valor</Text>
         </View>
@@ -262,7 +280,11 @@ export default function VehicleTimelinePage() {
                             style={[
                               styles.stageLine,
                               {
-                                backgroundColor: done ? "#fecaca" : theme.box,
+                                backgroundColor: done
+                                  ? dark
+                                    ? "#52525b"
+                                    : "#fecaca"
+                                  : theme.box,
                               },
                             ]}
                           />
@@ -272,12 +294,8 @@ export default function VehicleTimelinePage() {
                         style={[
                           styles.stageCard,
                           {
-                            backgroundColor: done
-                              ? dark
-                                ? "#351c21"
-                                : "#fff0f0"
-                              : theme.card,
-                            borderColor: done ? "#fecaca" : theme.box,
+                            backgroundColor: done && !dark ? "#fff0f0" : theme.card,
+                            borderColor: done && !dark ? "#fecaca" : theme.box,
                           },
                         ]}
                       >
@@ -301,10 +319,21 @@ export default function VehicleTimelinePage() {
                           </Text>
                         </View>
                         {done && index === 0 ? (
-                          <View style={styles.stageDate}>
+                          <View
+                            style={[
+                              styles.stageDate,
+                              dark && { backgroundColor: "#3f3f46" },
+                            ]}
+                          >
                             <Ionicons name="calendar-outline" size={14} color="#dc2626" />
-                            <Text style={styles.stageDateText}>
-                              {formatOrderDate(vehicle)}
+                            <Text
+                              style={[
+                                styles.stageDateText,
+                                dark && { color: "#fca5a5" },
+                              ]}
+                              numberOfLines={1}
+                            >
+                              {formatOrderDate(vehicle, settings.language)}
                             </Text>
                           </View>
                         ) : !done ? (
@@ -357,7 +386,7 @@ export default function VehicleTimelinePage() {
                         Data do Pedido
                       </Text>
                       <Text style={[styles.orderValue, { color: theme.text }]}>
-                        {formatOrderDate(vehicle)}
+                        {formatOrderDate(vehicle, settings.language)}
                       </Text>
                     </View>
                   </View>
@@ -369,38 +398,50 @@ export default function VehicleTimelinePage() {
             </View>
           </>
         ) : null}
+        <View
+          style={[
+            styles.footer,
+            { backgroundColor: theme.card, borderColor: theme.box },
+          ]}
+        >
+          <View style={styles.footerMessage}>
+            <Ionicons
+              name="information-circle-outline"
+              size={22}
+              color={dark ? "#60a5fa" : "#1e3a8a"}
+            />
+            <Text style={[styles.footerText, { color: theme.text }]}>
+              Você será notificado em todas as atualizações do seu pedido.
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.footerActions,
+              compact && styles.footerActionsCompact,
+            ]}
+          >
+            <TouchableOpacity
+              style={[styles.refreshButton, compact && styles.footerButtonCompact]}
+              onPress={loadVehicle}
+              disabled={loading}
+            >
+              <Ionicons name="refresh" size={17} color="#dc2626" />
+              <Text style={styles.refreshText}>Atualizar Status</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.backButton,
+                { borderColor: theme.box },
+                compact && styles.footerButtonCompact,
+              ]}
+              onPress={() => router.replace("/(tabs)/vehicle")}
+            >
+              <Ionicons name="arrow-back" size={17} color={theme.text} />
+              <Text style={[styles.backText, { color: theme.text }]}>Voltar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
-
-      <View
-        style={[
-          styles.footer,
-          { backgroundColor: theme.card, borderColor: theme.box },
-        ]}
-      >
-        <View style={styles.footerMessage}>
-          <Ionicons name="information-circle-outline" size={22} color="#1e3a8a" />
-          <Text style={[styles.footerText, { color: theme.text }]}>
-            Você será notificado em todas as atualizações do seu pedido.
-          </Text>
-        </View>
-        <View style={styles.footerActions}>
-          <TouchableOpacity
-            style={styles.refreshButton}
-            onPress={loadVehicle}
-            disabled={loading}
-          >
-            <Ionicons name="refresh" size={17} color="#dc2626" />
-            <Text style={styles.refreshText}>Atualizar Status</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.backButton, { borderColor: theme.box }]}
-            onPress={() => router.replace("/(tabs)/vehicle")}
-          >
-            <Ionicons name="arrow-back" size={17} color={theme.text} />
-            <Text style={[styles.backText, { color: theme.text }]}>Voltar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </View>
   );
 }
@@ -438,6 +479,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
+  completionPillCompact: { alignSelf: "flex-end" },
   completionText: { color: "#15803d", fontWeight: "bold", fontSize: 12 },
   scroll: { flex: 1 },
   content: { paddingTop: 15, paddingBottom: 14 },
@@ -501,6 +543,7 @@ const styles = StyleSheet.create({
   stageTitle: { fontSize: 13, fontWeight: "bold" },
   stageDescription: { marginTop: 3, fontSize: 11 },
   stageDate: {
+    maxWidth: 112,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
@@ -509,7 +552,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 6,
   },
-  stageDateText: { color: "#b91c1c", fontSize: 9, fontWeight: "600" },
+  stageDateText: { color: "#b91c1c", fontSize: 9, fontWeight: "600", flexShrink: 1 },
   orderCard: { borderWidth: 1, borderRadius: 12, overflow: "hidden" },
   vehicleImage: { width: "100%", height: 190, resizeMode: "contain", backgroundColor: "#f8fafc" },
   orderContent: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 14 },
@@ -531,10 +574,13 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     padding: 10,
     gap: 10,
+    marginTop: 16,
   },
   footerMessage: { flexDirection: "row", alignItems: "center", gap: 8 },
   footerText: { flex: 1, fontSize: 11 },
   footerActions: { flexDirection: "row", justifyContent: "flex-end", gap: 8 },
+  footerActionsCompact: { flexDirection: "column-reverse" },
+  footerButtonCompact: { width: "100%" },
   refreshButton: {
     minHeight: 40,
     flexDirection: "row",

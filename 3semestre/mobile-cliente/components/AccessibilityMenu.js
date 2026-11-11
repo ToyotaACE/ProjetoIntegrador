@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { useAccessibility } from "../contexts/AccessibilityContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { translateText } from "../contexts/translations";
 
 const languages = [
@@ -32,6 +33,7 @@ export default function AccessibilityMenu() {
   const [open, setOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const { settings, updateSetting, resetSettings, getReadableText } = useAccessibility();
+  const { theme } = useTheme();
   const japanese = settings.language === "ja-JP";
   const label = (pt, ja) => japanese ? ja : translateText(pt, settings.language);
 
@@ -67,9 +69,9 @@ export default function AccessibilityMenu() {
         accessibilityRole="button"
         accessibilityLabel={label("Abrir acessibilidade", "アクセシビリティを開く")}
         onPress={() => setOpen(true)}
-        style={styles.floatingButton}
+        style={[styles.headerButton, { backgroundColor: theme.box }]}
       >
-        <Ionicons name="accessibility" size={25} color="#fff" />
+        <Ionicons name="accessibility" size={21} color={theme.text} />
       </TouchableOpacity>
 
       <Modal
@@ -196,21 +198,13 @@ export default function AccessibilityMenu() {
 }
 
 const styles = StyleSheet.create({
-  floatingButton: {
-    position: "absolute",
-    left: 18,
-    bottom: 84,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+  headerButton: {
+    width: 36,
+    height: 36,
+    marginLeft: 5,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#d71920",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
   },
   modalRoot: { flex: 1, justifyContent: "flex-end", padding: 14 },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.55)" },
