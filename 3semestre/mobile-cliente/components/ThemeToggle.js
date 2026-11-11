@@ -13,7 +13,7 @@ export default function ThemeToggle() {
       accessibilityRole="button"
       accessibilityLabel={translateText(dark ? "Ativar tema claro" : "Ativar tema escuro", settings.language)}
       onPress={toggleTheme}
-      style={[styles.button, { backgroundColor: theme.card }]}
+      style={[styles.button, { backgroundColor: theme.box }]}
     >
       <Ionicons
         name={dark ? "sunny" : "moon"}
@@ -26,11 +26,11 @@ export default function ThemeToggle() {
 
 const styles = StyleSheet.create({
   button: {
-    position: "absolute",
-    top: 10,
-    right: 15,
-    padding: 10,
-    borderRadius: 50,
-    elevation: 5,
+    width: 36,
+    height: 36,
+    marginLeft: 5,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

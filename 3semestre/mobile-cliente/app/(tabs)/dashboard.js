@@ -18,8 +18,8 @@ import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { formatCurrency } from "../../contexts/formatters";
 
-// Imagens locais dentro de app/image
-import carroToyota from "../image/carro toyota.jpg";
+// Imagens locais com transparência para combinar com o tema dos cards.
+import corolla from "../../assets/corolla.png";
 import yarisHatch from "../image/yaris.png";
 import yarisCross from "../image/yarisseda.png";
 import sw4 from "../image/sw4.png";
@@ -63,7 +63,7 @@ function getVehicleImage(vehicle) {
     return sw4;
   }
 
-  return carroToyota;
+  return corolla;
 }
 
 function getVehicleProgress(vehicle) {
@@ -141,12 +141,18 @@ function getProgressColor(progress, theme) {
   return theme.primary;
 }
 
-function getNextReview(vehicle) {
-  return (
-    vehicle?.dataProximaRevisao ||
-    vehicle?.proximaRevisao ||
-    "Não informada"
+function getNextReview(vehicle, language) {
+  const value = vehicle?.dataProximaRevisao || vehicle?.proximaRevisao;
+  if (!value) return "Não informada";
+
+  const date = new Date(
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? `${value}T00:00:00`
+      : value,
   );
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(language);
 }
 
 function getInstallmentValue(vehicle) {
@@ -164,7 +170,7 @@ function getWarrantyStatus(vehicle) {
 export default function Dashboard() {
   const { user } = useAuth();
   const { settings } = useAccessibility();
-  const { theme } = useTheme();
+  const { theme, dark } = useTheme();
   const router = useRouter();
 
   const [client, setClient] = useState(null);
@@ -305,7 +311,7 @@ export default function Dashboard() {
         <View style={styles.headerTop}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: theme.text }]}>
-              Olá, {clientName} 👋
+              Olá, {clientName}
             </Text>
 
             <Text style={[styles.subtitle, { color: theme.subtext }]}>
@@ -328,7 +334,15 @@ export default function Dashboard() {
 
       {selectedVehicle ? (
         <>
-          <View style={[styles.heroCard, { backgroundColor: theme.card }]}>
+          <View
+            style={[
+              styles.heroCard,
+              {
+                backgroundColor: dark ? "#262626" : theme.card,
+                borderColor: theme.box,
+              },
+            ]}
+          >
             <View style={styles.heroInfo}>
               <View style={styles.heroLabelRow}>
                 <Text style={[styles.heroLabel, { color: theme.primary }]}>
@@ -349,7 +363,7 @@ export default function Dashboard() {
                 {vehicleName}
               </Text>
 
-              <Text style={[styles.heroSub, { color: theme.subtext }]}>
+              <Text style={[styles.heroSub, { color: dark ? "#d4d4d8" : theme.subtext }]}>
                 {getVehicleYear(selectedVehicle)} •{" "}
                 {getVehicleColor(selectedVehicle)}
               </Text>
@@ -395,7 +409,7 @@ export default function Dashboard() {
 
               <View style={styles.stageBox}>
                 <View>
-                  <Text style={[styles.stageLabel, { color: theme.subtext }]}>
+                  <Text style={[styles.stageLabel, { color: dark ? "#d4d4d8" : theme.subtext }]}>
                     Etapa atual
                   </Text>
 
@@ -459,7 +473,12 @@ export default function Dashboard() {
               </View>
             </View>
 
-            <View style={styles.heroImageArea}>
+            <View
+              style={[
+            styles.heroImageArea,
+            { backgroundColor: dark ? "#1f1f1f" : theme.box },
+              ]}
+            >
               <Image
                 source={getVehicleImage(selectedVehicle)}
                 style={styles.heroImage}
@@ -490,7 +509,7 @@ export default function Dashboard() {
               theme={theme}
               icon="construct-outline"
               title="Próxima revisão"
-              value={getNextReview(selectedVehicle)}
+              value={getNextReview(selectedVehicle, settings.language)}
               description="garantia ativa"
             />
 
@@ -786,7 +805,6 @@ const styles = StyleSheet.create({
 
   heroImageArea: {
     minHeight: 180,
-    backgroundColor: "rgba(255,255,255,0.05)",
     alignItems: "center",
     justifyContent: "center",
     padding: 12,

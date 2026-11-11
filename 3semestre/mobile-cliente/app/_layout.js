@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { PurchasesProvider } from "../contexts/PurchasesContext";
 import { AccessibilityProvider, useAccessibility } from "../contexts/AccessibilityContext";
-import AccessibilityMenu from "../components/AccessibilityMenu";
 
 function RootNavigator() {
   const { isAuthenticated, loadingAuth } = useAuth();
@@ -55,11 +54,6 @@ function RootNavigator() {
   );
 }
 
-function AccessibilityControls() {
-  const { hydrated } = useAccessibility();
-  return hydrated ? <AccessibilityMenu /> : null;
-}
-
 export default function Layout() {
   return (
     <AccessibilityProvider>
@@ -67,7 +61,6 @@ export default function Layout() {
         <ThemeProvider>
           <PurchasesProvider>
             <RootNavigator />
-            <AccessibilityControls />
           </PurchasesProvider>
         </ThemeProvider>
       </AuthProvider>

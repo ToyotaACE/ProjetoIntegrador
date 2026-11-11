@@ -3,13 +3,16 @@ import {
   View,
   TouchableOpacity,
   Image,
-  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { LocalizedText as Text, LocalizedTextInput as TextInput } from "../components/LocalizedText";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 import logoT from "../assets/logoT.png";
 
@@ -24,6 +27,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
+  const { theme, dark } = useTheme();
   const router = useRouter();
 
   const handleRegister = async () => {
@@ -82,63 +86,90 @@ export default function RegisterPage() {
   
 
   return (
-    <ImageBackground
-      source={{
-        uri: "https://mir-s3-cdn-cf.behance.net/project_modules/fs/c84ab249239255.56085275bc31a.png",
-      }}
-      style={styles.background}
-      resizeMode="cover"
+    <KeyboardAvoidingView
+      style={[styles.background, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.container}>
-        <View style={styles.card}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.card, borderColor: theme.box },
+          ]}
+        >
           <Image source={logoT} style={styles.logo} />
-
-          <Text style={styles.title}>Criar Conta</Text>
-
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.text }]}>Criar Conta</Text>
+          <Text style={[styles.subtitle, { color: theme.subtext }]}>
             Cadastre-se para acompanhar seu veículo
           </Text>
 
           <TextInput
             placeholder="Seu nome"
-            placeholderTextColor="#ccc"
+            placeholderTextColor={theme.muted}
             value={name}
             onChangeText={setName}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: dark ? "#141414" : "#f5f5f5",
+                borderColor: theme.box,
+                color: theme.text,
+              },
+            ]}
           />
-
           <TextInput
             placeholder="seu@email.com"
-            placeholderTextColor="#ccc"
+            placeholderTextColor={theme.muted}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: dark ? "#141414" : "#f5f5f5",
+                borderColor: theme.box,
+                color: theme.text,
+              },
+            ]}
           />
-
           <TextInput
             placeholder="Senha"
-            placeholderTextColor="#ccc"
+            placeholderTextColor={theme.muted}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: dark ? "#141414" : "#f5f5f5",
+                borderColor: theme.box,
+                color: theme.text,
+              },
+            ]}
           />
-
           <TextInput
             placeholder="Confirmar senha"
-            placeholderTextColor="#ccc"
+            placeholderTextColor={theme.muted}
             secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: dark ? "#141414" : "#f5f5f5",
+                borderColor: theme.box,
+                color: theme.text,
+              },
+            ]}
           />
-
           {error ? <Text style={styles.error}>{error}</Text> : null}
-
           <TouchableOpacity
-            style={[styles.button, loading && { opacity: 0.6 }]}
+            style={[styles.button, { backgroundColor: theme.primary }, loading && { opacity: 0.6 }]}
             onPress={handleRegister}
             disabled={loading}
           >
@@ -148,94 +179,77 @@ export default function RegisterPage() {
               <Text style={styles.buttonText}>Criar conta</Text>
             )}
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => router.replace("/login")}>
-            <Text style={styles.link}>
+            <Text style={[styles.link, { color: theme.subtext }]}>
               Já tem conta?{" "}
-              <Text style={styles.linkBold}>Entrar</Text>
+              <Text style={[styles.linkBold, { color: theme.primary }]}>Entrar</Text>
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ImageBackground>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-
+  background: { flex: 1 },
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 16,
+    padding: 18,
   },
-
   card: {
     width: "100%",
     maxWidth: 400,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 16,
+    borderWidth: 1,
+    borderRadius: 20,
     padding: 20,
   },
-
   logo: {
-    width: 80,
-    height: 80,
+    width: 54,
+    height: 54,
     alignSelf: "center",
-    marginBottom: 10,
+    marginBottom: 14,
     resizeMode: "contain",
   },
-
   title: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 23,
+    fontWeight: "800",
     textAlign: "center",
   },
-
   subtitle: {
-    color: "#ddd",
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: "center",
+    marginTop: 6,
     marginBottom: 20,
   },
-
   input: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    padding: 12,
-    borderRadius: 8,
-    color: "#fff",
-    marginBottom: 12,
+    minHeight: 50,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginBottom: 11,
+    fontSize: 14,
   },
-
   button: {
-    backgroundColor: "#e11d48",
+    minHeight: 50,
     padding: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    justifyContent: "center",
+    marginTop: 3,
   },
-
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-
+  buttonText: { color: "#fff", fontWeight: "800" },
   link: {
-    color: "#fff",
     textAlign: "center",
-    marginTop: 15,
+    marginTop: 18,
+    fontSize: 12,
   },
-
-  linkBold: {
-    fontWeight: "bold",
-    textDecorationLine: "underline",
-  },
-
+  linkBold: { fontWeight: "800" },
   error: {
-    color: "#ff4d4d",
+    color: "#ef4444",
     textAlign: "center",
     marginBottom: 10,
   },

@@ -380,18 +380,18 @@ const FinancingPage = () => {
                 />
               </div>
 
-              <Card className="bg-white dark:bg-red-600 border shadow-sm">
+              <Card className="bg-white dark:bg-zinc-800 border shadow-sm">
                 <CardHeader>
                   <CardTitle>Pagamento simulado</CardTitle>
                 </CardHeader>
 
                 <CardContent className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Próxima parcela</p>
+                    <p className="text-sm text-gray-500 dark:text-zinc-300">Próxima parcela</p>
 
                     <p className="text-2xl font-bold">{fmt(valorParcela)}</p>
 
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-zinc-300">
                       Escolha a forma de pagamento e confirme para dar baixa na
                       parcela.
                     </p>

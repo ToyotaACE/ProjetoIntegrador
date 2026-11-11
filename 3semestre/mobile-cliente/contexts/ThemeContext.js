@@ -4,25 +4,25 @@ const ThemeContext = createContext();
 
 // 🎨 TEMAS FICAM AQUI
 const darkTheme = {
-  background: "#0a0a0a",
-  card: "#1a1a1a",
-  box: "#222",
+  background: "#121212",
+  card: "#1c1c1c",
+  box: "#292929",
   text: "#fff",
-  subtext: "#aaa",
-  muted: "#666",
-  primary: "#e11d48",
-  progressBg: "#333"
+  subtext: "#b8b8b8",
+  muted: "#777",
+  primary: "#eb0a1e",
+  progressBg: "#383838"
 };
 
 const lightTheme = {
-  background: "#f5f5f5",
+  background: "#f4f4f4",
   card: "#ffffff",
-  box: "#f0f0f0",
-  text: "#000",
-  subtext: "#555",
-  muted: "#888",
-  primary: "#e11d48",
-  progressBg: "#ddd"
+  box: "#eeeeee",
+  text: "#171717",
+  subtext: "#5f5f5f",
+  muted: "#858585",
+  primary: "#eb0a1e",
+  progressBg: "#dedede"
 };
 
 export const ThemeProvider = ({ children }) => {

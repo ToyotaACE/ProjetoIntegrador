@@ -2038,10 +2038,115 @@ export const translationSupplement: Record<
     "es-ES": "Seguridad de la cuenta",
     "ja-JP": "アカウントのセキュリティ",
   },
+  "Acompanhe o progresso das etapas de produção em tempo real": {
+    "en-US": "Track production progress in real time",
+    "es-ES": "Sigue el progreso de producción en tiempo real",
+    "ja-JP": "生産工程の進捗をリアルタイムで確認できます",
+  },
+  "Atualizar Status": {
+    "en-US": "Refresh status",
+    "es-ES": "Actualizar estado",
+    "ja-JP": "状況を更新",
+  },
+  "Automático": {
+    "en-US": "Automatic",
+    "es-ES": "Automático",
+    "ja-JP": "オートマチック",
+  },
+  "Concluído": {
+    "en-US": "Completed",
+    "es-ES": "Completado",
+    "ja-JP": "完了",
+  },
+  "Data do Pedido": {
+    "en-US": "Order date",
+    "es-ES": "Fecha del pedido",
+    "ja-JP": "注文日",
+  },
+  "Enviado para a concessionária.": {
+    "en-US": "Sent to the dealership.",
+    "es-ES": "Enviado al concesionario.",
+    "ja-JP": "販売店へ輸送中です。",
+  },
+  "Flex": {
+    "en-US": "Flex-fuel",
+    "es-ES": "Flex",
+    "ja-JP": "フレックス燃料",
+  },
+  "Motor 2.0 Flex": {
+    "en-US": "2.0 Flex-fuel engine",
+    "es-ES": "Motor 2.0 Flex",
+    "ja-JP": "2.0 フレックス燃料エンジン",
+  },
+  "Número do pedido": {
+    "en-US": "Order number",
+    "es-ES": "Número del pedido",
+    "ja-JP": "注文番号",
+  },
+  "Prata": {
+    "en-US": "Silver",
+    "es-ES": "Plateado",
+    "ja-JP": "シルバー",
+  },
+  "Produto em processo de acabamento.": {
+    "en-US": "Vehicle is in the finishing stage.",
+    "es-ES": "El vehículo está en la etapa de acabado.",
+    "ja-JP": "車両の仕上げ工程中です。",
+  },
+  "Produto em processo de fabricação.": {
+    "en-US": "Vehicle is being manufactured.",
+    "es-ES": "El vehículo está en proceso de fabricación.",
+    "ja-JP": "車両を製造中です。",
+  },
+  "Progresso Geral": {
+    "en-US": "Overall progress",
+    "es-ES": "Progreso general",
+    "ja-JP": "全体の進捗",
+  },
+  "Qualidade sendo verificada.": {
+    "en-US": "Quality inspection in progress.",
+    "es-ES": "Se está verificando la calidad.",
+    "ja-JP": "品質検査中です。",
+  },
+  "Seu Pedido": {
+    "en-US": "Your order",
+    "es-ES": "Tu pedido",
+    "ja-JP": "ご注文",
+  },
+  "Seu pedido está pronto para ser retirado.": {
+    "en-US": "Your vehicle is ready for pickup.",
+    "es-ES": "Tu vehículo está listo para recoger.",
+    "ja-JP": "お車をお受け取りいただけます。",
+  },
+  "Seu pedido foi registrado com sucesso.": {
+    "en-US": "Your order has been placed successfully.",
+    "es-ES": "Tu pedido se registró correctamente.",
+    "ja-JP": "ご注文が正常に登録されました。",
+  },
+  "Você será notificado em todas as atualizações do seu pedido.": {
+    "en-US": "You will be notified about all updates to your order.",
+    "es-ES": "Recibirás notificaciones sobre todas las actualizaciones de tu pedido.",
+    "ja-JP": "ご注文に関するすべての更新をお知らせします。",
+  },
+  "Vermelho": {
+    "en-US": "Red",
+    "es-ES": "Rojo",
+    "ja-JP": "赤",
+  },
+  "Selecione o serviço": {
+    "en-US": "Select a service",
+    "es-ES": "Selecciona un servicio",
+    "ja-JP": "サービスを選択",
+  },
   "Selecione o tipo": {
     "en-US": "Select a type",
     "es-ES": "Selecciona un tipo",
     "ja-JP": "種類を選択",
+  },
+  "Selecione um veículo": {
+    "en-US": "Select a vehicle",
+    "es-ES": "Selecciona un vehículo",
+    "ja-JP": "車両を選択",
   },
   "Selecione um horário": {
     "en-US": "Select a time",
@@ -2082,6 +2187,26 @@ export const translationSupplement: Record<
     "en-US": "Select a payment method.",
     "es-ES": "Selecciona un método de pago.",
     "ja-JP": "お支払い方法を選択してください。",
+  },
+  "Selecionar concessionária": {
+    "en-US": "Select a dealership",
+    "es-ES": "Seleccionar concesionario",
+    "ja-JP": "販売店を選択",
+  },
+  "Selecionar serviço": {
+    "en-US": "Select a service",
+    "es-ES": "Seleccionar servicio",
+    "ja-JP": "サービスを選択",
+  },
+  "Selecionar veículo": {
+    "en-US": "Select a vehicle",
+    "es-ES": "Seleccionar vehículo",
+    "ja-JP": "車両を選択",
+  },
+  "Selecionar horário disponível": {
+    "en-US": "Select an available time",
+    "es-ES": "Seleccionar horario disponible",
+    "ja-JP": "空いている時間を選択",
   },
   "Sem dados disponíveis.": {
     "en-US": "No data available.",

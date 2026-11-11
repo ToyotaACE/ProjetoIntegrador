@@ -137,7 +137,7 @@ export default function FinancingPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { settings } = useAccessibility();
-  const { theme } = useTheme();
+  const { theme, dark } = useTheme();
   const { vehicleId: requestedVehicleId } = useLocalSearchParams();
   const requestedVehicleIdString = Array.isArray(requestedVehicleId)
     ? requestedVehicleId[0]
@@ -606,13 +606,21 @@ export default function FinancingPage() {
             </View>
           </View>
 
-          <View style={[styles.paymentCard, { backgroundColor: theme.card }]}>
+          <View
+            style={[
+              styles.paymentCard,
+              {
+                backgroundColor: dark ? "#262626" : theme.card,
+                borderColor: theme.box,
+              },
+            ]}
+          >
             <View>
               <Text style={[styles.paymentTitle, { color: theme.text }]}>
                 Pagamento simulado
               </Text>
 
-              <Text style={[styles.paymentSub, { color: theme.subtext }]}>
+              <Text style={[styles.paymentSub, { color: dark ? "#d4d4d8" : theme.subtext }]}>
                 Próxima parcela
               </Text>
 
@@ -620,7 +628,7 @@ export default function FinancingPage() {
                 {formatCurrency(valorParcela, settings.language)}
               </Text>
 
-              <Text style={[styles.paymentDescription, { color: theme.subtext }]}>
+              <Text style={[styles.paymentDescription, { color: dark ? "#d4d4d8" : theme.subtext }]}>
                 Escolha a forma de pagamento e confirme para dar baixa na parcela.
               </Text>
             </View>
