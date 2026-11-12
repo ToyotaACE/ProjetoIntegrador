@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 const STORAGE_KEY = "@toyota_ace:accessibility";
@@ -53,14 +53,14 @@ export function AccessibilityProvider({ children }) {
     setSettings((current) => ({ ...current, [key]: value }));
   }
 
-  function registerText(id, value) {
+  const registerText = useCallback((id, value) => {
     if (value) readableTexts.current.set(id, value);
     else readableTexts.current.delete(id);
-  }
+  }, []);
 
-  function getReadableText() {
+  const getReadableText = useCallback(() => {
     return Array.from(readableTexts.current.values()).join(". ");
-  }
+  }, []);
 
   return (
     <AccessibilityContext.Provider

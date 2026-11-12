@@ -19,7 +19,7 @@ import { translateText } from "../contexts/translations";
 const CHAT_URL = process.env.EXPO_PUBLIC_CHATBOT_URL || "http://localhost:5000/chat";
 const suggestions = ["garantia", "financiamento", "retirada"];
 
-export default function Chatbot() {
+export default function Chatbot({ inDrawer = false }) {
   const { settings } = useAccessibility();
   const { theme } = useTheme();
   const [visible, setVisible] = useState(false);
@@ -88,9 +88,18 @@ export default function Chatbot() {
         accessibilityLabel={translateText(visible ? "Fechar assistente Toyota ACE" : "Abrir assistente Toyota ACE", settings.language)}
         accessibilityRole="button"
         onPress={() => setVisible((current) => !current)}
-        style={[styles.headerButton, { backgroundColor: theme.box }]}
+        style={[
+          styles.headerButton,
+          inDrawer && styles.drawerButton,
+          { backgroundColor: theme.box },
+        ]}
       >
         <Ionicons name="chatbubble-ellipses" size={20} color={theme.text} />
+        {inDrawer ? (
+          <Text style={[styles.drawerButtonLabel, { color: theme.text }]}>
+            {translateText("Assistente Toyota", settings.language)}
+          </Text>
+        ) : null}
       </TouchableOpacity>
 
       <Modal
@@ -214,6 +223,20 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+  },
+  drawerButton: {
+    width: "100%",
+    height: 48,
+    marginLeft: 0,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    paddingHorizontal: 12,
+    gap: 11,
+    borderRadius: 12,
+  },
+  drawerButtonLabel: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   modalRoot: {
     flex: 1,

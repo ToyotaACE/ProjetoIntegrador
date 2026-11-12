@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Modal,
   ScrollView,
+  Alert,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,6 +15,7 @@ import {
 import { useAccessibility } from "../contexts/AccessibilityContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { translateText } from "../contexts/translations";
+import { findSpeechVoice, getSpeechLanguage } from "../utils/speechLanguage";
 
 const languages = [
   { id: "pt-BR", label: "Português (Brasil)" },
@@ -20,6 +23,53 @@ const languages = [
   { id: "es-ES", label: "Español" },
   { id: "ja-JP", label: "日本語" },
 ];
+
+const unavailableVoiceMessages = {
+  "pt-BR": {
+    title: "Voz indisponível",
+    message: "Não há uma voz instalada para este idioma. Baixe uma voz nas configurações de texto para fala do aparelho e tente novamente.",
+    emptyTitle: "Nada para ler",
+    emptyMessage: "Não há texto disponível nesta tela para leitura.",
+    loadTitle: "Leitura indisponível",
+    loadMessage: "Não foi possível carregar as vozes disponíveis. Tente novamente.",
+    stopMessage: "Não foi possível interromper a leitura. Tente novamente.",
+    failedTitle: "Falha na leitura",
+    failedMessage: "Não foi possível iniciar a leitura com a voz selecionada.",
+  },
+  "en-US": {
+    title: "Voice unavailable",
+    message: "No voice is installed for this language. Download a voice in your device's text-to-speech settings and try again.",
+    emptyTitle: "Nothing to read",
+    emptyMessage: "There is no text available to read on this screen.",
+    loadTitle: "Reading unavailable",
+    loadMessage: "Could not load available voices. Please try again.",
+    stopMessage: "Could not stop the reading. Please try again.",
+    failedTitle: "Reading failed",
+    failedMessage: "Could not start reading with the selected voice.",
+  },
+  "es-ES": {
+    title: "Voz no disponible",
+    message: "No hay una voz instalada para este idioma. Descarga una voz en los ajustes de conversión de texto a voz del dispositivo e inténtalo de nuevo.",
+    emptyTitle: "Nada que leer",
+    emptyMessage: "No hay texto disponible para leer en esta pantalla.",
+    loadTitle: "Lectura no disponible",
+    loadMessage: "No se pudieron cargar las voces disponibles. Inténtalo de nuevo.",
+    stopMessage: "No se pudo detener la lectura. Inténtalo de nuevo.",
+    failedTitle: "Error de lectura",
+    failedMessage: "No se pudo iniciar la lectura con la voz seleccionada.",
+  },
+  "ja-JP": {
+    title: "音声を利用できません",
+    message: "この言語の音声がインストールされていません。端末のテキスト読み上げ設定から音声をダウンロードして、もう一度お試しください。",
+    emptyTitle: "読み上げる内容がありません",
+    emptyMessage: "この画面に読み上げ可能なテキストがありません。",
+    loadTitle: "読み上げを利用できません",
+    loadMessage: "利用可能な音声を読み込めませんでした。もう一度お試しください。",
+    stopMessage: "読み上げを停止できませんでした。もう一度お試しください。",
+    failedTitle: "読み上げに失敗しました",
+    failedMessage: "選択した音声で読み上げを開始できませんでした。",
+  },
+};
 
 const colorFilters = [
   { id: "none", label: "Sem filtro", ja: "フィルターなし", color: "#71717a" },
@@ -29,37 +79,127 @@ const colorFilters = [
   { id: "tritanopia", label: "Tritanopia", ja: "3型色覚", color: "#d26e96" },
 ];
 
-export default function AccessibilityMenu() {
+export default function AccessibilityMenu({ inDrawer = false }) {
   const [open, setOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const { settings, updateSetting, resetSettings, getReadableText } = useAccessibility();
   const { theme } = useTheme();
+  const requestId = useRef(0);
+  const starting = useRef(false);
   const japanese = settings.language === "ja-JP";
   const label = (pt, ja) => japanese ? ja : translateText(pt, settings.language);
 
-  async function toggleReading() {
-    if (speaking) {
+  useEffect(() => {
+    requestId.current += 1;
+    starting.current = false;
+    setPreparing(false);
+    setSpeaking(false);
+    Speech.stop().catch((error) => {
+      console.error("Não foi possível parar a leitura ao trocar o idioma.", error);
+    });
+  }, [settings.language]);
+
+  useEffect(() => () => {
+    requestId.current += 1;
+    starting.current = false;
+    Speech.stop().catch((error) => {
+      console.error("Não foi possível parar a leitura ao fechar o menu.", error);
+    });
+  }, []);
+
+  async function stopReading() {
+    requestId.current += 1;
+    starting.current = false;
+    setPreparing(false);
+    setSpeaking(false);
+    try {
       await Speech.stop();
-      setSpeaking(false);
+    } catch (error) {
+      console.error("Não foi possível interromper a leitura.", error);
+      Alert.alert(
+        "Leitura indisponível",
+        unavailableVoiceMessages[settings.language].stopMessage,
+      );
+    }
+  }
+
+  async function toggleReading() {
+    if (speaking || preparing) {
+      await stopReading();
       return;
     }
 
+    if (starting.current) return;
+    starting.current = true;
+    const currentRequest = ++requestId.current;
     const content = getReadableText().replace(/\s+/g, " ").trim();
-    if (!content) return;
+    if (!content) {
+      starting.current = false;
+      const message = unavailableVoiceMessages[settings.language];
+      Alert.alert(message.emptyTitle, message.emptyMessage);
+      return;
+    }
+
+    setPreparing(true);
+    let voices;
+    try {
+      voices = await Speech.getAvailableVoicesAsync();
+    } catch (error) {
+      if (currentRequest !== requestId.current) return;
+      console.error("Não foi possível carregar as vozes de leitura.", error);
+      const message = unavailableVoiceMessages[settings.language];
+      Alert.alert(
+        message.loadTitle,
+        message.loadMessage,
+      );
+      starting.current = false;
+      setPreparing(false);
+      return;
+    }
+
+    if (currentRequest !== requestId.current) return;
+    const voice = findSpeechVoice(voices, settings.language);
+    if (!voice) {
+      const message = unavailableVoiceMessages[settings.language];
+      Alert.alert(message.title, message.message);
+      starting.current = false;
+      setPreparing(false);
+      return;
+    }
 
     setSpeaking(true);
-    Speech.speak(content, {
-      language: settings.language,
-      rate: 0.92,
-      onDone: () => setSpeaking(false),
-      onStopped: () => setSpeaking(false),
-      onError: () => setSpeaking(false),
-    });
+    setPreparing(false);
+    starting.current = false;
+    try {
+      Speech.speak(content, {
+        language: getSpeechLanguage(settings.language, Platform.OS),
+        voice: voice.identifier,
+        rate: 0.92,
+        onDone: () => {
+          if (currentRequest === requestId.current) setSpeaking(false);
+        },
+        onStopped: () => {
+          if (currentRequest === requestId.current) setSpeaking(false);
+        },
+        onError: (error) => {
+          if (currentRequest !== requestId.current) return;
+          console.error("Falha ao falar com a voz selecionada.", error);
+          setSpeaking(false);
+          const message = unavailableVoiceMessages[settings.language];
+          Alert.alert(message.failedTitle, message.failedMessage);
+        },
+      });
+    } catch (error) {
+      console.error("Não foi possível iniciar a leitura por voz.", error);
+      setSpeaking(false);
+      const message = unavailableVoiceMessages[settings.language];
+      Alert.alert(message.failedTitle, message.failedMessage);
+    }
   }
 
   function reset() {
-    Speech.stop();
-    setSpeaking(false);
+    stopReading();
     resetSettings();
   }
 
@@ -69,9 +209,18 @@ export default function AccessibilityMenu() {
         accessibilityRole="button"
         accessibilityLabel={label("Abrir acessibilidade", "アクセシビリティを開く")}
         onPress={() => setOpen(true)}
-        style={[styles.headerButton, { backgroundColor: theme.box }]}
+        style={[
+          styles.headerButton,
+          inDrawer && styles.drawerButton,
+          { backgroundColor: theme.box },
+        ]}
       >
         <Ionicons name="accessibility" size={21} color={theme.text} />
+        {inDrawer ? (
+          <Text style={[styles.drawerButtonLabel, { color: theme.text }]}>
+            {label("Acessibilidade", "アクセシビリティ")}
+          </Text>
+        ) : null}
       </TouchableOpacity>
 
       <Modal
@@ -105,10 +254,19 @@ export default function AccessibilityMenu() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-              <TouchableOpacity onPress={toggleReading} style={styles.readButton}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityState={{ busy: preparing }}
+                onPress={toggleReading}
+                style={styles.readButton}
+              >
                 <Ionicons name={speaking ? "volume-mute" : "volume-high"} size={19} color="#fff" />
                 <Text style={styles.readButtonText}>
-                  {speaking ? label("Parar leitura", "読み上げを停止") : label("Ler página", "ページを読み上げる")}
+                  {preparing
+                    ? label("Carregando voz...", "音声を読み込み中...")
+                    : speaking
+                      ? label("Parar leitura", "読み上げを停止")
+                      : label("Ler página", "ページを読み上げる")}
                 </Text>
               </TouchableOpacity>
 
@@ -205,6 +363,20 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+  },
+  drawerButton: {
+    width: "100%",
+    height: 48,
+    marginLeft: 0,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    paddingHorizontal: 12,
+    gap: 11,
+    borderRadius: 12,
+  },
+  drawerButtonLabel: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   modalRoot: { flex: 1, justifyContent: "flex-end", padding: 14 },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.55)" },
