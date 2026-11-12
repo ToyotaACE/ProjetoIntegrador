@@ -23,6 +23,7 @@ function loadModule(relativePath) {
 }
 
 const { translateChildren, translateText } = loadModule("contexts/translations.js");
+const { findSpeechVoice, getSpeechLanguage } = loadModule("utils/speechLanguage.js");
 const { formatCurrency } = loadModule("contexts/formatters.js");
 const {
   findNextReviewDate,
@@ -32,6 +33,42 @@ const {
   isPdfSelection,
   partitionDocumentsByType,
 } = loadModule("utils/vehicleDocuments.js");
+
+test("speech uses Android-compatible language codes without changing other platforms", () => {
+  assert.deepEqual(
+    ["pt-BR", "en-US", "es-ES", "ja-JP"].map((language) =>
+      getSpeechLanguage(language, "android"),
+    ),
+    ["pt", "en", "es", "ja"],
+  );
+  assert.equal(getSpeechLanguage("en-US", "ios"), "en-US");
+  assert.equal(getSpeechLanguage("es-ES", "web"), "es-ES");
+});
+
+test("speech selects an installed voice in the requested language", () => {
+  const voices = [
+    { identifier: "pt-BR-1", language: "pt-BR" },
+    { identifier: "en-GB-1", language: "en-GB" },
+    { identifier: "en-US-1", language: "en_US" },
+    { identifier: "es-ES-1", language: "es-ES" },
+    { identifier: "ja-JP-1", language: "ja-JP" },
+  ];
+
+  assert.equal(findSpeechVoice(voices, "en-US").identifier, "en-US-1");
+  assert.equal(findSpeechVoice(voices, "es-ES").identifier, "es-ES-1");
+  assert.equal(findSpeechVoice(voices, "ja-JP").identifier, "ja-JP-1");
+  assert.equal(findSpeechVoice(voices, "fr-FR"), null);
+});
+
+test("speech does not select a voice with a missing locale", () => {
+  assert.equal(
+    findSpeechVoice(
+      [{ identifier: "unknown", language: "" }, { identifier: "portuguese", language: "pt-BR" }],
+      "ja-JP",
+    ),
+    null,
+  );
+});
 
 test("the store label is available in all supported languages", () => {
   assert.equal(translateText("Loja", "pt-BR"), "Loja");

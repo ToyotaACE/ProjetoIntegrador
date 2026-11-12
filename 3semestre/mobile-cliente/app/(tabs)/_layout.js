@@ -1,9 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
+import { useState } from "react";
 import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
-import AccessibilityMenu from "../../components/AccessibilityMenu";
-import Chatbot from "../../components/Chatbot";
-import ThemeToggle from "../../components/ThemeToggle";
+import ClientDrawer from "../../components/ClientDrawer";
 import { useAuth } from "../../contexts/AuthContext";
 import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -22,9 +21,6 @@ function HeaderActions() {
 
   return (
     <View style={styles.headerActions}>
-      <ThemeToggle />
-      <AccessibilityMenu />
-      <Chatbot />
       <TouchableOpacity
         accessibilityRole="button"
         accessibilityLabel={translateText("Sair", settings.language)}
@@ -40,11 +36,12 @@ function HeaderActions() {
 export default function TabsLayout() {
   const { theme, dark } = useTheme();
   const { settings } = useAccessibility();
+  const [drawerVisible, setDrawerVisible] = useState(false);
   const tabLabels = {
-    "pt-BR": ["Início", "Veículo", "Financeiro", "Agenda", "Loja", "Perfil"],
-    "en-US": ["Home", "Vehicle", "Financing", "Schedule", "Shop", "Profile"],
-    "es-ES": ["Inicio", "Vehículo", "Financiación", "Agenda", "Tienda", "Perfil"],
-    "ja-JP": ["ホーム", "車両", "ローン", "予約", "ショップ", "プロフィール"],
+    "pt-BR": ["Início", "Veículo", "Financeiro", "Agenda", "Loja"],
+    "en-US": ["Home", "Vehicle", "Financing", "Schedule", "Shop"],
+    "es-ES": ["Inicio", "Vehículo", "Financiación", "Agenda", "Tienda"],
+    "ja-JP": ["ホーム", "車両", "ローン", "予約", "ショップ"],
   }[settings.language];
 
   return (
@@ -59,6 +56,16 @@ export default function TabsLayout() {
           headerTitleStyle: {
             fontWeight: "700",
           },
+          headerLeft: () => (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={translateText("Abrir menu de navegação", settings.language)}
+              onPress={() => setDrawerVisible(true)}
+              style={[styles.menuButton, { backgroundColor: theme.box }]}
+            >
+              <Ionicons name="menu-outline" size={23} color={theme.text} />
+            </TouchableOpacity>
+          ),
           headerRight: () => <HeaderActions />,
           headerRightContainerStyle: {
             paddingRight: 8,
@@ -130,13 +137,15 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: tabLabels[5],
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+          title: "Configurações",
+          href: null,
         }}
       />
       </Tabs>
+      <ClientDrawer
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+      />
     </View>
   );
 }
@@ -145,6 +154,14 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  menuButton: {
+    width: 36,
+    height: 36,
+    marginLeft: 12,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
   actionButton: {
     width: 36,

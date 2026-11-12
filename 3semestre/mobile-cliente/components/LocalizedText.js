@@ -1,5 +1,6 @@
 import { useEffect, useId } from "react";
 import { StyleSheet, Text as NativeText, TextInput as NativeTextInput } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 
 import { useAccessibility } from "../contexts/AccessibilityContext";
 import { translateChildren, translateText } from "../contexts/translations";
@@ -7,6 +8,9 @@ import { translateChildren, translateText } from "../contexts/translations";
 function plainText(children) {
   if (typeof children === "string" || typeof children === "number") return String(children);
   if (Array.isArray(children)) return children.map(plainText).join("");
+  if (children && typeof children === "object" && "props" in children) {
+    return plainText(children.props.children);
+  }
   return "";
 }
 
@@ -18,14 +22,16 @@ function scaledStyle(style, fontScale) {
 
 export function LocalizedText({ children, style, accessibilityLabel, ...props }) {
   const { settings, registerText } = useAccessibility();
+  const isFocused = useIsFocused();
   const id = useId();
   const translated = translateChildren(children, settings.language);
   const readingText = translateText(plainText(children), settings.language);
 
   useEffect(() => {
-    registerText(id, readingText);
+    if (isFocused) registerText(id, readingText);
+    else registerText(id, "");
     return () => registerText(id, "");
-  }, [id, readingText, registerText]);
+  }, [id, isFocused, readingText, registerText]);
 
   return (
     <NativeText
@@ -39,9 +45,18 @@ export function LocalizedText({ children, style, accessibilityLabel, ...props })
 }
 
 export function LocalizedTextInput({ placeholder, accessibilityLabel, style, ...props }) {
-  const { settings } = useAccessibility();
+  const { settings, registerText } = useAccessibility();
+  const isFocused = useIsFocused();
+  const id = useId();
   const defaultAccessibilityLabel =
     placeholder === "••••••••" ? "Senha" : placeholder;
+  const readingText = translateText(accessibilityLabel || defaultAccessibilityLabel || "", settings.language);
+
+  useEffect(() => {
+    if (isFocused) registerText(id, readingText);
+    else registerText(id, "");
+    return () => registerText(id, "");
+  }, [id, isFocused, readingText, registerText]);
 
   return (
     <NativeTextInput

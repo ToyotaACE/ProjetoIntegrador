@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useLocalizedAlert } from "../../components/LocalizedAlert";
+import ThemeToggle from "../../components/ThemeToggle";
 import { useTheme } from "../../contexts/ThemeContext";
 import { formatCurrency } from "../../contexts/formatters";
 
@@ -42,9 +43,41 @@ function getUserName(user) {
   return user?.nome || user?.name || user?.nomeCliente || "Cliente Toyota";
 }
 
+const settingsCopy = {
+  "pt-BR": {
+    title: "Configurações",
+    description: "Informações do seu perfil e preferências da aplicação.",
+    appearance: "Aparência",
+    theme: "Tema",
+    themeDescription: "Escolha como deseja visualizar a aplicação.",
+  },
+  "en-US": {
+    title: "Settings",
+    description: "Your profile information and app preferences.",
+    appearance: "Appearance",
+    theme: "Theme",
+    themeDescription: "Choose how you want the app to look.",
+  },
+  "es-ES": {
+    title: "Configuración",
+    description: "Información de tu perfil y preferencias de la aplicación.",
+    appearance: "Apariencia",
+    theme: "Tema",
+    themeDescription: "Elige cómo quieres ver la aplicación.",
+  },
+  "ja-JP": {
+    title: "設定",
+    description: "プロフィール情報とアプリの設定。",
+    appearance: "外観",
+    theme: "テーマ",
+    themeDescription: "アプリの表示方法を選択してください。",
+  },
+};
+
 export default function ProfilePage() {
   const { user, logout } = useAuth();
   const { settings } = useAccessibility();
+  const pageCopy = settingsCopy[settings.language] || settingsCopy["pt-BR"];
   const Alert = useLocalizedAlert();
   const { theme } = useTheme();
   const router = useRouter();
@@ -348,15 +381,32 @@ export default function ProfilePage() {
     >
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>
-          Perfil do Cliente
+          {pageCopy.title}
         </Text>
 
         <Text style={[styles.subtitle, { color: theme.subtext }]}>
-          Gerencie suas informações pessoais e segurança da conta.
+          {pageCopy.description}
         </Text>
       </View>
 
       <View style={styles.grid}>
+        <View style={[styles.card, { backgroundColor: theme.card }]}>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>
+            {pageCopy.appearance}
+          </Text>
+          <View style={styles.themeRow}>
+            <View style={styles.themeCopy}>
+              <Text style={[styles.securityTitle, { color: theme.text }]}>
+                {pageCopy.theme}
+              </Text>
+              <Text style={[styles.subinfo, { color: theme.subtext }]}>
+                {pageCopy.themeDescription}
+              </Text>
+            </View>
+            <ThemeToggle showLabel />
+          </View>
+        </View>
+
         <View style={[styles.card, { backgroundColor: theme.card }]}>
           <View style={styles.cardTitleRow}>
             <Text style={[styles.cardTitle, { color: theme.text }]}>
@@ -813,6 +863,16 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 14,
+  },
+  themeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 16,
+  },
+  themeCopy: {
+    flex: 1,
   },
 
   cardTitleRow: {
