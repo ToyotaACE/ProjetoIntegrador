@@ -29,20 +29,7 @@ npm install
 npm run dev
 ```
 
-## 5. Primeiro Acesso e Dados de Teste
-Após criar sua conta na interface (http://localhost:8080/cadastro), abra um **terceiro terminal (PowerShell)** e rode o script abaixo para cadastrar um veículo via API e vincular à sua conta (assumindo que seu `clienteId` é 1):
-```powershell
-$body = @{
-    clienteId = 1; marcaVeiculo = "Toyota"; modeloVeiculo = "Corolla Cross"; anoVeiculo = "2025"
-    corVeiculo = "Prata"; placaVeiculo = "ABC1023"; motorVeiculo = "2.0 Hybrid"; combustivelVeiculo = "Flex"
-    cambioVeiculo = "CVT"; statusVeiculo = "PEDIDO REALIZADO"; progressoVeiculo = 0; valorTotal = 183000
-    valorEntrada = 100000; valorFinanciado = 83000; parcelasTotais = 48; parcelasPagas = 0; parcelasRestantes = 48
-    valorParcela = 2200; taxaJuros = 1.5; statusFinanciamento = "ATIVO"; statusGarantia = "ATIVA"
-} | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri http://localhost:8083/api/veiculos -ContentType "application/json" -Body $body
-```
-
-<img width="1536" height="1024" alt="Guia Rápido Toyota ACE no Windows" src="https://github.com/user-attachments/assets/46aead41-3e14-4b48-b803-4610591b036c" />
+<img width="2752" height="1536" alt="Gemini_Generated_Image_cm50cfcm50cfcm50" src="https://github.com/user-attachments/assets/79c52979-dd74-4128-b9e0-dd5a6f690dd0" />
 
 <br>
 
@@ -89,7 +76,7 @@ Neste quadro, os tickets/cards estão organizados para refletir a delegação cl
 | Integrante | Responsabilidades |
 | --- | --- |
 | **Aline** | Documentação |
-| **Cecilia** | Documentação, Frontend, Figma |
+| **Cecilia** | Documentação, Frontend, Figma, Cibersegurança |
 | **Graciele** | Documentação |
 | **Hebert** | Frontend (web) |
 | **Isabelle** | Figma, Backend (mobile) |
