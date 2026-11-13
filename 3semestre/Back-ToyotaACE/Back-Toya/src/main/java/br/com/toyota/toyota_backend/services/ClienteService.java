@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -28,6 +29,7 @@ public class ClienteService {
     private final VeiculoRepository veiculoRepository;
     private final PasswordEncoder passwordEncoder;
     private final VehicleDocumentService vehicleDocumentService;
+    private final TentativasLoginService tentativasLoginService;
 
     // ============================================================
     // VALIDAÇÃO DO E-MAIL
@@ -54,13 +56,15 @@ public class ClienteService {
             VeiculoRepository veiculoRepository,
             MqttPedidoSimulatorService mqttPedidoSimulatorService,
             PasswordEncoder passwordEncoder,
-            VehicleDocumentService vehicleDocumentService
+            VehicleDocumentService vehicleDocumentService,
+            TentativasLoginService tentativasLoginService
     ) {
         this.clienteRepository = clienteRepository;
         this.veiculoRepository = veiculoRepository;
         this.mqttPedidoSimulatorService = mqttPedidoSimulatorService;
         this.passwordEncoder = passwordEncoder;
         this.vehicleDocumentService = vehicleDocumentService;
+        this.tentativasLoginService = tentativasLoginService;
     }
 
     // ============================================================
@@ -197,6 +201,14 @@ public class ClienteService {
 
         cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));
 
+        // ========================================================
+        // 8. SEGURANÇA: IMPEDIR SOBRESCREVER OUTRO CLIENTE
+        // Ignora "id" e "veiculos" enviados no JSON (mass assignment)
+        // ========================================================
+
+        cliente.setId(null);
+        cliente.setVeiculos(new ArrayList<>());
+
         return clienteRepository.save(cliente);
     }
 
@@ -215,12 +227,19 @@ public class ClienteService {
             );
         }
 
-        Cliente cliente = buscarPorEmail(email);
+        // Segurança: limite de tentativas contra força bruta
+        String chave = "cliente:" + email.trim().toLowerCase();
+        tentativasLoginService.verificarBloqueio(chave);
 
-        boolean senhaValida = passwordEncoder.matches(senha, cliente.getSenha());
+        // Segurança: e-mail inexistente responde igual a senha errada (401),
+        // para não revelar quais e-mails têm conta
+        Cliente cliente = clienteRepository.findByEmail(email).orElse(null);
+
+        boolean senhaValida = cliente != null
+                && passwordEncoder.matches(senha, cliente.getSenha());
 
         // Converte senhas antigas em texto puro no primeiro login válido.
-        if (!senhaValida && cliente.getSenha().equals(senha)) {
+        if (cliente != null && !senhaValida && cliente.getSenha().equals(senha)) {
             senhaValida = true;
             cliente.setSenha(passwordEncoder.encode(senha));
             clienteRepository.save(cliente);
@@ -228,11 +247,15 @@ public class ClienteService {
 
         if (!senhaValida) {
 
+            tentativasLoginService.registrarFalha(chave);
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "E-mail ou senha incorretos"
             );
         }
+
+        tentativasLoginService.registrarSucesso(chave);
 
         return cliente;
     }
@@ -248,8 +271,18 @@ public class ClienteService {
         if (dados.getNome() != null)
             cliente.setNome(dados.getNome());
 
-        if (dados.getEmail() != null)
+        // Segurança: e-mail duplicado responde 409 em vez de erro 500 com detalhes do banco
+        if (dados.getEmail() != null && !dados.getEmail().equals(cliente.getEmail())) {
+
+            if (clienteRepository.existsByEmail(dados.getEmail())) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "E-mail já cadastrado"
+                );
+            }
+
             cliente.setEmail(dados.getEmail());
+        }
 
         if (dados.getSenha() != null && !dados.getSenha().isBlank()) {
             if (!SENHA_PATTERN.matcher(dados.getSenha()).matches()) {

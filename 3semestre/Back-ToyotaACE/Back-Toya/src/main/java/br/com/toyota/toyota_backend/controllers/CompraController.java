@@ -5,8 +5,10 @@ import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.models.Compra;
 import br.com.toyota.toyota_backend.repositories.ClienteRepository;
 import br.com.toyota.toyota_backend.repositories.CompraRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +35,7 @@ public class CompraController {
     ) {
 
         Cliente cliente = clienteRepository.findById(request.getClienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
 
         Compra compra = new Compra();
 

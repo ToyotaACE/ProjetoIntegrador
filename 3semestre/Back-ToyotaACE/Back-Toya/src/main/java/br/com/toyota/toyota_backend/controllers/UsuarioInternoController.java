@@ -4,6 +4,7 @@ import br.com.toyota.toyota_backend.dto.UsuarioInternoLoginRequest;
 import br.com.toyota.toyota_backend.models.PerfilUsuario;
 import br.com.toyota.toyota_backend.models.UsuarioInterno;
 import br.com.toyota.toyota_backend.repositories.UsuarioInternoRepository;
+import br.com.toyota.toyota_backend.services.TentativasLoginService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,9 +20,14 @@ import static org.springframework.http.HttpStatus.*;
 public class UsuarioInternoController {
 
     private final UsuarioInternoRepository usuarioRepository;
+    private final TentativasLoginService tentativasLoginService;
 
-    public UsuarioInternoController(UsuarioInternoRepository usuarioRepository) {
+    public UsuarioInternoController(
+            UsuarioInternoRepository usuarioRepository,
+            TentativasLoginService tentativasLoginService
+    ) {
         this.usuarioRepository = usuarioRepository;
+        this.tentativasLoginService = tentativasLoginService;
     }
 
     @PostMapping("/login")
@@ -34,10 +40,14 @@ public class UsuarioInternoController {
                 ? ""
                 : loginRequest.getSenha();
 
-        UsuarioInterno usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "E-mail ou senha inválidos."));
+        // Segurança: limite de tentativas contra força bruta
+        String chave = "usuario:" + email;
+        tentativasLoginService.verificarBloqueio(chave);
 
-        if (!usuario.getSenha().equals(senha)) {
+        UsuarioInterno usuario = usuarioRepository.findByEmail(email).orElse(null);
+
+        if (usuario == null || !usuario.getSenha().equals(senha)) {
+            tentativasLoginService.registrarFalha(chave);
             throw new ResponseStatusException(UNAUTHORIZED, "E-mail ou senha inválidos.");
         }
 
@@ -45,6 +55,7 @@ public class UsuarioInternoController {
             throw new ResponseStatusException(FORBIDDEN, "Usuário desativado. Fale com o administrador.");
         }
 
+        tentativasLoginService.registrarSucesso(chave);
         return ResponseEntity.ok(usuario);
     }
 
