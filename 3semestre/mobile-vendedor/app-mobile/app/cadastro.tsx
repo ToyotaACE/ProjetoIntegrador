@@ -1,8 +1,6 @@
 import { useState, useRef } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ImageBackground,
   Image,
@@ -11,12 +9,17 @@ import {
   ScrollView,
   Keyboard,
   StyleSheet,
-  Alert,
 } from "react-native";
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
 import { useRouter } from "expo-router";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 
 export default function Cadastro() {
+  const Alert = useLocalizedAlert();
   const router = useRouter();
   const { colors, isDark } = useTheme();
 
@@ -132,13 +135,15 @@ export default function Cadastro() {
                   {
                     backgroundColor: colors.input,
                     color: colors.text,
-                    borderColor: erroEmail ? "#DC2626" : "transparent",
+                    borderColor: erroEmail ? colors.danger : "transparent",
                   },
                 ]}
               />
 
               {erroEmail && (
-                <Text style={styles.erroTexto}>{erroEmail}</Text>
+                <Text style={[styles.erroTexto, { color: colors.danger }]}>
+                  {erroEmail}
+                </Text>
               )}
 
               <TextInput
@@ -228,7 +233,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   erroTexto: {
-    color: "#DC2626",
     marginBottom: 10,
     fontSize: 12,
   },

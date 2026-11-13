@@ -3,15 +3,29 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { AppHeaderControls } from "@/components/AppHeaderControls";
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const { isAdmin } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerTitle: "Toyota ACE",
+        headerTitleStyle: {
+          color: colors.text,
+          fontSize: 16,
+          fontWeight: "700",
+        },
+        headerStyle: {
+          backgroundColor: colors.card,
+        },
+        headerShadowVisible: false,
+        headerRight: () => <AppHeaderControls />,
 
         tabBarStyle: {
           backgroundColor: colors.card,
@@ -37,7 +51,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("Home"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -47,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="veiculos"
         options={{
-          title: "Veículos",
+          title: t("Veículos"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="car-sport-outline" size={size} color={color} />
           ),
@@ -57,7 +71,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="agendamentos"
         options={{
-          title: "Agenda",
+          title: t("Agenda"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar-outline" size={size} color={color} />
           ),
@@ -67,7 +81,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="clientes"
         options={{
-          title: "Clientes",
+          title: t("Clientes"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),
@@ -77,7 +91,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="usuarios"
         options={{
-          title: "Usuários",
+          title: t("Usuários"),
           href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-add-outline" size={size} color={color} />
@@ -88,7 +102,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="perfil"
         options={{
-          title: "Perfil",
+          title: t("Perfil"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

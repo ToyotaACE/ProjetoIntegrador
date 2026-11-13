@@ -1,8 +1,6 @@
 import { useState, useRef } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ImageBackground,
   Image,
@@ -11,14 +9,20 @@ import {
   ScrollView,
   Keyboard,
   StyleSheet,
-  Alert,
+  type TextInput as NativeTextInput,
 } from "react-native";
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
 import { useRouter } from "expo-router";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 
 export default function Login() {
+  const Alert = useLocalizedAlert();
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const { login } = useAuth();
@@ -28,7 +32,7 @@ export default function Login() {
   const [erroEmail, setErroEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const senhaRef = useRef<TextInput>(null);
+  const senhaRef = useRef<NativeTextInput>(null);
 
   function validarEmail(valor: string) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -80,8 +84,9 @@ export default function Login() {
         keyboardShouldPersistTaps="handled"
       >
         <ImageBackground
-          source={require("@/assets/images/login-bg.jpg")}
+          source={require("@/assets/images/login-bg-web.png")}
           style={styles.background}
+          resizeMode="contain"
           blurRadius={isDark ? 6 : 2}
         >
           <View style={styles.container}>
@@ -128,13 +133,15 @@ export default function Login() {
                   {
                     backgroundColor: colors.input,
                     color: colors.text,
-                    borderColor: erroEmail ? "#DC2626" : "transparent",
+                    borderColor: erroEmail ? colors.danger : "transparent",
                   },
                 ]}
               />
 
               {erroEmail ? (
-                <Text style={styles.erroTexto}>{erroEmail}</Text>
+                <Text style={[styles.erroTexto, { color: colors.danger }]}>
+                  {erroEmail}
+                </Text>
               ) : null}
 
               <TextInput
@@ -183,7 +190,9 @@ export default function Login() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    width: "100%",
     justifyContent: "center",
+    backgroundColor: "#02070d",
   },
 
   container: {
@@ -238,7 +247,6 @@ const styles = StyleSheet.create({
   },
 
   erroTexto: {
-    color: "#DC2626",
     marginBottom: 10,
     fontSize: 12,
   },

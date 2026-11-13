@@ -1,9 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -11,14 +10,18 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 import { api, endpoints } from "@/services/api";
 
 LocaleConfig.locales["pt-br"] = {
@@ -71,6 +74,14 @@ type BackendCliente = {
   email: string;
   telefone?: string;
   cpf?: string;
+  veiculos?: BackendVeiculo[];
+};
+
+type BackendVeiculo = {
+  modeloVeiculo?: string;
+  marcaVeiculo?: string;
+  anoVeiculo?: string;
+  placaVeiculo?: string;
 };
 
 type BackendAgendamento = {
@@ -81,6 +92,7 @@ type BackendAgendamento = {
   observacao?: string;
   status?: string;
   cliente?: BackendCliente;
+  veiculo?: BackendVeiculo;
 };
 
 type Client = {
@@ -103,6 +115,8 @@ type Appointment = {
   time: string;
   client: string;
   clientEmail: string;
+  clientPhone: string;
+  vehicle: string;
   clientId?: number;
   type: AppointmentType;
   description: string;
@@ -219,6 +233,15 @@ function normalizeClient(cliente: BackendCliente): Client {
 
 function normalizeAppointment(item: BackendAgendamento): Appointment {
   const type = getTypeFromBackend(item.tipoServico);
+  const vehicleData = item.veiculo || item.cliente?.veiculos?.[0];
+  const vehicleParts = [
+    vehicleData?.marcaVeiculo,
+    vehicleData?.modeloVeiculo,
+    vehicleData?.anoVeiculo,
+  ].filter(Boolean);
+  const vehicle = vehicleParts.length
+    ? `${vehicleParts.join(" ")}${vehicleData?.placaVeiculo ? ` • ${vehicleData.placaVeiculo}` : ""}`
+    : "";
 
   return {
     id: item.id,
@@ -226,6 +249,8 @@ function normalizeAppointment(item: BackendAgendamento): Appointment {
     time: normalizeTime(item.horario),
     client: item.cliente?.nome || "Cliente não informado",
     clientEmail: item.cliente?.email || "",
+    clientPhone: item.cliente?.telefone || "",
+    vehicle,
     clientId: item.cliente?.id,
     type,
     description: item.observacao || "",
@@ -234,7 +259,33 @@ function normalizeAppointment(item: BackendAgendamento): Appointment {
 }
 
 export default function Agenda() {
+  const Alert = useLocalizedAlert();
   const { colors, isDark } = useTheme();
+  const { language, locale, t } = useLanguage();
+
+  useEffect(() => {
+    const calendarLocale = {
+      monthNames: Array.from({ length: 12 }, (_, month) =>
+        new Date(2024, month, 1).toLocaleDateString(locale, { month: "long" })
+      ),
+      monthNamesShort: Array.from({ length: 12 }, (_, month) =>
+        new Date(2024, month, 1).toLocaleDateString(locale, { month: "short" })
+      ),
+      dayNames: Array.from({ length: 7 }, (_, day) =>
+        new Date(2024, 0, 7 + day).toLocaleDateString(locale, {
+          weekday: "long",
+        })
+      ),
+      dayNamesShort: Array.from({ length: 7 }, (_, day) =>
+        new Date(2024, 0, 7 + day).toLocaleDateString(locale, {
+          weekday: "short",
+        })
+      ),
+      today: t("Hoje"),
+    };
+    LocaleConfig.locales[language] = calendarLocale;
+    LocaleConfig.defaultLocale = language;
+  }, [language, locale, t]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -468,7 +519,7 @@ export default function Agenda() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.calendarWrapper}>
           <Calendar
-            key={`calendar-${isDark}`}
+            key={`calendar-${isDark}-${language}`}
             current={selectedDate}
             onDayPress={(day) => setSelectedDate(day.dateString)}
             markedDates={markedDates}
@@ -504,7 +555,8 @@ export default function Agenda() {
             <Text style={[styles.title, { color: colors.text }]}>Agenda</Text>
 
             <Text style={[styles.subtitle, { color: colors.subtext }]}>
-              {formatDateBr(selectedDate)} • {dayAppointments.length} compromisso(s)
+              {formatDateBr(selectedDate)} • {dayAppointments.length}{" "}
+              {t("compromisso(s)")}
             </Text>
           </View>
 
@@ -583,6 +635,24 @@ export default function Agenda() {
                       </Text>
                     ) : null}
 
+                    {item.clientPhone ? (
+                      <View style={styles.contactRow}>
+                        <Ionicons name="call-outline" size={14} color={colors.subtext} />
+                        <Text style={[styles.contactText, { color: colors.subtext }]}>
+                          {item.clientPhone}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {item.vehicle ? (
+                      <View style={styles.contactRow}>
+                        <Ionicons name="car-outline" size={15} color={colors.subtext} />
+                        <Text style={[styles.contactText, { color: colors.subtext }]}>
+                          {item.vehicle}
+                        </Text>
+                      </View>
+                    ) : null}
+
                     <View style={styles.typeRow}>
                       <Ionicons
                         name={config.icon}
@@ -591,7 +661,7 @@ export default function Agenda() {
                       />
 
                       <Text style={[styles.typeText, { color: config.color }]}>
-                        {config.label}
+                        {t(config.label)}
                       </Text>
                     </View>
 
@@ -645,7 +715,7 @@ export default function Agenda() {
                 </Text>
 
                 <Text style={[styles.modalSubtitle, { color: colors.subtext }]}>
-                  Data selecionada: {formatDateBr(selectedDate)}
+                  {t("Data selecionada")}: {formatDateBr(selectedDate)}
                 </Text>
               </View>
 
@@ -1059,6 +1129,17 @@ const styles = StyleSheet.create({
   clientEmail: {
     fontSize: 12,
     marginTop: 2,
+  },
+
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 4,
+  },
+
+  contactText: {
+    fontSize: 12,
   },
 
   typeRow: {

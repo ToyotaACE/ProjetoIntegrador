@@ -8,11 +8,12 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
+import { AccessibleText as Text } from "@/components/AccessibleText";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { api, endpoints } from "@/services/api";
 
@@ -85,20 +86,36 @@ const catalogVehicles = [
 ];
 
 const salesData = [
-  { month: "Out", vendas: 8 },
-  { month: "Nov", vendas: 12 },
-  { month: "Dez", vendas: 15 },
-  { month: "Jan", vendas: 10 },
-  { month: "Fev", vendas: 14 },
-  { month: "Mar", vendas: 11 },
+  { month: "Out", vendas: 9800 },
+  { month: "Nov", vendas: 14200 },
+  { month: "Dez", vendas: 17100 },
+  { month: "Jan", vendas: 10800 },
+  { month: "Fev", vendas: 15000 },
+  { month: "Mar", vendas: 12900 },
 ];
+
+const SALES_BLUE_THRESHOLD = 15000;
+const AVERAGE_MONTHLY_SALES = 13300;
+const CHART_STEP = 5000;
+const LOW_SALES_COLOR = [203, 213, 225];
+const HIGH_SALES_COLOR = [30, 64, 175];
+
+function getSalesColor(sales: number) {
+  const normalizedSales =
+    Math.min(Math.max(sales, 0), SALES_BLUE_THRESHOLD) / SALES_BLUE_THRESHOLD;
+  const progress = Math.sqrt(normalizedSales);
+  const color = LOW_SALES_COLOR.map((channel, index) =>
+    Math.round(channel + (HIGH_SALES_COLOR[index] - channel) * progress)
+  );
+  return `rgb(${color.join(", ")})`;
+}
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
-function formatDateLong() {
-  return new Date().toLocaleDateString("pt-BR", {
+function formatDateLong(locale: string) {
+  return new Date().toLocaleDateString(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -121,7 +138,16 @@ function isCurrentMonth(dateString?: string) {
 
 export default function Dashboard() {
   const { colors } = useTheme();
+  const { t, locale } = useLanguage();
   const authContext = useAuth();
+  const compactNumberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        notation: "compact",
+        maximumFractionDigits: 1,
+      }),
+    [locale]
+  );
 
   const user = authContext?.user;
 
@@ -181,27 +207,29 @@ export default function Dashboard() {
   const metrics = useMemo(
     () => [
       {
-        label: "Vendas do mês",
+        label: t("Vendas do mês"),
         value: String(veiculosVendidos),
-        change: `${agendamentosHoje} agendamento(s) hoje`,
+        change: t("{count} agendamento(s) hoje", { count: agendamentosHoje }),
         icon: "trending-up-outline",
       },
       {
-        label: "Veículos disponíveis",
+        label: t("Veículos disponíveis"),
         value: String(catalogVehicles.length),
-        change: "no catálogo",
+        change: t("no catálogo"),
         icon: "car-sport-outline",
       },
       {
-        label: "Clientes ativos",
+        label: t("Clientes ativos"),
         value: String(totalClientes),
-        change: `${leads} lead(s)`,
+        change: t("{count} lead(s)", { count: leads }),
         icon: "people-outline",
       },
       {
-        label: "Taxa de conversão",
+        label: t("Taxa de conversão"),
         value: `${taxaConversao}%`,
-        change: `${clientesComVeiculo} cliente(s) com veículo`,
+        change: t("{count} cliente(s) com veículo", {
+          count: clientesComVeiculo,
+        }),
         icon: "radio-button-on-outline",
       },
     ],
@@ -212,10 +240,17 @@ export default function Dashboard() {
       leads,
       taxaConversao,
       clientesComVeiculo,
+      t,
     ]
   );
 
-  const chartMax = Math.max(...salesData.map((item) => item.vendas), 1);
+  const chartMax = Math.max(
+    SALES_BLUE_THRESHOLD + CHART_STEP,
+    Math.ceil(
+      Math.max(...salesData.map(({ vendas }) => vendas)) / CHART_STEP
+    ) * CHART_STEP
+  );
+  const chartTicks = [0, 5000, 10000, 15000, chartMax];
 
   if (loading) {
     return (
@@ -228,7 +263,7 @@ export default function Dashboard() {
         <ActivityIndicator size="large" color={colors.primary} />
 
         <Text style={[styles.loadingText, { color: colors.subtext }]}>
-          Carregando dashboard...
+          {t("Carregando dashboard...")}
         </Text>
       </SafeAreaView>
     );
@@ -244,11 +279,13 @@ export default function Dashboard() {
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Bom dia, {user?.nome || user?.name || "Vendedor"}
+            {t("Bom dia, {name}", {
+              name: user?.nome || t("Vendedor"),
+            })}
           </Text>
 
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
-            Toyota Centro · {formatDateLong()}
+            Toyota Centro · {formatDateLong(locale)}
           </Text>
         </View>
 
@@ -272,7 +309,7 @@ export default function Dashboard() {
                 <View
                   style={[
                     styles.metricIconBox,
-                    { backgroundColor: "rgba(230,0,18,0.12)" },
+                    { backgroundColor: colors.primarySoft },
                   ]}
                 >
                   <Ionicons
@@ -305,7 +342,7 @@ export default function Dashboard() {
         >
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Destaques da loja
+              {t("Destaques da loja")}
             </Text>
 
             <View style={styles.carouselButtons}>
@@ -382,7 +419,7 @@ export default function Dashboard() {
         >
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Resumo de hoje
+              {t("Resumo de hoje")}
             </Text>
 
             <Ionicons
@@ -404,7 +441,7 @@ export default function Dashboard() {
               </Text>
 
               <Text style={[styles.todayLabel, { color: colors.subtext }]}>
-                Agendamentos hoje
+                {t("Agendamentos hoje")}
               </Text>
             </View>
 
@@ -419,7 +456,7 @@ export default function Dashboard() {
               </Text>
 
               <Text style={[styles.todayLabel, { color: colors.subtext }]}>
-                Agendamentos no mês
+                {t("Agendamentos no mês")}
               </Text>
             </View>
           </View>
@@ -434,33 +471,96 @@ export default function Dashboard() {
             },
           ]}
         >
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Desempenho de vendas
-          </Text>
+          <View style={styles.chartHeader}>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                {t("Vendas Toyota Brasil (estimativa)")}
+              </Text>
+              <Text style={[styles.chartSubtitle, { color: colors.subtext }]}>
+                {t("Unidades vendidas por mês (dados ilustrativos)")}
+              </Text>
+            </View>
+          </View>
 
-          <View style={styles.customChart}>
+          <View style={styles.chartLegend}>
+            <Text style={[styles.legendLabel, { color: colors.subtext }]}>
+              {t("Até 5.000 vendas")}
+            </Text>
+            <View style={styles.legendGradient} accessibilityElementsHidden>
+              {Array.from({ length: 8 }, (_, index) => {
+                const color = LOW_SALES_COLOR.map((channel, colorIndex) =>
+                  Math.round(
+                    channel +
+                      (HIGH_SALES_COLOR[colorIndex] - channel) *
+                        (index / 7)
+                  )
+                );
+                return (
+                  <View
+                    key={index}
+                    style={[
+                      styles.legendSwatch,
+                      { backgroundColor: `rgb(${color.join(", ")})` },
+                    ]}
+                  />
+                );
+              })}
+            </View>
+            <Text style={[styles.legendLabel, { color: colors.subtext }]}>
+              {t("15.000+ vendas")}
+            </Text>
+          </View>
+
+          <View
+            style={styles.customChart}
+            accessibilityLabel={t("Gráfico de vendas mensais estimadas")}
+          >
             <View style={styles.chartScale}>
-              {[15, 10, 5, 0].map((value) => (
+              {[...chartTicks].reverse().map((value) => (
                 <Text
                   key={value}
                   style={[styles.scaleText, { color: colors.subtext }]}
                 >
-                  {value}
+                  {compactNumberFormatter.format(value)}
                 </Text>
               ))}
             </View>
 
             <View style={styles.chartContent}>
               <View style={styles.gridLines}>
-                {[0, 1, 2, 3].map((item) => (
+                {chartTicks.map((value) => (
                   <View
-                    key={item}
+                    key={value}
                     style={[
                       styles.gridLine,
-                      { backgroundColor: "rgba(255,255,255,0.06)" },
+                      {
+                        bottom: 21 + (value / chartMax) * 190,
+                        borderColor: colors.border,
+                      },
                     ]}
                   />
                 ))}
+              </View>
+
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.referenceLine,
+                  {
+                    bottom:
+                      21 + (AVERAGE_MONTHLY_SALES / chartMax) * 190,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.referenceLabel,
+                    { backgroundColor: colors.card },
+                  ]}
+                >
+                  Referência mensal: ~
+                  {compactNumberFormatter.format(AVERAGE_MONTHLY_SALES)} vendas
+                </Text>
               </View>
 
               <View style={styles.barsArea}>
@@ -468,14 +568,19 @@ export default function Dashboard() {
                   const heightPercent = (item.vendas / chartMax) * 100;
 
                   return (
-                    <View key={item.month} style={styles.barColumn}>
+                    <View
+                      key={item.month}
+                      style={styles.barColumn}
+                      accessible
+                      accessibilityLabel={`${item.month}: ${compactNumberFormatter.format(item.vendas)} vendas`}
+                    >
                       <View style={styles.barWrapper}>
                         <View
                           style={[
                             styles.bar,
                             {
                               height: `${heightPercent}%`,
-                              backgroundColor: colors.primary,
+                              backgroundColor: getSalesColor(item.vendas),
                             },
                           ]}
                         />
@@ -484,7 +589,7 @@ export default function Dashboard() {
                       <Text
                         style={[styles.barLabel, { color: colors.subtext }]}
                       >
-                        {item.month}
+                        {t(item.month)}
                       </Text>
                     </View>
                   );
@@ -608,6 +713,41 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  chartHeader: {
+    marginBottom: 4,
+  },
+
+  chartSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+
+  chartLegend: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 5,
+    marginTop: 12,
+    flexWrap: "wrap",
+  },
+
+  legendLabel: {
+    fontSize: 9,
+  },
+
+  legendGradient: {
+    width: 48,
+    height: 9,
+    flexDirection: "row",
+    overflow: "hidden",
+    borderRadius: 999,
+  },
+
+  legendSwatch: {
+    flex: 1,
+  },
+
   carouselButtons: {
     flexDirection: "row",
     gap: 6,
@@ -684,56 +824,61 @@ const styles = StyleSheet.create({
   },
 
   customChart: {
-    marginTop: 18,
+    marginTop: 16,
     flexDirection: "row",
   },
 
   chartScale: {
-    width: 26,
-    height: 200,
+    width: 38,
+    height: 220,
     justifyContent: "space-between",
-    paddingBottom: 22,
+    paddingBottom: 21,
   },
 
   scaleText: {
-    fontSize: 11,
+    fontSize: 9,
     textAlign: "right",
   },
 
   chartContent: {
     flex: 1,
     position: "relative",
+    height: 220,
   },
 
   gridLines: {
     position: "absolute",
-    left: 0,
+    left: 4,
     right: 0,
     top: 0,
-    height: 178,
-    justifyContent: "space-between",
+    bottom: 0,
   },
 
   gridLine: {
-    height: 1,
-    width: "100%",
+    position: "absolute",
+    left: 0,
+    right: 0,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderStyle: "dashed",
   },
 
   barsArea: {
-    height: 200,
+    height: 220,
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
-    paddingLeft: 8,
+    paddingLeft: 4,
   },
 
   barColumn: {
     flex: 1,
     alignItems: "center",
+    height: 220,
+    justifyContent: "flex-end",
   },
 
   barWrapper: {
-    height: 170,
+    height: 190,
     justifyContent: "flex-end",
     alignItems: "center",
     width: "100%",
@@ -748,6 +893,24 @@ const styles = StyleSheet.create({
   barLabel: {
     fontSize: 11,
     marginTop: 8,
+  },
+
+  referenceLine: {
+    position: "absolute",
+    left: 4,
+    right: 0,
+    borderTopWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#4F75A2",
+    zIndex: 2,
+    alignItems: "flex-end",
+  },
+
+  referenceLabel: {
+    color: "#4F75A2",
+    fontSize: 8,
+    paddingHorizontal: 3,
+    marginTop: -13,
   },
 
   chartHint: {

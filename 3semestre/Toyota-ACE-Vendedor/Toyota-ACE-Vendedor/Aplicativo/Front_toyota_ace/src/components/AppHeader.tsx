@@ -33,7 +33,8 @@ const AppHeader = () => {
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="text-muted-foreground hover:text-foreground"
+          aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
+          className="text-foreground hover:text-foreground"
         >
           {theme === "dark" ? (
             <Sun className="h-5 w-5" />

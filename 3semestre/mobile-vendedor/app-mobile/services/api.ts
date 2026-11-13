@@ -1,17 +1,15 @@
+import Constants from "expo-constants";
+import { Platform } from "react-native";
+
+const expoHost = Constants.expoConfig?.hostUri;
+const developmentHost = expoHost
+  ? new URL(`http://${expoHost}`).hostname
+  : null;
 const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || "http://localhost:8083/api";
-/*
-  IMPORTANTE:
-
-  Se estiver rodando no Expo Web ou emulador que acessa o localhost,
-  pode manter:
-
-  Se estiver rodando no celular físico pelo Expo Go,
-  troque localhost pelo IP da sua máquina na mesma rede.
-
-  Exemplo:
-  const API_BASE_URL = "http://192.168.0.15:8083/api";
-*/
+  process.env.EXPO_PUBLIC_API_URL ||
+  (Platform.OS !== "web" && developmentHost
+    ? `http://${developmentHost}:8083/api`
+    : "http://localhost:8083/api");
 
 type RequestOptions = RequestInit & {
   body?: BodyInit | null;

@@ -3,21 +3,24 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Linking,
   Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
 
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 import { api, endpoints } from "@/services/api";
 
 type BackendVeiculo = {
@@ -193,7 +196,9 @@ function normalizeClient(client: BackendCliente): Client {
 }
 
 export default function Clientes() {
+  const Alert = useLocalizedAlert();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
   const { width } = useWindowDimensions();
 
@@ -379,27 +384,46 @@ export default function Clientes() {
   }
 
   function deleteClient(client: Client) {
-    Alert.alert("Excluir cliente", `Deseja realmente excluir ${client.nome}?`, [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.delete<void>(`${endpoints.clientes}/${client.id}`);
-            await carregarClientes();
-          } catch (error: any) {
-            Alert.alert(
-              "Erro",
-              error?.message || "Não foi possível excluir o cliente."
-            );
-          }
+    const message = t(
+      "Confirma a exclusão de {name} e dos veículos, documentos, agendamentos e pedidos vinculados?",
+      { name: client.nome }
+    );
+
+    Alert.alert(
+      t("Excluir cliente"),
+      message,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.delete<void>(`${endpoints.clientes}/${client.id}`);
+              setClients((current) =>
+                current.filter(
+                  (currentClient) => currentClient.id !== client.id
+                )
+              );
+              Alert.alert(
+                t("Cliente excluído"),
+                t("O cliente {name} e seus dados vinculados foram excluídos.", {
+                  name: client.nome,
+                })
+              );
+            } catch (error: any) {
+              Alert.alert(
+                "Erro",
+                error?.message || "Não foi possível excluir o cliente."
+              );
+            }
+          },
+        },
+      ]
+    );
   }
 
   function callClient(client: Client) {
@@ -586,7 +610,7 @@ export default function Clientes() {
           <Text style={[styles.title, { color: colors.text }]}>Clientes</Text>
 
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
-            {clients.length} clientes cadastrados
+            {t("{count} clientes cadastrados", { count: clients.length })}
           </Text>
         </View>
 
@@ -643,7 +667,7 @@ export default function Clientes() {
               </View>
 
               <View style={styles.leadBadge}>
-                <Text style={styles.leadText}>{item.status}</Text>
+                <Text style={styles.leadText}>{t(item.status)}</Text>
               </View>
             </View>
 
@@ -852,7 +876,7 @@ export default function Clientes() {
                     <Text
                       style={[styles.vehicleStatus, { color: colors.primary }]}
                     >
-                      {vehicle.status}
+                      {t(vehicle.status)}
                     </Text>
 
                     <Text

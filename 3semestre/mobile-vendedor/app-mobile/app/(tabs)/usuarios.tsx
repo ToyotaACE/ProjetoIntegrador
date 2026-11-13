@@ -3,21 +3,23 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Switch,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { PerfilUsuario, UsuarioInterno, useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 import { api, endpoints } from "@/services/api";
 
 type UserForm = {
@@ -49,7 +51,9 @@ function getInitials(name: string) {
 }
 
 export default function Usuarios() {
+  const Alert = useLocalizedAlert();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { user, isAdmin, recarregarUsuarios } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -312,7 +316,7 @@ export default function Usuarios() {
           </Text>
 
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
-            {usuarios.length} usuário(s) interno(s)
+            {t("{count} usuário(s) interno(s)", { count: usuarios.length })}
           </Text>
         </View>
 
@@ -384,7 +388,7 @@ export default function Usuarios() {
                   </Text>
 
                   <Text style={[styles.userDate, { color: colors.subtext }]}>
-                    Criado em {formatDate(item.createdAt)}
+                    {t("Criado em")} {formatDate(item.createdAt)}
                   </Text>
                 </View>
               </View>
@@ -422,7 +426,7 @@ export default function Usuarios() {
                       },
                     ]}
                   >
-                    {item.perfil}
+                    {t(item.perfil === "ADMIN" ? "Administrador" : "Vendedor")}
                   </Text>
                 </View>
 
@@ -678,15 +682,30 @@ export default function Usuarios() {
                 </Text>
               </View>
 
-              <Switch
-                value={form.ativo}
-                onValueChange={(value) => setForm({ ...form, ativo: value })}
-                trackColor={{
-                  false: "#52525B",
-                  true: "rgba(230,0,18,0.35)",
+              <TouchableOpacity
+                accessibilityRole="switch"
+                accessibilityState={{ checked: form.ativo }}
+                accessibilityLabel="Usuário ativo"
+                onPress={() => setForm({ ...form, ativo: !form.ativo })}
+                style={{
+                  width: 50,
+                  height: 30,
+                  borderRadius: 15,
+                  padding: 3,
+                  justifyContent: "center",
+                  backgroundColor: form.ativo ? colors.danger : "#52525B",
                 }}
-                thumbColor={form.ativo ? colors.primary : "#A1A1AA"}
-              />
+              >
+                <View
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 12,
+                    backgroundColor: "#FFFFFF",
+                    alignSelf: form.ativo ? "flex-end" : "flex-start",
+                  }}
+                />
+              </TouchableOpacity>
             </View>
 
             <TouchableOpacity

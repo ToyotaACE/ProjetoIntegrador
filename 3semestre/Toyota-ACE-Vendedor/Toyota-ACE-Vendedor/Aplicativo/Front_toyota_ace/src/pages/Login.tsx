@@ -48,8 +48,8 @@ const Login = () => {
   return (
     <div className="w-full min-h-screen bg-[url('https://mir-s3-cdn-cf.behance.net/project_modules/fs/c84ab249239255.56085275bc31a.png')] bg-center bg-cover flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-4 right-4 z-20 flex items-center gap-1">
-          <AccessibilityControls />
-          <ThemeToggle />
+          <AccessibilityControls className="text-white hover:text-white" />
+          <ThemeToggle className="text-white hover:text-white" />
       </div>
 
       <div className="w-full max-w-md animate-fade-in backdrop-blur-xl bg-white/10 border border-white/20 rounded-xl shadow-2xl shadow-black/40 p-8">
@@ -79,7 +79,7 @@ const Login = () => {
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-black/80"
+              className="bg-black/80 text-white placeholder:text-white/60 border-white/70 focus-visible:ring-white"
             />
           </div>
 
@@ -94,7 +94,7 @@ const Login = () => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-black/80"
+                className="bg-black/80 text-white placeholder:text-white/60 border-white/70 focus-visible:ring-white"
             />
           </div>
 

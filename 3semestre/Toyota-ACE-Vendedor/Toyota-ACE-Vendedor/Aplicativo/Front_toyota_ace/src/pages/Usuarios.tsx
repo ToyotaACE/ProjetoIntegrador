@@ -496,6 +496,7 @@ const Usuarios = () => {
                 </div>
 
                 <Switch
+                  className="data-[state=checked]:!bg-red-600 data-[state=unchecked]:!bg-zinc-700 focus-visible:!ring-red-500"
                   checked={form.ativo}
                   onCheckedChange={(checked) =>
                     setForm({ ...form, ativo: checked })

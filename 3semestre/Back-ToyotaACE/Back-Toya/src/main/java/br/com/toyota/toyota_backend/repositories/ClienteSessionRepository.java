@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ClienteSessionRepository extends JpaRepository<ClienteSession, String> {
     Optional<ClienteSession> findByTokenHashAndExpiresAtAfter(String tokenHash, Instant now);
     long deleteByExpiresAtBefore(Instant now);
+    void deleteByClienteId(Long clienteId);
 }

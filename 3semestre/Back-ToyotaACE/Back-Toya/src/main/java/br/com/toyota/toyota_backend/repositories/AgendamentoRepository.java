@@ -15,6 +15,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
     List<Agendamento> findByClienteIdOrderByDataAscHorarioAsc(Long clienteId);
 
+    void deleteByClienteId(Long clienteId);
+
     List<Agendamento> findAllByOrderByDataAscHorarioAsc();
 
     boolean existsByDataAndHorario(LocalDate data, LocalTime horario);
