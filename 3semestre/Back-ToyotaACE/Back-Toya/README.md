@@ -27,8 +27,11 @@ Depois rode:
 
 ## Usuário de teste
 
-- Email: nastrisalesisabelle@gmail.com
-- Senha: 123456
+Para testar localmente, cadastre um cliente pela rota `POST /api/clientes/cadastro`
+(ou pelo front do cliente). A senha precisa ter no mínimo 8 caracteres, com letra
+maiúscula, letra minúscula, número e caractere especial.
+
+> Por segurança, não publique e-mails e senhas reais neste arquivo.
 
 ## Rotas principais
 
