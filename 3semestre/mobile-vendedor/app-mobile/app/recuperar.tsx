@@ -1,8 +1,6 @@
 import { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ImageBackground,
   KeyboardAvoidingView,
@@ -10,12 +8,17 @@ import {
   ScrollView,
   Keyboard,
   StyleSheet,
-  Alert,
 } from "react-native";
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
 import { useRouter } from "expo-router";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 
 export default function RecuperarSenha() {
+  const Alert = useLocalizedAlert();
   const router = useRouter();
   const { colors, isDark } = useTheme();
 
@@ -110,13 +113,15 @@ export default function RecuperarSenha() {
                   {
                     backgroundColor: colors.input,
                     color: colors.text,
-                    borderColor: erroEmail ? "#DC2626" : "transparent",
+                    borderColor: erroEmail ? colors.danger : "transparent",
                   },
                 ]}
               />
 
               {erroEmail ? (
-                <Text style={styles.erroTexto}>{erroEmail}</Text>
+                <Text style={[styles.erroTexto, { color: colors.danger }]}>
+                  {erroEmail}
+                </Text>
               ) : null}
 
               <TouchableOpacity
@@ -179,7 +184,6 @@ const styles = StyleSheet.create({
     
   },
   erroTexto: {
-    color: "#DC2626",
     marginBottom: 10,
     fontSize: 12,
   },

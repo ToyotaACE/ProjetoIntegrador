@@ -1,2 +1,2 @@
 ALTER TABLE agendamentos
-    ADD COLUMN concessionaria VARCHAR(255);
+    ADD COLUMN IF NOT EXISTS concessionaria VARCHAR(255);

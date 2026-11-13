@@ -4,12 +4,16 @@ import br.com.toyota.toyota_backend.dto.FinanciamentoRequest;
 import br.com.toyota.toyota_backend.dto.VeiculoRequest;
 import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.models.Veiculo;
+import br.com.toyota.toyota_backend.repositories.AgendamentoRepository;
 import br.com.toyota.toyota_backend.repositories.ClienteRepository;
+import br.com.toyota.toyota_backend.repositories.ClienteSessionRepository;
+import br.com.toyota.toyota_backend.repositories.CompraRepository;
 import br.com.toyota.toyota_backend.repositories.VeiculoRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -27,6 +31,9 @@ public class ClienteService {
     private final MqttPedidoSimulatorService mqttPedidoSimulatorService;
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
+    private final AgendamentoRepository agendamentoRepository;
+    private final CompraRepository compraRepository;
+    private final ClienteSessionRepository clienteSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final VehicleDocumentService vehicleDocumentService;
     private final TentativasLoginService tentativasLoginService;
@@ -54,6 +61,9 @@ public class ClienteService {
     public ClienteService(
             ClienteRepository clienteRepository,
             VeiculoRepository veiculoRepository,
+            AgendamentoRepository agendamentoRepository,
+            CompraRepository compraRepository,
+            ClienteSessionRepository clienteSessionRepository,
             MqttPedidoSimulatorService mqttPedidoSimulatorService,
             PasswordEncoder passwordEncoder,
             VehicleDocumentService vehicleDocumentService,
@@ -61,6 +71,9 @@ public class ClienteService {
     ) {
         this.clienteRepository = clienteRepository;
         this.veiculoRepository = veiculoRepository;
+        this.agendamentoRepository = agendamentoRepository;
+        this.compraRepository = compraRepository;
+        this.clienteSessionRepository = clienteSessionRepository;
         this.mqttPedidoSimulatorService = mqttPedidoSimulatorService;
         this.passwordEncoder = passwordEncoder;
         this.vehicleDocumentService = vehicleDocumentService;
@@ -376,8 +389,13 @@ public class ClienteService {
         veiculoRepository.delete(veiculo);
     }
 
+    @Transactional
     public void deletar(Long id) {
         Cliente cliente = buscarPorId(id);
+
+        agendamentoRepository.deleteByClienteId(id);
+        compraRepository.deleteByClienteId(id);
+        clienteSessionRepository.deleteByClienteId(id);
         cliente.getVeiculos().forEach(veiculo -> vehicleDocumentService.excluirTodosDoVeiculo(veiculo.getId()));
         clienteRepository.delete(cliente);
     }

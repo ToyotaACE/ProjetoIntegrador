@@ -3,21 +3,24 @@ import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
 
+import {
+  AccessibleText as Text,
+  AccessibleTextInput as TextInput,
+} from "@/components/AccessibleText";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
 import { api, endpoints } from "@/services/api";
 
 type BackendCliente = {
@@ -238,13 +241,18 @@ function normalizarClientes(lista: BackendCliente[]): ClienteOption[] {
 }
 
 export default function Veiculos() {
-  const { colors } = useTheme();
+  const Alert = useLocalizedAlert();
+  const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams();
 
   const clienteIdParam = params.clienteId ? Number(params.clienteId) : null;
 
   const numColumns = 2;
+  const selectedButtonBackground = isDark ? "#3F3F46" : "#E5E7EB";
+  const selectedButtonBorder = isDark ? "#71717A" : "#9CA3AF";
+  const selectedButtonText = isDark ? "#FFFFFF" : "#18181B";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -255,8 +263,10 @@ export default function Veiculos() {
   );
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [orderConfirmed, setOrderConfirmed] = useState(false);
 
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [clientSearchQuery, setClientSearchQuery] = useState("");
   const [selectedVersion, setSelectedVersion] = useState("");
   const [selectedColor, setSelectedColor] = useState("Branco");
   const [selectedSeat, setSelectedSeat] = useState("Tecido");
@@ -266,6 +276,21 @@ export default function Veiculos() {
   const [parcelasTotais, setParcelasTotais] = useState("48");
   const [parcelasPagas, setParcelasPagas] = useState("0");
   const [taxaJuros, setTaxaJuros] = useState("1,49");
+
+  const filteredClients = useMemo(() => {
+    const query = clientSearchQuery.trim().toLocaleLowerCase();
+
+    if (!query) {
+      return clients;
+    }
+
+    return clients.filter((client) =>
+      [client.nome, client.email, client.telefone, client.cpf]
+        .join(" ")
+        .toLocaleLowerCase()
+        .includes(query)
+    );
+  }, [clientSearchQuery, clients]);
 
   useFocusEffect(
     useCallback(() => {
@@ -284,8 +309,8 @@ export default function Veiculos() {
 
       if (clienteIdParam) {
         setSelectedClientId(clienteIdParam);
-      } else if (clientesNormalizados.length > 0) {
-        setSelectedClientId(clientesNormalizados[0].id);
+      } else {
+        setSelectedClientId(null);
       }
     } catch (error: any) {
       Alert.alert(
@@ -353,6 +378,7 @@ export default function Veiculos() {
   );
 
   function openConfigModal(vehicle: CatalogVehicle) {
+    setOrderConfirmed(false);
     setSelectedVehicle(vehicle);
     setSelectedVersion(vehicle.versions[0].name);
     setSelectedColor("Branco");
@@ -362,11 +388,10 @@ export default function Veiculos() {
     setParcelasTotais("48");
     setParcelasPagas("0");
     setTaxaJuros("1,49");
+    setClientSearchQuery("");
 
     if (clienteIdParam) {
       setSelectedClientId(clienteIdParam);
-    } else if (!selectedClientId && clients.length > 0) {
-      setSelectedClientId(clients[0].id);
     }
 
     setModalVisible(true);
@@ -443,11 +468,12 @@ export default function Veiculos() {
       await api.post(endpoints.veiculos, payload);
 
       Alert.alert(
-        "Pedido criado",
+        "Pedido confirmado",
         "O veículo foi vinculado ao cliente com sucesso."
       );
 
       setModalVisible(false);
+      setOrderConfirmed(true);
     } catch (error: any) {
       Alert.alert(
         "Erro",
@@ -544,7 +570,7 @@ export default function Veiculos() {
               </Text>
 
               <Text style={[styles.price, { color: colors.primary }]}>
-                A partir de {formatMoney(item.basePrice)}
+                {t("A partir de")} {formatMoney(item.basePrice)}
               </Text>
 
               <TouchableOpacity
@@ -613,37 +639,99 @@ export default function Veiculos() {
 
             <SectionTitle title="Cliente" color={colors.text} />
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.chipsRow}>
-                {clients.map((client) => {
+            <View
+              style={[
+                styles.clientSearch,
+                { backgroundColor: colors.input, borderColor: colors.border },
+              ]}
+            >
+              <Ionicons name="search-outline" size={19} color={colors.subtext} />
+              <TextInput
+                value={clientSearchQuery}
+                onChangeText={setClientSearchQuery}
+                placeholder={t("Buscar cliente por nome, e-mail ou telefone")}
+                placeholderTextColor={colors.subtext}
+                style={[styles.clientSearchInput, { color: colors.text }]}
+                autoCapitalize="none"
+                accessibilityLabel={t("Buscar cliente")}
+              />
+              {clientSearchQuery ? (
+                <TouchableOpacity
+                  onPress={() => setClientSearchQuery("")}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("Limpar busca")}
+                >
+                  <Ionicons
+                    name="close-circle"
+                    size={19}
+                    color={colors.subtext}
+                  />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            <ScrollView
+              style={[
+                styles.clientResults,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+            >
+              {filteredClients.length > 0 ? (
+                filteredClients.map((client) => {
                   const active = selectedClientId === client.id;
 
                   return (
                     <TouchableOpacity
                       key={client.id}
                       style={[
-                        styles.clientChip,
-                        {
-                          backgroundColor: active
-                            ? colors.primary
-                            : colors.card,
-                          borderColor: active ? colors.primary : colors.border,
-                        },
+                        styles.clientResult,
+                        { borderBottomColor: colors.border },
                       ]}
                       onPress={() => setSelectedClientId(client.id)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
                     >
-                      <Text
-                        style={[
-                          styles.clientChipText,
-                          { color: active ? "#fff" : colors.text },
-                        ]}
-                      >
-                        {client.nome}
-                      </Text>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            styles.clientResultName,
+                            { color: active ? colors.primary : colors.text },
+                          ]}
+                        >
+                          {client.nome}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.clientResultDetails,
+                            { color: colors.subtext },
+                          ]}
+                        >
+                          {client.email}
+                          {client.telefone ? ` • ${client.telefone}` : ""}
+                        </Text>
+                      </View>
+                      {active ? (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={20}
+                          color={colors.primary}
+                        />
+                      ) : null}
                     </TouchableOpacity>
                   );
-                })}
-              </View>
+                })
+              ) : (
+                <Text
+                  style={[
+                    styles.clientNoResults,
+                    { color: colors.subtext },
+                  ]}
+                >
+                  {t("Nenhum cliente encontrado")}
+                </Text>
+              )}
             </ScrollView>
 
             <SectionTitle title="Versão" color={colors.text} />
@@ -659,9 +747,9 @@ export default function Veiculos() {
                       styles.optionCard,
                       {
                         backgroundColor: active
-                          ? "rgba(230,0,18,0.15)"
+                          ? selectedButtonBackground
                           : colors.card,
-                        borderColor: active ? colors.primary : colors.border,
+                        borderColor: active ? selectedButtonBorder : colors.border,
                       },
                     ]}
                     onPress={() => setSelectedVersion(version.name)}
@@ -692,8 +780,8 @@ export default function Veiculos() {
                     style={[
                       styles.smallChip,
                       {
-                        backgroundColor: active ? colors.primary : colors.card,
-                        borderColor: active ? colors.primary : colors.border,
+                        backgroundColor: active ? selectedButtonBackground : colors.card,
+                        borderColor: active ? selectedButtonBorder : colors.border,
                       },
                     ]}
                     onPress={() => setSelectedColor(colorOption)}
@@ -701,7 +789,7 @@ export default function Veiculos() {
                     <Text
                       style={[
                         styles.smallChipText,
-                        { color: active ? "#fff" : colors.text },
+                        { color: active ? selectedButtonText : colors.text },
                       ]}
                     >
                       {colorOption}
@@ -724,9 +812,9 @@ export default function Veiculos() {
                       styles.optionCard,
                       {
                         backgroundColor: active
-                          ? "rgba(230,0,18,0.15)"
+                          ? selectedButtonBackground
                           : colors.card,
-                        borderColor: active ? colors.primary : colors.border,
+                        borderColor: active ? selectedButtonBorder : colors.border,
                       },
                     ]}
                     onPress={() => setSelectedSeat(seat.name)}
@@ -758,9 +846,9 @@ export default function Veiculos() {
                       styles.optionCard,
                       {
                         backgroundColor: active
-                          ? "rgba(230,0,18,0.15)"
+                          ? selectedButtonBackground
                           : colors.card,
-                        borderColor: active ? colors.primary : colors.border,
+                        borderColor: active ? selectedButtonBorder : colors.border,
                       },
                     ]}
                     onPress={() => toggleAccessory(accessory.id)}
@@ -877,6 +965,32 @@ export default function Veiculos() {
             </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={orderConfirmed}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOrderConfirmed(false)}
+      >
+        <View style={styles.confirmationBackdrop}>
+          <View
+            style={[
+              styles.confirmationCard,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <Ionicons name="checkmark-circle" size={52} color={colors.success} />
+            <Text style={[styles.confirmationTitle, { color: colors.text }]}>Pedido criado</Text>
+            <Text style={[styles.confirmationMessage, { color: colors.subtext }]}>Pedido confirmado com sucesso.</Text>
+            <TouchableOpacity
+              style={[styles.confirmationButton, { backgroundColor: colors.primary }]}
+              onPress={() => setOrderConfirmed(false)}
+            >
+              <Text style={styles.saveButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -1148,17 +1262,53 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
-  clientChip: {
+  clientSearch: {
+    minHeight: 46,
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    marginRight: 8,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
   },
 
-  clientChipText: {
+  clientSearchInput: {
+    flex: 1,
+    minHeight: 44,
+    fontSize: 14,
+  },
+
+  clientResults: {
+    maxHeight: 190,
+    marginTop: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+
+  clientResult: {
+    minHeight: 58,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  clientResultName: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  clientResultDetails: {
+    marginTop: 2,
     fontSize: 12,
-    fontWeight: "bold",
+  },
+
+  clientNoResults: {
+    padding: 14,
+    fontSize: 13,
   },
 
   smallChip: {
@@ -1252,6 +1402,43 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "rgba(255,255,255,0.08)",
     marginVertical: 6,
+  },
+
+  confirmationBackdrop: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+
+  confirmationCard: {
+    width: "100%",
+    maxWidth: 360,
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 24,
+    alignItems: "center",
+    gap: 10,
+  },
+
+  confirmationTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
+  confirmationMessage: {
+    fontSize: 14,
+    textAlign: "center",
+  },
+
+  confirmationButton: {
+    minWidth: 110,
+    minHeight: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 6,
   },
 
   saveButton: {

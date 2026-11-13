@@ -1,21 +1,32 @@
 import {
-  Alert,
   ScrollView,
   StyleSheet,
-  Text,
+  Switch,
   TouchableOpacity,
   View,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import { AccessibleText as Text } from "@/components/AccessibleText";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function ProfilePage() {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const {
+    colors,
+    isDark,
+    toggleTheme,
+    fontScale,
+    changeFontScale,
+    colorblindPalette,
+    toggleColorblindPalette,
+    resetAccessibility,
+  } = useTheme();
+  const { t } = useLanguage();
   const { user, logout, isAdmin } = useAuth();
   const router = useRouter();
 
@@ -53,11 +64,11 @@ export default function ProfilePage() {
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Perfil do Vendedor
+            {t("Perfil do Vendedor")}
           </Text>
 
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
-            Visualize suas informações de acesso ao Toyota ACE.
+            {t("Visualize suas informações de acesso ao Toyota ACE.")}
           </Text>
         </View>
 
@@ -75,7 +86,7 @@ export default function ProfilePage() {
               styles.avatar,
               {
                 backgroundColor: isAdmin
-                  ? "rgba(228,29,61,0.16)"
+                  ? colors.primarySoft
                   : "rgba(37,99,235,0.16)",
                 borderColor: isAdmin ? colors.primary : "#2563EB",
               },
@@ -105,7 +116,7 @@ export default function ProfilePage() {
                 styles.profileBadge,
                 {
                   backgroundColor: isAdmin
-                    ? "rgba(228,29,61,0.15)"
+                    ? colors.primarySoft
                     : "rgba(37,99,235,0.15)",
                 },
               ]}
@@ -138,34 +149,34 @@ export default function ProfilePage() {
           ]}
         >
           <Text style={[styles.cardTitle, { color: colors.text }]}>
-            Dados da Conta
+            {t("Dados da Conta")}
           </Text>
 
           <InfoRow
             icon="person-outline"
-            label="Nome"
+            label={t("Nome")}
             value={nome}
             colors={colors}
           />
 
           <InfoRow
             icon="mail-outline"
-            label="E-mail"
+            label={t("E-mail")}
             value={email}
             colors={colors}
           />
 
           <InfoRow
             icon="briefcase-outline"
-            label="Perfil"
-            value={isAdmin ? "Administrador" : "Vendedor"}
+            label={t("Perfil")}
+            value={isAdmin ? t("Administrador") : t("Vendedor")}
             colors={colors}
           />
 
           <InfoRow
             icon="checkmark-circle-outline"
-            label="Status"
-            value="Ativo"
+            label={t("Status")}
+            value={t("Ativo")}
             colors={colors}
           />
         </View>
@@ -180,32 +191,128 @@ export default function ProfilePage() {
           ]}
         >
           <Text style={[styles.cardTitle, { color: colors.text }]}>
-            Permissões
+            {t("Permissões")}
           </Text>
 
           <PermissionRow
             enabled
-            text="Acessar dashboard"
+            text={t("Acessar dashboard")}
             colors={colors}
           />
 
           <PermissionRow
             enabled
-            text="Gerenciar clientes"
+            text={t("Gerenciar clientes")}
             colors={colors}
           />
 
           <PermissionRow
             enabled
-            text="Acompanhar veículos e agenda"
+            text={t("Acompanhar veículos e agenda")}
             colors={colors}
           />
 
           <PermissionRow
             enabled={isAdmin}
-            text="Gerenciar usuários vendedores"
+            text={t("Gerenciar usuários vendedores")}
             colors={colors}
           />
+        </View>
+
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            {t("Acessibilidade")}
+          </Text>
+          <Text style={[styles.accessibilityDescription, { color: colors.subtext }]}>
+            {t("Ajuste a leitura e as cores da interface.")}
+          </Text>
+
+          <View style={styles.accessibilityRow}>
+            <View style={styles.accessibilityText}>
+              <Text style={[styles.accessibilityLabel, { color: colors.text }]}>
+                {t("Tamanho do texto")}
+              </Text>
+              <Text style={[styles.themeSubtitle, { color: colors.subtext }]}>
+                {fontScale}%
+              </Text>
+            </View>
+            <View style={styles.scaleButtons}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={t("Diminuir texto")}
+                accessibilityState={{ disabled: fontScale === 100 }}
+                disabled={fontScale === 100}
+                style={[
+                  styles.scaleButton,
+                  { backgroundColor: colors.box },
+                  fontScale === 100 && styles.disabledButton,
+                ]}
+                onPress={() => changeFontScale(-1)}
+              >
+                <Ionicons name="remove-outline" size={20} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={t("Aumentar texto")}
+                accessibilityState={{ disabled: fontScale === 150 }}
+                disabled={fontScale === 150}
+                style={[
+                  styles.scaleButton,
+                  { backgroundColor: colors.box },
+                  fontScale === 150 && styles.disabledButton,
+                ]}
+                onPress={() => changeFontScale(1)}
+              >
+                <Ionicons name="add-outline" size={20} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.accessibilityRow}>
+            <View style={styles.accessibilityText}>
+              <Text style={[styles.accessibilityLabel, { color: colors.text }]}>
+                {t("Paleta para daltonismo")}
+              </Text>
+              <Text style={[styles.themeSubtitle, { color: colors.subtext }]}>
+                {t("Usa azul e laranja no lugar de vermelho e verde.")}
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel={t("Paleta para daltonismo")}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: colorblindPalette }}
+              value={colorblindPalette}
+              onValueChange={toggleColorblindPalette}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={colors.card}
+            />
+          </View>
+
+          <TouchableOpacity
+            accessibilityRole="button"
+            disabled={fontScale === 100 && !colorblindPalette}
+            style={[
+              styles.resetAccessibilityButton,
+              { borderColor: colors.border },
+              fontScale === 100 &&
+                !colorblindPalette &&
+                styles.disabledButton,
+            ]}
+            onPress={resetAccessibility}
+          >
+            <Ionicons name="refresh-outline" size={17} color={colors.primary} />
+            <Text style={[styles.resetAccessibilityText, { color: colors.text }]}>
+              {t("Restaurar padrão")}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
@@ -227,11 +334,13 @@ export default function ProfilePage() {
 
             <View>
               <Text style={[styles.themeTitle, { color: colors.text }]}>
-                Aparência
+                {t("Aparência")}
               </Text>
 
               <Text style={[styles.themeSubtitle, { color: colors.subtext }]}>
-                Tema atual: {isDark ? "Escuro" : "Claro"}
+                {t("Tema atual: {theme}", {
+                  theme: t(isDark ? "Escuro" : "Claro"),
+                })}
               </Text>
             </View>
           </View>
@@ -248,7 +357,7 @@ export default function ProfilePage() {
           onPress={handleLogout}
         >
           <Ionicons name="log-out-outline" size={20} color="#fff" />
-          <Text style={styles.logoutText}>Sair da Conta</Text>
+          <Text style={styles.logoutText}>{t("Sair da Conta")}</Text>
         </TouchableOpacity>
 
         <Text style={[styles.footer, { color: colors.subtext }]}>
@@ -275,7 +384,7 @@ function InfoRow({
       <View
         style={[
           styles.infoIcon,
-          { backgroundColor: "rgba(228,29,61,0.12)" },
+          { backgroundColor: colors.primarySoft },
         ]}
       >
         <Ionicons name={icon} size={19} color={colors.primary} />
@@ -322,6 +431,63 @@ function PermissionRow({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+
+  accessibilityDescription: {
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: -7,
+    marginBottom: 8,
+  },
+
+  accessibilityRow: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 8,
+  },
+
+  accessibilityText: {
+    flex: 1,
+  },
+
+  accessibilityLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  scaleButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  scaleButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  disabledButton: {
+    opacity: 0.4,
+  },
+
+  resetAccessibilityButton: {
+    minHeight: 42,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 6,
+    paddingTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  resetAccessibilityText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
 
   container: {

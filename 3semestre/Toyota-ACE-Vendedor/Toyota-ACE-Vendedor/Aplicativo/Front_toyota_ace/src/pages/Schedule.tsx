@@ -68,9 +68,19 @@ type Appointment = {
   date: string;
   time: string;
   client: string;
+  clientEmail: string;
+  clientPhone: string;
+  vehicle: string;
   clientId?: number;
   type: AppointmentType;
   description: string;
+};
+
+type VehicleApiResponse = {
+  marcaVeiculo?: string;
+  modeloVeiculo?: string;
+  anoVeiculo?: string;
+  placaVeiculo?: string;
 };
 
 type AppointmentApiResponse = {
@@ -80,7 +90,11 @@ type AppointmentApiResponse = {
   cliente?: {
     id?: number;
     nome?: string;
+    email?: string;
+    telefone?: string;
+    veiculos?: VehicleApiResponse[];
   };
+  veiculo?: VehicleApiResponse;
   tipoServico?: string;
   observacao?: string;
   status?: string;
@@ -160,6 +174,20 @@ const normalizarHorario = (horario?: string): string => {
   if (!horario) return "";
 
   return horario.substring(0, 5);
+};
+
+const formatarVeiculo = (vehicle?: VehicleApiResponse): string => {
+  if (!vehicle) return "";
+
+  const parts = [
+    vehicle.marcaVeiculo,
+    vehicle.modeloVeiculo,
+    vehicle.anoVeiculo,
+  ].filter(Boolean);
+
+  return parts.length
+    ? `${parts.join(" ")}${vehicle.placaVeiculo ? ` • ${vehicle.placaVeiculo}` : ""}`
+    : "";
 };
 
 const Schedule = () => {
@@ -268,6 +296,9 @@ const Schedule = () => {
           client:
             item.cliente?.nome ||
             t("Cliente não informado"),
+          clientEmail: item.cliente?.email || "",
+          clientPhone: item.cliente?.telefone || "",
+          vehicle: formatarVeiculo(item.veiculo || item.cliente?.veiculos?.[0]),
           clientId: item.cliente?.id,
           type: mapTipoServico(item.tipoServico),
           description:
@@ -669,9 +700,31 @@ const Schedule = () => {
 
                         </div>
 
-                        <p className="text-xs text-muted-foreground">
-                          {appointment.description}
-                        </p>
+                        {appointment.clientEmail && (
+                          <p className="text-xs text-muted-foreground">
+                            {appointment.clientEmail}
+                          </p>
+                        )}
+
+                        {appointment.clientPhone && (
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                            <Phone aria-hidden="true" className="h-3.5 w-3.5" />
+                            {appointment.clientPhone}
+                          </p>
+                        )}
+
+                        {appointment.vehicle && (
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                            <Car aria-hidden="true" className="h-3.5 w-3.5" />
+                            {appointment.vehicle}
+                          </p>
+                        )}
+
+                        {appointment.description && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {appointment.description}
+                          </p>
+                        )}
 
                       </div>
 
