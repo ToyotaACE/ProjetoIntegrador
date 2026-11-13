@@ -26,12 +26,12 @@
 
 | Commit | Tipo | Descrição |
 |---|---|---|
-| `5e971ad` | fix | Ajustes de segurança no back-end (os 7 ajustes da seção 2) |
-| `4f7081a` | test | Testes do limite de tentativas de login |
-| `01544f7` | test | Testes da validação do VIN contra injeção Flux |
-| `4c3db59` | test | Testes de segurança do cadastro e login de clientes |
-| `5c1faa4` | docs | Remoção das credenciais reais do README do back-end |
-| `893a864` | config | Log de SQL do Hibernate desligado |
+| `9d5347b` | fix | Ajustes de segurança no back-end (os 7 ajustes da seção 2) |
+| `5559844` | test | Testes do limite de tentativas de login |
+| `6fc862c` | test | Testes da validação do VIN contra injeção Flux |
+| `b8549fb` | test | Testes de segurança do cadastro e login de clientes |
+| `c89d4f0` | docs | Remoção das credenciais reais do README do back-end |
+| `38a98bc` | config | Log de SQL do Hibernate desligado |
 | (3 últimos) | docs | Guia de testes, relatório e este registro |
 
 ---

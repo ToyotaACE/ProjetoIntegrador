@@ -222,7 +222,7 @@ Resultado esperado: `HTTP 201 Created` com `"perfil":"ADMIN"`. Com essa conta, �
 - Estender o token de sessão, que já existe para o cliente, aos usuários internos.
 - Proteger todas as rotas com Spring Security, exigir o perfil ADMIN nas rotas `/api/usuarios` e verificar o dono do recurso nas rotas de cliente.
 - Aplicar BCrypt e `WRITE_ONLY` também em `UsuarioInterno`, como o grupo já fez em `Cliente`.
-- Remover a senha fixa do usuário padrão. As credenciais do README já foram removidas (commit `5c1faa4`).
+- Remover a senha fixa do usuário padrão. As credenciais do README já foram removidas (commit `c89d4f0`).
 
 Essas mudanças exigem alterar os fronts e os apps do vendedor e migrar o banco de produção, por isso foram planejadas para uma próxima etapa, para não interromper o ambiente publicado na AWS.
 
@@ -290,12 +290,12 @@ Commits da branch, em ordem:
 
 | Commit | Descrição |
 |---|---|
-| `5e971ad` | Ajustes de segurança no back-end (os 7 ajustes da tabela abaixo) |
-| `4f7081a` | Testes do limite de tentativas de login |
-| `01544f7` | Testes da validação do VIN contra injeção Flux |
-| `4c3db59` | Testes de segurança do cadastro e login de clientes |
-| `5c1faa4` | Remoção das credenciais reais do README do back-end |
-| `893a864` | Log de SQL do Hibernate desligado |
+| `9d5347b` | Ajustes de segurança no back-end (os 7 ajustes da tabela abaixo) |
+| `5559844` | Testes do limite de tentativas de login |
+| `6fc862c` | Testes da validação do VIN contra injeção Flux |
+| `b8549fb` | Testes de segurança do cadastro e login de clientes |
+| `c89d4f0` | Remoção das credenciais reais do README do back-end |
+| `38a98bc` | Log de SQL do Hibernate desligado |
 | (3 últimos) | Guia de testes, este relatório e o registro das correções |
 
 | Achado | Mitigação implementada | Arquivo(s) | Verificação (ambiente local) |
