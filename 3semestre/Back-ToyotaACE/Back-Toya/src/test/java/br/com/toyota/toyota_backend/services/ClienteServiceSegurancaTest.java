@@ -2,7 +2,10 @@ package br.com.toyota.toyota_backend.services;
 
 import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.models.Veiculo;
+import br.com.toyota.toyota_backend.repositories.AgendamentoRepository;
 import br.com.toyota.toyota_backend.repositories.ClienteRepository;
+import br.com.toyota.toyota_backend.repositories.ClienteSessionRepository;
+import br.com.toyota.toyota_backend.repositories.CompraRepository;
 import br.com.toyota.toyota_backend.repositories.VeiculoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +40,9 @@ class ClienteServiceSegurancaTest {
         service = new ClienteService(
                 clienteRepository,
                 mock(VeiculoRepository.class),
+                mock(AgendamentoRepository.class),
+                mock(CompraRepository.class),
+                mock(ClienteSessionRepository.class),
                 mock(MqttPedidoSimulatorService.class),
                 passwordEncoder,
                 mock(VehicleDocumentService.class),
