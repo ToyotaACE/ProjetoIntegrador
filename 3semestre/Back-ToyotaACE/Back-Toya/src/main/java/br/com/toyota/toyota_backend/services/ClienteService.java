@@ -252,7 +252,11 @@ public class ClienteService {
                 && passwordEncoder.matches(senha, cliente.getSenha());
 
         // Converte senhas antigas em texto puro no primeiro login válido.
-        if (cliente != null && !senhaValida && cliente.getSenha().equals(senha)) {
+        // Segurança: um valor que já é hash BCrypt nunca é comparado como texto,
+        // para que o próprio hash não funcione como senha caso o banco vaze.
+        if (cliente != null && !senhaValida
+                && !cliente.getSenha().matches("^\\$2[aby]\\$\\d{2}\\$.{53}$")
+                && cliente.getSenha().equals(senha)) {
             senhaValida = true;
             cliente.setSenha(passwordEncoder.encode(senha));
             clienteRepository.save(cliente);

@@ -6,6 +6,7 @@ import br.com.toyota.toyota_backend.models.UsuarioInterno;
 import br.com.toyota.toyota_backend.repositories.UsuarioInternoRepository;
 import br.com.toyota.toyota_backend.services.TentativasLoginService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,13 +22,16 @@ public class UsuarioInternoController {
 
     private final UsuarioInternoRepository usuarioRepository;
     private final TentativasLoginService tentativasLoginService;
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioInternoController(
             UsuarioInternoRepository usuarioRepository,
-            TentativasLoginService tentativasLoginService
+            TentativasLoginService tentativasLoginService,
+            PasswordEncoder passwordEncoder
     ) {
         this.usuarioRepository = usuarioRepository;
         this.tentativasLoginService = tentativasLoginService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -46,7 +50,9 @@ public class UsuarioInternoController {
 
         UsuarioInterno usuario = usuarioRepository.findByEmail(email).orElse(null);
 
-        if (usuario == null || !usuario.getSenha().equals(senha)) {
+        boolean senhaValida = usuario != null && senhaConfere(usuario, senha);
+
+        if (!senhaValida) {
             tentativasLoginService.registrarFalha(chave);
             throw new ResponseStatusException(UNAUTHORIZED, "E-mail ou senha inválidos.");
         }
@@ -87,7 +93,13 @@ public class UsuarioInternoController {
         UsuarioInterno usuario = new UsuarioInterno();
         usuario.setNome(dados.getNome());
         usuario.setEmail(email);
-        usuario.setSenha(dados.getSenha());
+
+        if (dados.getSenha() == null || dados.getSenha().isBlank()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Senha é obrigatória.");
+        }
+
+        // Segurança: senha gravada com hash BCrypt
+        usuario.setSenha(passwordEncoder.encode(dados.getSenha()));
         usuario.setPerfil(dados.getPerfil() == null ? PerfilUsuario.VENDEDOR : dados.getPerfil());
         usuario.setAtivo(dados.getAtivo() == null ? true : dados.getAtivo());
         usuario.setCreatedAt(LocalDate.now());
@@ -118,7 +130,8 @@ public class UsuarioInternoController {
         }
 
         if (dados.getSenha() != null && !dados.getSenha().isBlank()) {
-            usuario.setSenha(dados.getSenha());
+            // Segurança: senha gravada com hash BCrypt
+            usuario.setSenha(passwordEncoder.encode(dados.getSenha()));
         }
 
         if (dados.getPerfil() != null) {
@@ -141,6 +154,36 @@ public class UsuarioInternoController {
         usuarioRepository.save(usuario);
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Confere a senha com BCrypt. Senhas antigas, gravadas em texto puro antes desta
+     * correção, são aceitas uma única vez e convertidas para BCrypt no mesmo login.
+     * Um valor que já é hash nunca é comparado como texto, para que o próprio hash
+     * não funcione como senha caso o banco vaze.
+     */
+    private boolean senhaConfere(UsuarioInterno usuario, String senhaDigitada) {
+        String armazenada = usuario.getSenha();
+
+        if (armazenada == null || senhaDigitada.isEmpty()) {
+            return false;
+        }
+
+        if (ehHashBcrypt(armazenada)) {
+            return passwordEncoder.matches(senhaDigitada, armazenada);
+        }
+
+        if (armazenada.equals(senhaDigitada)) {
+            usuario.setSenha(passwordEncoder.encode(senhaDigitada));
+            usuarioRepository.save(usuario);
+            return true;
+        }
+
+        return false;
+    }
+
+    static boolean ehHashBcrypt(String valor) {
+        return valor != null && valor.matches("^\\$2[aby]\\$\\d{2}\\$.{53}$");
     }
 
     private String normalizarEmail(String email) {

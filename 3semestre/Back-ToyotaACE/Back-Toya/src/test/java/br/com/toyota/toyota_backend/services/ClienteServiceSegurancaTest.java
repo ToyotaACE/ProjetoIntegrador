@@ -2,7 +2,10 @@ package br.com.toyota.toyota_backend.services;
 
 import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.models.Veiculo;
+import br.com.toyota.toyota_backend.repositories.AgendamentoRepository;
 import br.com.toyota.toyota_backend.repositories.ClienteRepository;
+import br.com.toyota.toyota_backend.repositories.ClienteSessionRepository;
+import br.com.toyota.toyota_backend.repositories.CompraRepository;
 import br.com.toyota.toyota_backend.repositories.VeiculoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +40,9 @@ class ClienteServiceSegurancaTest {
         service = new ClienteService(
                 clienteRepository,
                 mock(VeiculoRepository.class),
+                mock(AgendamentoRepository.class),
+                mock(CompraRepository.class),
+                mock(ClienteSessionRepository.class),
                 mock(MqttPedidoSimulatorService.class),
                 passwordEncoder,
                 mock(VehicleDocumentService.class),
@@ -95,6 +101,23 @@ class ClienteServiceSegurancaTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED, erro.getStatusCode());
         assertEquals("E-mail ou senha incorretos", erro.getReason());
+    }
+
+    @Test
+    void oProprioHashNaoFuncionaComoSenhaDoCliente() {
+        String hash = "$2a$10$abcdefghijklmnopqrstuuJbqGJ4b1Sx6dJ6s1t0Zr1h4yQ7m5W2e";
+        Cliente cliente = novoCliente();
+        cliente.setSenha(hash);
+        when(clienteRepository.findByEmail("invasor@teste.com")).thenReturn(Optional.of(cliente));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+
+        ResponseStatusException erro = assertThrows(
+                ResponseStatusException.class,
+                () -> service.login("invasor@teste.com", hash)
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, erro.getStatusCode());
+        verify(clienteRepository, never()).save(any());
     }
 
     @Test
