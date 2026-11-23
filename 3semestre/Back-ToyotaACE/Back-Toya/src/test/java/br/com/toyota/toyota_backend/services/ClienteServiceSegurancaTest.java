@@ -104,6 +104,23 @@ class ClienteServiceSegurancaTest {
     }
 
     @Test
+    void oProprioHashNaoFuncionaComoSenhaDoCliente() {
+        String hash = "$2a$10$abcdefghijklmnopqrstuuJbqGJ4b1Sx6dJ6s1t0Zr1h4yQ7m5W2e";
+        Cliente cliente = novoCliente();
+        cliente.setSenha(hash);
+        when(clienteRepository.findByEmail("invasor@teste.com")).thenReturn(Optional.of(cliente));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+
+        ResponseStatusException erro = assertThrows(
+                ResponseStatusException.class,
+                () -> service.login("invasor@teste.com", hash)
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, erro.getStatusCode());
+        verify(clienteRepository, never()).save(any());
+    }
+
+    @Test
     void loginBloqueiaComHttp429AposCincoFalhas() {
         when(clienteRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 

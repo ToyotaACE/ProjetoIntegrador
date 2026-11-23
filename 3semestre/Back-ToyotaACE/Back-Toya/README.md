@@ -33,6 +33,21 @@ maiúscula, letra minúscula, número e caractere especial.
 
 > Por segurança, não publique e-mails e senhas reais neste arquivo.
 
+## Usuários internos padrão (admin e vendedor)
+
+Os usuários `adm@toyota.com` e `vendedor@toyota.com` só são criados se as senhas
+forem informadas por variável de ambiente. Crie um arquivo `.env` nesta pasta
+(ele é ignorado pelo Git) antes de rodar o `docker compose up`:
+
+```
+ADMIN_SEED_SENHA=escolha-uma-senha-forte
+VENDEDOR_SEED_SENHA=escolha-outra-senha-forte
+```
+
+As senhas são gravadas com hash BCrypt e nunca aparecem nas respostas da API.
+Bancos que já tinham esses usuários continuam com a senha antiga, que é convertida
+para BCrypt no primeiro login. Troque a senha antiga pela tela de Usuários.
+
 ## Rotas principais
 
 ### Clientes/Auth
