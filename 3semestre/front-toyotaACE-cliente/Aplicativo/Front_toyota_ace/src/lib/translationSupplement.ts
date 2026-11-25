@@ -43,6 +43,11 @@ export const translationSupplement: Record<
     "es-ES": "% del importe",
     "ja-JP": "%",
   },
+  "% do progresso": {
+    "en-US": "% of progress",
+    "es-ES": "% del progreso",
+    "ja-JP": "%",
+  },
   ", você acompanha seu pedido em tempo real, recebe atualizações importantes e vive uma experiência digital completa, onde quer que esteja.": {
     "en-US": ", you can track your order in real time, receive important updates, and enjoy a complete digital experience wherever you are.",
     "es-ES": ", puedes consultar tu pedido en tiempo real, recibir actualizaciones importantes y disfrutar de una experiencia digital completa estés donde estés.",

@@ -17,6 +17,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useAccessibility } from "../../contexts/AccessibilityContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { formatCurrency } from "../../contexts/formatters";
+import { findNextReviewDate } from "../../utils/vehicleDocuments";
 
 // Imagens locais com transparência para combinar com o tema dos cards.
 import corolla from "../../assets/corolla.png";
@@ -46,6 +47,26 @@ function getVehicleYear(vehicle) {
 
 function getVehicleColor(vehicle) {
   return vehicle?.corVeiculo || vehicle?.cor || "Cor não informada";
+}
+
+function getVehicleMotor(vehicle) {
+  return vehicle?.motorVeiculo || vehicle?.motor || "Motor não informado";
+}
+
+function getVehicleFuel(vehicle) {
+  return vehicle?.combustivelVeiculo || vehicle?.combustivel || "Não informado";
+}
+
+function getVehicleGear(vehicle) {
+  return vehicle?.cambioVeiculo || vehicle?.cambio || "Não informado";
+}
+
+function getVehicleChassi(vehicle) {
+  return vehicle?.chassiVeiculo || vehicle?.chassi || "Não informado";
+}
+
+function getVehiclePlate(vehicle) {
+  return vehicle?.placaVeiculo || vehicle?.placa || "Não informada";
 }
 
 function getVehicleImage(vehicle) {
@@ -142,6 +163,14 @@ function getProgressColor(progress, theme) {
 }
 
 function getNextReview(vehicle, language) {
+  const nextReview = findNextReviewDate(vehicle?.appointments);
+  if (nextReview) {
+    const [year, month, day] = nextReview.split("-").map(Number);
+    return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(language, {
+      timeZone: "UTC",
+    });
+  }
+
   const value = vehicle?.dataProximaRevisao || vehicle?.proximaRevisao;
   if (!value) return "Não informada";
 
@@ -175,6 +204,7 @@ export default function Dashboard() {
 
   const [client, setClient] = useState(null);
   const [vehicles, setVehicles] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -183,6 +213,7 @@ export default function Dashboard() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const emailLogado = getUserEmail(user);
+  const clientId = client?.id || client?.clienteId || client?.usuario?.id;
 
   const selectedVehicle = useMemo(() => {
     if (!vehicles.length) return null;
@@ -192,6 +223,11 @@ export default function Dashboard() {
       vehicles[0]
     );
   }, [vehicles, selectedVehicleId]);
+
+  const vehicleWithAppointments = useMemo(
+    () => (selectedVehicle ? { ...selectedVehicle, appointments } : null),
+    [appointments, selectedVehicle],
+  );
 
   const clientName = client?.nome || user?.name || user?.nome || "Usuário";
 
@@ -260,6 +296,33 @@ export default function Dashboard() {
   useEffect(() => {
     carregarDashboard(false);
   }, [carregarDashboard]);
+
+  useEffect(() => {
+    let active = true;
+    if (!clientId) {
+      setAppointments([]);
+      return () => {
+        active = false;
+      };
+    }
+
+    fetch(`${API_URL}/agendamentos/cliente/${encodeURIComponent(clientId)}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Não foi possível carregar revisões agendadas.");
+        return response.json();
+      })
+      .then((savedAppointments) => {
+        if (active) setAppointments(Array.isArray(savedAppointments) ? savedAppointments : []);
+      })
+      .catch((error) => {
+        console.log("Erro ao carregar revisões agendadas:", error);
+        if (active) setAppointments([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [clientId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -407,6 +470,28 @@ export default function Dashboard() {
                 </ScrollView>
               ) : null}
 
+              <View
+                style={[
+                  styles.vehicleDetailsCard,
+                  { backgroundColor: dark ? "#1f1f1f" : theme.background, borderColor: theme.box },
+                ]}
+              >
+                <Text style={[styles.vehicleDetailsTitle, { color: theme.text }]}>
+                  Ficha técnica
+                </Text>
+                <View style={styles.vehicleDetailsGrid}>
+                  <VehicleInfo label="Modelo" value={vehicleName} theme={theme} />
+                  <VehicleInfo label="Ano" value={getVehicleYear(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Motor" value={getVehicleMotor(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Cor" value={getVehicleColor(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Câmbio" value={getVehicleGear(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Combustível" value={getVehicleFuel(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Chassi" value={getVehicleChassi(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Placa" value={getVehiclePlate(selectedVehicle)} theme={theme} />
+                  <VehicleInfo label="Próxima revisão" value={getNextReview(vehicleWithAppointments, settings.language)} theme={theme} />
+                </View>
+              </View>
+
               <View style={styles.stageBox}>
                 <View>
                   <Text style={[styles.stageLabel, { color: dark ? "#d4d4d8" : theme.subtext }]}>
@@ -419,7 +504,7 @@ export default function Dashboard() {
                 </View>
 
                 <Text style={[styles.stagePercent, { color: progressColor }]}>
-                  {progress}%
+                  {`${progress}% do progresso`}
                 </Text>
               </View>
 
@@ -446,9 +531,15 @@ export default function Dashboard() {
                     styles.primaryAction,
                     { backgroundColor: theme.primary },
                   ]}
-                  onPress={() => router.push("/vehicle")}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/vehicle-timeline",
+                      params: { vehicleId: String(selectedVehicle?.id || "") },
+                    })
+                  }
                 >
-                  <Text style={styles.primaryActionText}>Ver veículo</Text>
+                  <Ionicons name="git-branch-outline" size={16} color="#fff" />
+                  <Text style={styles.primaryActionText}>Progresso de preparação</Text>
                   <Ionicons name="chevron-forward" size={16} color="#fff" />
                 </TouchableOpacity>
 
@@ -456,18 +547,40 @@ export default function Dashboard() {
                   style={[styles.secondaryAction, { borderColor: theme.box }]}
                   onPress={() =>
                     router.push({
-                      pathname: "/vehicle-financing",
-                      params: { vehicleId: String(selectedVehicle?.id || "") },
+                      pathname: "/vehicle-documents",
+                      params: {
+                        vehicle: JSON.stringify(selectedVehicle),
+                        vehicleId: String(selectedVehicle?.id || ""),
+                      },
                     })
                   }
                 >
+                  <Ionicons name="document-text-outline" size={17} color={theme.text} />
+                  <Text style={[styles.secondaryActionText, { color: theme.text }]}>
+                    Documentação
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.secondaryAction, { borderColor: theme.box }]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/vehicle-financing",
+                      params: {
+                        vehicleId: String(selectedVehicle?.id || ""),
+                        openPayment: "true",
+                      },
+                    })
+                  }
+                >
+                  <Ionicons name="card-outline" size={17} color={theme.text} />
                   <Text
                     style={[
                       styles.secondaryActionText,
                       { color: theme.text },
                     ]}
                   >
-                    Financiamento
+                    Ver financiamento
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -628,6 +741,15 @@ function Notice({ theme, title, text }) {
   );
 }
 
+function VehicleInfo({ label, value, theme }) {
+  return (
+    <View style={styles.vehicleDetailsItem}>
+      <Text style={[styles.vehicleDetailsLabel, { color: theme.subtext }]}>{label}</Text>
+      <Text style={[styles.vehicleDetailsValue, { color: theme.text }]}>{value}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -732,6 +854,40 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  vehicleDetailsCard: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+
+  vehicleDetailsTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+
+  vehicleDetailsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+
+  vehicleDetailsItem: {
+    width: "47%",
+    minWidth: 120,
+  },
+
+  vehicleDetailsLabel: {
+    fontSize: 11,
+    marginBottom: 3,
+  },
+
+  vehicleDetailsValue: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
   stageBox: {
     marginTop: 16,
     marginBottom: 8,
@@ -769,37 +925,48 @@ const styles = StyleSheet.create({
 
   heroActions: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginTop: 16,
   },
 
   primaryAction: {
-    flex: 1,
-    minHeight: 44,
+    flexGrow: 1,
+    flexBasis: "48%",
+    minWidth: 145,
+    minHeight: 48,
     borderRadius: 11,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    paddingHorizontal: 8,
+    gap: 5,
   },
 
   primaryActionText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 13,
+    fontSize: 12,
+    textAlign: "center",
   },
 
   secondaryAction: {
-    flex: 1,
-    minHeight: 44,
+    flexGrow: 1,
+    flexBasis: "48%",
+    minWidth: 135,
+    minHeight: 48,
     borderRadius: 11,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    paddingHorizontal: 8,
+    gap: 5,
   },
 
   secondaryActionText: {
     fontWeight: "bold",
+    textAlign: "center",
     fontSize: 13,
   },
 

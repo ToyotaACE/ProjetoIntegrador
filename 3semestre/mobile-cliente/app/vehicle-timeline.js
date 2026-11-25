@@ -195,7 +195,7 @@ export default function VehicleTimelinePage() {
         </View>
         <View style={[styles.completionPill, compact && styles.completionPillCompact]}>
           <Ionicons name="checkmark-circle" size={19} color="#15803d" />
-          <Text style={styles.completionText}>{progress}% do valor</Text>
+          <Text style={styles.completionText}>{progress}% do progresso</Text>
         </View>
       </View>
 
@@ -238,7 +238,7 @@ export default function VehicleTimelinePage() {
                     Progresso Geral
                   </Text>
                   <Text style={[styles.progressPercent, { color: progressColor }]}>
-                    {progress}%
+                    {`${progress}% do progresso`}
                   </Text>
                 </View>
                 <View style={[styles.progressTrack, { backgroundColor: theme.box }]}>
@@ -336,8 +336,6 @@ export default function VehicleTimelinePage() {
                               {formatOrderDate(vehicle, settings.language)}
                             </Text>
                           </View>
-                        ) : !done ? (
-                          <Ionicons name="chevron-forward" size={19} color={theme.subtext} />
                         ) : null}
                       </View>
                     </View>
@@ -434,7 +432,7 @@ export default function VehicleTimelinePage() {
                 { borderColor: theme.box },
                 compact && styles.footerButtonCompact,
               ]}
-              onPress={() => router.replace("/(tabs)/vehicle")}
+              onPress={() => router.replace("/(tabs)/dashboard")}
             >
               <Ionicons name="arrow-back" size={17} color={theme.text} />
               <Text style={[styles.backText, { color: theme.text }]}>Voltar</Text>

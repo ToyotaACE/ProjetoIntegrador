@@ -596,8 +596,8 @@ export default function VehicleDocumentsPage() {
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Voltar"
-          accessibilityHint="Retorna à tela do veículo"
-          onPress={() => router.back()}
+          accessibilityHint="Retorna ao painel"
+          onPress={() => router.replace("/(tabs)/dashboard")}
           style={[styles.backButton, { backgroundColor: theme.card }]}
         >
           <Ionicons name="arrow-back" size={21} color={theme.text} />

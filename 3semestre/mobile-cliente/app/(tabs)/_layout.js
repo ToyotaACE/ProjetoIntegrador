@@ -100,6 +100,7 @@ export default function TabsLayout() {
         name="vehicle"
         options={{
           title: tabLabels[1],
+          href: null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="car" size={size} color={color} />
           ),

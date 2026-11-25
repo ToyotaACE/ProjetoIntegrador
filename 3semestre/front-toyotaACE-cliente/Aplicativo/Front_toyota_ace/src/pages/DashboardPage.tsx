@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, type Cliente, type Veiculo } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getNextReviewDate } from "@/lib/vehicleMaintenance";
 import {
   Car,
   Calendar,
@@ -12,10 +14,15 @@ import {
   ShoppingBag,
   Wrench,
   Bell,
-  ChevronRight,
   ShieldCheck,
+  FileText,
+  Route,
 } from "lucide-react";
 import corolla from "@/assets/corolla.png";
+import ramiresMotorsMap from "@/assets/ramires-motors-map.png";
+
+const ramiresMotorsDirectionsUrl =
+  "https://www.google.com/maps/dir//Ramires+Motors,+Av.+Darcí+Carvalho+Dafferner,+301+-+Alto+da+Boa+Vista,+Sorocaba+-+SP,+18085-850/@-23.4848256,-47.4382336,14z/data=!4m8!4m7!1m0!1m5!1s0x94cf601c5b2c8405:0x609fd3f1a45f9a9c!2m2!1d-47.4295781!2d-23.4739131?entry=ttu&g_ep=EgoyMDI2MTEyMy4wIKXMDSoASAFQAw%3D%3D";
 
 const fmt = (v?: number) =>
   Number(v || 0).toLocaleString("pt-BR", {
@@ -25,10 +32,13 @@ const fmt = (v?: number) =>
 
 const DashboardPage = () => {
   const { user, setUser } = useAuth();
+  const { language } = useLanguage();
+  const navigate = useNavigate();
 
   const [cliente, setCliente] = useState<Cliente | null>(user);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [mainVehicleId, setMainVehicleId] = useState<number | null>(null);
+  const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -72,6 +82,29 @@ const DashboardPage = () => {
     carregar();
   }, [setUser, user?.email]);
 
+  useEffect(() => {
+    let active = true;
+    if (!cliente?.id) {
+      setNextReviewDate(null);
+      return () => {
+        active = false;
+      };
+    }
+
+    api.buscarAgendamentosCliente(cliente.id)
+      .then((appointments) => {
+        if (active) setNextReviewDate(getNextReviewDate(appointments));
+      })
+      .catch((error: unknown) => {
+        console.error("Erro ao carregar revisões agendadas:", error);
+        if (active) setNextReviewDate(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [cliente?.id]);
+
   const nome = cliente?.nome?.split(" ")[0] || "Cliente";
 
   const veiculoPrincipal = useMemo(() => {
@@ -104,6 +137,29 @@ const DashboardPage = () => {
 
   const valorParcela = veiculoPrincipal?.valorParcela ?? 0;
   const parcelasRestantes = veiculoPrincipal?.parcelasRestantes ?? 0;
+  const abrirDocumentacao = () => {
+    if (!veiculoPrincipal) return;
+
+    const vehicleDetails = {
+      marcaVeiculo: veiculoPrincipal.marcaVeiculo,
+      modeloVeiculo: veiculoPrincipal.modeloVeiculo,
+      anoVeiculo: veiculoPrincipal.anoVeiculo,
+      corVeiculo: veiculoPrincipal.corVeiculo,
+      motorVeiculo: veiculoPrincipal.motorVeiculo,
+      cambioVeiculo: veiculoPrincipal.cambioVeiculo,
+      combustivelVeiculo: veiculoPrincipal.combustivelVeiculo,
+    };
+    const query = new URLSearchParams({
+      vehicle: JSON.stringify(vehicleDetails),
+      lang: language,
+      ...(veiculoPrincipal.id ? { vehicleId: String(veiculoPrincipal.id) } : {}),
+    });
+    window.open(
+      `/documentacao?${query.toString()}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
 
   if (loading) {
     return <div className="p-8 text-gray-500">Carregando dashboard...</div>;
@@ -182,7 +238,7 @@ const DashboardPage = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Etapa atual</span>
                       <span className="font-medium text-green-600">
-                        {progresso}%
+                        {`${progresso}% do progresso`}
                       </span>
                     </div>
 
@@ -193,17 +249,38 @@ const DashboardPage = () => {
 
                   <div className="flex flex-wrap gap-3">
                     <Button
-                      asChild
+                      onClick={() =>
+                        veiculoPrincipal?.id &&
+                        navigate(`/veiculo/${veiculoPrincipal.id}/timeline`)
+                      }
                       className="bg-zinc-900 hover:bg-zinc-800 text-white"
+                      disabled={!veiculoPrincipal?.id}
                     >
-                      <Link to="/veiculo">
-                        Ver veículo
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
+                      <Route className="h-4 w-4 mr-2" />
+                      Progresso de preparação
                     </Button>
 
-                    <Button asChild variant="outline">
-                      <Link to="/financiamento">Ver financiamento</Link>
+                    <Button
+                      variant="outline"
+                      onClick={abrirDocumentacao}
+                      disabled={!veiculoPrincipal}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Documentação
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        veiculoPrincipal?.id &&
+                        navigate(
+                          `/financiamento?vehicleId=${veiculoPrincipal.id}&abrirPagamento=true`,
+                        )
+                      }
+                      disabled={!veiculoPrincipal?.id}
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Ver financiamento
                     </Button>
                   </div>
                 </div>
@@ -219,13 +296,39 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
 
+          {veiculoPrincipal && (
+            <Card id="vehicle-details" className="bg-white dark:bg-zinc-900 border shadow-sm">
+              <CardHeader>
+                <CardTitle>Ficha técnica</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 text-sm">
+                <VehicleInfo label="Modelo" value={veiculoPrincipal.modeloVeiculo || "Não informado"} />
+                <VehicleInfo label="Ano" value={veiculoPrincipal.anoVeiculo || "Não informado"} />
+                <VehicleInfo label="Motor" value={veiculoPrincipal.motorVeiculo || "Não informado"} />
+                <VehicleInfo label="Cor" value={veiculoPrincipal.corVeiculo || "Não informado"} />
+                <VehicleInfo label="Câmbio" value={veiculoPrincipal.cambioVeiculo || "Não informado"} />
+                <VehicleInfo label="Combustível" value={veiculoPrincipal.combustivelVeiculo || "Não informado"} />
+                <VehicleInfo label="Chassi" value={veiculoPrincipal.chassiVeiculo || "Gerando..."} />
+                <VehicleInfo label="Placa" value={veiculoPrincipal.placaVeiculo || "Não informada"} />
+                <VehicleInfo
+                  label="Próxima revisão"
+                  value={
+                    nextReviewDate?.toLocaleDateString(language) ||
+                    veiculoPrincipal.dataProximaRevisao ||
+                    "Não informada"
+                  }
+                />
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <QuickCard
               icon={<Car className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />}
               title="Veículos"
               value={`${veiculos.length}`}
               subtitle="veículo(s) vinculado(s)"
-              to="/veiculo"
+              to={veiculoPrincipal ? "/dashboard#vehicle-details" : "/dashboard"}
             />
 
             <QuickCard
@@ -233,7 +336,11 @@ const DashboardPage = () => {
               title="Próxima parcela"
               value={fmt(valorParcela)}
               subtitle={`${parcelasRestantes} restantes`}
-              to="/financiamento"
+              to={
+                veiculoPrincipal?.id
+                  ? `/financiamento?vehicleId=${veiculoPrincipal.id}&abrirPagamento=true`
+                  : "/financiamento"
+              }
             />
 
             <QuickCard
@@ -309,14 +416,26 @@ const DashboardPage = () => {
                 </Button>
 
                 <Button asChild variant="outline" className="justify-start">
-                  <Link to="/financiamento">
+                  <Link
+                    to={
+                      veiculoPrincipal?.id
+                        ? `/financiamento?vehicleId=${veiculoPrincipal.id}&abrirPagamento=true`
+                        : "/financiamento"
+                    }
+                  >
                     <CreditCard className="h-4 w-4 mr-2" />
                     Pagar parcela
                   </Link>
                 </Button>
 
                 <Button asChild variant="outline" className="justify-start">
-                  <Link to="/veiculo">
+                  <Link
+                    to={
+                      veiculoPrincipal?.id
+                        ? `/veiculo/${veiculoPrincipal.id}/timeline`
+                        : "/dashboard#vehicle-details"
+                    }
+                  >
                     <Car className="h-4 w-4 mr-2" />
                     Ver timeline
                   </Link>
@@ -328,6 +447,21 @@ const DashboardPage = () => {
                     Comprar acessórios
                   </Link>
                 </Button>
+              </CardContent>
+              <CardContent className="pt-0">
+                <a
+                  href={ramiresMotorsDirectionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Abrir rota para Ramires Motors no Google Maps"
+                  className="block overflow-hidden rounded-xl border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <img
+                    src={ramiresMotorsMap}
+                    alt="Mapa da Ramires Motors em Sorocaba"
+                    className="w-full max-h-80 object-cover transition-opacity hover:opacity-90"
+                  />
+                </a>
               </CardContent>
             </Card>
           </div>
@@ -383,6 +517,15 @@ function AlertItem({
     <div className="rounded-xl border p-4 bg-zinc-50 dark:bg-zinc-800/40">
       <p className="font-semibold">{title}</p>
       <p className="text-gray-500 mt-1">{description}</p>
+    </div>
+  );
+}
+
+function VehicleInfo({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="text-gray-500">{label}</span>
+      <p className="font-medium">{value}</p>
     </div>
   );
 }
