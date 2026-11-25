@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -138,11 +138,19 @@ export default function FinancingPage() {
   const { user } = useAuth();
   const { settings } = useAccessibility();
   const { theme, dark } = useTheme();
-  const { vehicleId: requestedVehicleId } = useLocalSearchParams();
+  const {
+    vehicleId: requestedVehicleId,
+    openPayment: requestedOpenPayment,
+  } = useLocalSearchParams();
   const requestedVehicleIdString = Array.isArray(requestedVehicleId)
     ? requestedVehicleId[0]
     : requestedVehicleId;
   const requestedVehicleIdNumber = Number(requestedVehicleIdString);
+  const shouldOpenPayment =
+    (Array.isArray(requestedOpenPayment)
+      ? requestedOpenPayment[0]
+      : requestedOpenPayment) === "true";
+  const paymentModalRequested = useRef(false);
 
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
@@ -252,6 +260,25 @@ export default function FinancingPage() {
   useEffect(() => {
     carregarFinanciamento();
   }, [carregarFinanciamento]);
+
+  useEffect(() => {
+    if (
+      !shouldOpenPayment ||
+      loading ||
+      paymentModalRequested.current ||
+      !selectedVehicle
+    ) {
+      return;
+    }
+
+    paymentModalRequested.current = true;
+    if (parcelasRestantes > 0) {
+      setPaymentMethod("credito");
+      setPaymentError("");
+      setPaymentSuccess("");
+      setPaymentModalVisible(true);
+    }
+  }, [loading, parcelasRestantes, selectedVehicle, shouldOpenPayment]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -381,7 +408,7 @@ export default function FinancingPage() {
       <View style={styles.header}>
         <TouchableOpacity
           style={[styles.backButton, { borderColor: theme.box }]}
-          onPress={() => router.replace("/(tabs)/vehicle")}
+          onPress={() => router.replace("/(tabs)/dashboard")}
         >
           <Ionicons name="arrow-back" size={18} color={theme.text} />
           <Text style={[styles.backButtonText, { color: theme.text }]}>

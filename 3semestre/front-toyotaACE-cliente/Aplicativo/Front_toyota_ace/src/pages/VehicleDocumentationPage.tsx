@@ -542,7 +542,7 @@ export default function VehicleDocumentationPage() {
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
         <div className="order-0 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <Button asChild variant="outline">
-            <Link to="/veiculo"><ArrowLeft aria-hidden="true" />{content.back}</Link>
+            <Link to="/dashboard"><ArrowLeft aria-hidden="true" />{content.back}</Link>
           </Button>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => window.print()}>

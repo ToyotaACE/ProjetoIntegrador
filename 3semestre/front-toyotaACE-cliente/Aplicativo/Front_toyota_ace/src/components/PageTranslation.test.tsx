@@ -24,6 +24,7 @@ function TranslationFixture() {
       <p>Olá, Cliente 👋</p>
       <p>{3} de {6} etapas concluídas</p>
       <p>Seu Corolla está na etapa: Linha de produção.</p>
+      <p>{`25% do progresso`}</p>
       <p>Acompanhe o progresso das etapas de produção em tempo real</p>
       <p>Progresso Geral</p>
       <p>Seu pedido foi registrado com sucesso.</p>
@@ -78,6 +79,7 @@ describe("PageTranslation", () => {
       expect(screen.getByText("Hello, Cliente 👋")).toBeInTheDocument();
       expect(screen.getByText("3 of 6 steps completed")).toBeInTheDocument();
       expect(screen.getByText("Your Corolla is at this stage: Production line.")).toBeInTheDocument();
+      expect(screen.getByText("25% of progress")).toBeInTheDocument();
       expect(screen.getByText("Track production progress in real time")).toBeInTheDocument();
       expect(screen.getByText("Overall progress")).toBeInTheDocument();
       expect(screen.getByText("Your order has been placed successfully.")).toBeInTheDocument();
@@ -128,6 +130,7 @@ describe("PageTranslation", () => {
       expect(screen.getByPlaceholderText("Selecciona un horario")).toBeInTheDocument();
       expect(screen.getByLabelText("Seleccionar horario disponible")).toBeInTheDocument();
       expect(screen.getByText("Tu Corolla está en la etapa: Línea de producción.")).toBeInTheDocument();
+      expect(screen.getByText("25% del progreso")).toBeInTheDocument();
       expect(screen.getByText("Sigue el progreso de producción en tiempo real")).toBeInTheDocument();
       expect(screen.getByText("Progreso general")).toBeInTheDocument();
       expect(screen.getByText("Tu pedido se registró correctamente.")).toBeInTheDocument();
@@ -161,6 +164,7 @@ describe("PageTranslation", () => {
       expect(screen.getByText("アシスタントに接続できません。Flaskがポート5000で起動しているか確認してください。")).toBeInTheDocument();
       expect(screen.getByText("こんにちは、Cliente 👋")).toBeInTheDocument();
       expect(screen.getByText("Corollaの現在の段階: 生産ライン。" )).toBeInTheDocument();
+      expect(screen.getByText("進捗 25%")).toBeInTheDocument();
       expect(screen.getByAltText("車両")).toBeInTheDocument();
       expect(screen.getByAltText("トヨタのロゴ")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "前のページへ" })).toBeInTheDocument();

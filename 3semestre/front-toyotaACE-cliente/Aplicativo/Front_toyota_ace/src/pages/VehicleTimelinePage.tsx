@@ -7,7 +7,6 @@ import {
   CarFront,
   Check,
   CheckCircle2,
-  ChevronRight,
   Clock3,
   Factory,
   FileCheck2,
@@ -21,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { api, type Veiculo } from "@/services/api";
+import { getTimelineStageStatuses } from "@/lib/vehicleTimeline";
 
 const stages = [
   {
@@ -124,6 +124,9 @@ export default function VehicleTimelinePage() {
     () => stages.filter((stage) => stage.isComplete(progress)).length,
     [progress],
   );
+  const stageStatuses = getTimelineStageStatuses(
+    stages.map((stage) => stage.isComplete(progress)),
+  );
 
   return (
     <main className="min-h-screen bg-[#f7f8fa] px-4 py-5 text-[#141923] dark:bg-zinc-950 dark:text-white md:px-7">
@@ -146,11 +149,11 @@ export default function VehicleTimelinePage() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 rounded-full bg-green-100 px-4 py-3 font-bold text-green-700 dark:bg-green-950 dark:text-green-300">
               <BadgeCheck className="h-5 w-5" />
-              {progress}% do valor
+              {`${progress}% do progresso`}
             </div>
             <Button
               variant="outline"
-              onClick={() => navigate("/veiculo")}
+              onClick={() => navigate("/dashboard")}
               className="hidden sm:inline-flex"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -174,8 +177,8 @@ export default function VehicleTimelinePage() {
               <div className="min-w-0 flex-1">
                 <div className="mb-2 flex justify-between gap-4 text-sm font-semibold">
                   <span>Progresso Geral</span>
-                  <span className="text-lg font-bold text-red-600">
-                    {progress}%
+                  <span className="text-lg font-bold text-black dark:text-white">
+                    {`${progress}% do progresso`}
                   </span>
                 </div>
                 <div
@@ -186,7 +189,7 @@ export default function VehicleTimelinePage() {
                   aria-valuemax={100}
                 >
                   <div
-                    className="h-full rounded-full bg-red-600 transition-all duration-500"
+                    className="h-full rounded-full bg-green-500/70 transition-all duration-500"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -196,17 +199,19 @@ export default function VehicleTimelinePage() {
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_250px]">
               <div className="space-y-3">
                 {stages.map((stage, index) => {
-                  const done = stage.isComplete(progress);
-                  const Icon = done
-                    ? Check
-                    : stage.icon;
+                  const status = stageStatuses[index];
+                  const done = status === "completed";
+                  const inProgress = status === "in-progress";
+                  const Icon = done ? Check : stage.icon;
                   return (
                     <div key={stage.label} className="flex items-stretch gap-3">
                       <div className="flex w-12 shrink-0 flex-col items-center">
                         <div
                           className={`flex h-11 w-11 items-center justify-center rounded-full ${
                             done
-                              ? "bg-red-600 text-white"
+                              ? "border-2 border-green-600 bg-green-500/20 text-green-700 dark:border-green-500 dark:bg-green-500/20 dark:text-green-300"
+                              : inProgress
+                                ? "border-2 border-slate-400 bg-slate-200 text-slate-700 dark:border-zinc-500 dark:bg-zinc-700 dark:text-zinc-100"
                               : "border-2 border-slate-300 bg-white text-slate-600 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300"
                           }`}
                         >
@@ -215,7 +220,7 @@ export default function VehicleTimelinePage() {
                         {index < stages.length - 1 && (
                           <div
                             className={`my-1 min-h-3 w-1 flex-1 rounded-full ${
-                              done ? "bg-red-200 dark:bg-red-950" : "bg-slate-200 dark:bg-zinc-700"
+                              done ? "bg-green-500/40 dark:bg-green-500/30" : "bg-slate-200 dark:bg-zinc-700"
                             }`}
                           />
                         )}
@@ -223,13 +228,19 @@ export default function VehicleTimelinePage() {
                       <div
                         className={`flex min-h-[72px] flex-1 items-center gap-4 rounded-xl border px-4 py-3 ${
                           done
-                            ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-                            : "border-slate-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+                            ? "border-green-300 bg-green-500/10 dark:border-green-800 dark:bg-green-500/10"
+                            : inProgress
+                              ? "border-slate-300 bg-slate-100 dark:border-zinc-600 dark:bg-zinc-800"
+                              : "border-slate-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
                         }`}
                       >
                         <stage.icon
                           className={`hidden h-7 w-7 shrink-0 sm:block ${
-                            done ? "text-red-600" : "text-slate-800 dark:text-zinc-200"
+                            done
+                              ? "text-green-700 dark:text-green-300"
+                              : inProgress
+                                ? "text-slate-600 dark:text-zinc-300"
+                                : "text-slate-800 dark:text-zinc-200"
                           }`}
                         />
                         <div className="min-w-0 flex-1">
@@ -239,13 +250,11 @@ export default function VehicleTimelinePage() {
                           </p>
                         </div>
                         {done ? (
-                          <span className="hidden items-center gap-2 rounded-full bg-red-100 px-3 py-2 text-xs font-medium text-red-700 sm:flex dark:bg-red-900/50 dark:text-red-200">
+                          <span className="hidden items-center gap-2 rounded-full bg-green-500/15 px-3 py-2 text-xs font-medium text-green-800 sm:flex dark:text-green-200">
                             <CalendarDays className="h-4 w-4" />
                             {index === 0 ? formatOrderDate(vehicle, language) : "Concluído"}
                           </span>
-                        ) : (
-                          <ChevronRight className="h-5 w-5 shrink-0 text-slate-500" />
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   );
@@ -311,7 +320,7 @@ export default function VehicleTimelinePage() {
                 Você será notificado em todas as atualizações do seu pedido.
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => navigate("/veiculo")}>
+                <Button variant="outline" onClick={() => navigate("/dashboard")}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Voltar
                 </Button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, type Veiculo } from "@/services/api";
@@ -45,6 +45,8 @@ const FinancingPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedVehicleId = Number(searchParams.get("vehicleId"));
+  const shouldOpenPayment = searchParams.get("abrirPagamento") === "true";
+  const paymentModalRequested = useRef(false);
 
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(
@@ -134,6 +136,20 @@ const FinancingPage = () => {
     parcelasRestantes > 0 && valorParcela > 0
       ? parcelasRestantes * valorParcela
       : valorFinanciado;
+
+  useEffect(() => {
+    if (
+      !shouldOpenPayment ||
+      loading ||
+      paymentModalRequested.current ||
+      !veiculoSelecionado
+    ) {
+      return;
+    }
+
+    paymentModalRequested.current = true;
+    if (parcelasRestantes > 0) setModalPagamentoAberto(true);
+  }, [loading, parcelasRestantes, shouldOpenPayment, veiculoSelecionado]);
 
   const avancarMes = () => {
     const indexAtual = meses.indexOf(ultimoMesPago);
@@ -225,7 +241,7 @@ const FinancingPage = () => {
           <div>
             <Button
               variant="outline"
-              onClick={() => navigate("/veiculo")}
+              onClick={() => navigate("/dashboard")}
               className="mb-4"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />

@@ -29,6 +29,8 @@ const translations: Record<string, Translation> = {
   "Toyota Shop": { "en-US": "Toyota Shop", "es-ES": "Tienda Toyota" },
   "Carregando dashboard...": { "en-US": "Loading dashboard...", "es-ES": "Cargando panel..." },
   "Ver veículo": { "en-US": "View vehicle", "es-ES": "Ver vehículo" },
+  "Progresso de preparação": { "en-US": "Preparation progress", "es-ES": "Progreso de preparación" },
+  "Ficha técnica": { "en-US": "Specifications", "es-ES": "Ficha técnica" },
   "Ver financiamento": { "en-US": "View financing", "es-ES": "Ver financiación" },
   "Central de avisos": { "en-US": "Notifications", "es-ES": "Centro de avisos" },
   "Ações rápidas": { "en-US": "Quick actions", "es-ES": "Acciones rápidas" },
@@ -222,6 +224,7 @@ const translations: Record<string, Translation> = {
   "Veja e simule o pagamento das parcelas por veículo.": { "en-US": "View and simulate installment payments for each vehicle.", "es-ES": "Consulta y simula el pago de cuotas de cada vehículo." },
   "Nenhum veículo com financiamento encontrado.": { "en-US": "No financed vehicles found.", "es-ES": "No se encontraron vehículos financiados." },
   "% do valor": { "en-US": "% of amount", "es-ES": "% del importe" },
+  "% do progresso": { "en-US": "% of progress", "es-ES": "% del progreso" },
   " restantes": { "en-US": " remaining", "es-ES": " restantes" },
   " pagas · ": { "en-US": " paid · ", "es-ES": " pagadas · " },
   "Último mês pago:": { "en-US": "Last month paid:", "es-ES": "Último mes pagado:" },
@@ -356,6 +359,8 @@ const japaneseTranslations: Record<string, string> = {
   "Toyota Shop": "Toyota ショップ",
   "Carregando dashboard...": "ダッシュボードを読み込み中...",
   "Ver veículo": "車両を見る",
+  "Progresso de preparação": "準備の進捗",
+  "Ficha técnica": "車両仕様",
   "Ver financiamento": "ローンを確認",
   "Central de avisos": "お知らせ",
   "Ações rápidas": "クイックアクション",
@@ -540,6 +545,7 @@ const japaneseTranslations: Record<string, string> = {
   "Veja e simule o pagamento das parcelas por veículo.": "車両ごとの分割払いを確認・シミュレーションできます。",
   "Nenhum veículo com financiamento encontrado.": "ローン契約のある車両はありません。",
   "% do valor": "%",
+  "% do progresso": "進捗 %",
   " restantes": " 残り",
   " pagas · ": " 回支払い済み · ",
   "Último mês pago:": "前回のお支払い月:",
@@ -756,6 +762,14 @@ function translateDynamic(value: string, language: Language) {
     return language === "en-US"
       ? `${completedSteps[1]} of ${completedSteps[2]} steps completed`
       : `${completedSteps[1]} de ${completedSteps[2]} etapas completadas`;
+  }
+
+  const progressPercentage = value.match(/^(\d+(?:[.,]\d+)?)% do progresso$/);
+  if (progressPercentage) {
+    if (language === "ja-JP") return `進捗 ${progressPercentage[1]}%`;
+    return language === "en-US"
+      ? `${progressPercentage[1]}% of progress`
+      : `${progressPercentage[1]}% del progreso`;
   }
 
   const currentStepCount = value.match(/^(.+) de (\d+) etapas concluídas$/);

@@ -490,6 +490,13 @@ test("dynamic phrases split across JSX text nodes are localized as a whole", () 
   assert.equal(translateChildren(parts, "ja-JP").join(""), "1 / 3 段階完了");
 });
 
+test("vehicle progress percentages use progress wording in every locale", () => {
+  assert.equal(translateText("25% do progresso", "pt-BR"), "25% do progresso");
+  assert.equal(translateText("25% do progresso", "en-US"), "25% of progress");
+  assert.equal(translateText("25% do progresso", "es-ES"), "25% del progreso");
+  assert.equal(translateText("25% do progresso", "ja-JP"), "進捗 25%");
+});
+
 test("unmatched mixed text still translates known labels independently", () => {
   assert.equal(
     translateChildren(["Data:", " ", "23/10/2026"], "en-US").join(""),

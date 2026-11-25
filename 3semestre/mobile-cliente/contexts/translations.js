@@ -91,6 +91,8 @@ const japanese = {
   "Pedido realizado": "ご注文済み",
   "Aguardando início": "開始待ち",
   "Ver veículo": "車両を見る",
+  "Progresso de preparação": "準備の進捗",
+  "Ver financiamento": "ローンを支払う",
   "Financiamento": "ローン",
   "Veículos": "車両",
   "Próxima parcela": "次回のお支払い",
@@ -327,7 +329,7 @@ const english = {
   "Nome": "Name", "Seu nome": "Your name", "Telefone": "Phone", "CPF": "Tax ID", "Senha": "Password", "Confirmar Senha": "Confirm password", "Confirmar senha": "Confirm password",
   "Já tem conta?": "Already have an account?", "Cadastrar": "Register", "Criar conta": "Create account", "Criando conta...": "Creating account...", "E-mail já cadastrado.": "Email already registered.", "Erro ao cadastrar usuário.": "Could not register the user.", "Erro ao criar conta.": "Could not create the account.", "As senhas não coincidem.": "Passwords do not match.",
   "Olá!": "Hello!", "Bem-vindo ao seu portal Toyota ACE.": "Welcome to your Toyota ACE portal.", "Carregando Home...": "Loading home...", "Carregando perfil...": "Loading profile...", "Veículo principal": "Main vehicle", "Etapa atual": "Current step",
-  "Pronto para retirada": "Ready for pickup", "Concessionária": "Dealership", "Cegonha": "Vehicle carrier", "Inspeção": "Inspection", "Linha de produção": "Production line", "Pedido realizado": "Order placed", "Aguardando início": "Awaiting start", "Ver veículo": "View vehicle", "Financiamento": "Financing", "Veículos": "Vehicles", "Próxima parcela": "Next installment", "Próxima revisão": "Next service", "Toyota Shop": "Toyota Shop", "Acessórios": "Accessories", "Central de avisos": "Notifications", "Acompanhamento do veículo": "Vehicle tracking", "Garantia": "Warranty",
+  "Pronto para retirada": "Ready for pickup", "Concessionária": "Dealership", "Cegonha": "Vehicle carrier", "Inspeção": "Inspection", "Linha de produção": "Production line", "Pedido realizado": "Order placed", "Aguardando início": "Awaiting start", "Ver veículo": "View vehicle", "Progresso de preparação": "Preparation progress", "Ver financiamento": "Pay financing", "Financiamento": "Financing", "Veículos": "Vehicles", "Próxima parcela": "Next installment", "Próxima revisão": "Next service", "Toyota Shop": "Toyota Shop", "Acessórios": "Accessories", "Central de avisos": "Notifications", "Acompanhamento do veículo": "Vehicle tracking", "Garantia": "Warranty",
   "Nenhum veículo encontrado": "No vehicle found", "Não encontramos veículos vinculados ao seu perfil.": "No vehicles are linked to your profile.", "Meus Veículos": "My Vehicles", "Selecione um veículo para acompanhar ficha técnica e fabricação.": "Select a vehicle to track its specifications and production.", "Carregando veículos...": "Loading vehicles...", "Não foi possível carregar seus veículos.": "Could not load your vehicles.", "Nenhum veículo vinculado ao seu cadastro ainda.": "No vehicle is linked to your account yet.", "Veículo Toyota": "Toyota vehicle", "Ano não informado": "Year not provided", "Cor não informada": "Color not provided",
   "Marca": "Make", "Modelo": "Model", "Ano": "Year", "Motor": "Engine", "Cor": "Color", "Câmbio": "Transmission", "Combustível": "Fuel", "Chassi": "Chassis", "Placa": "License plate", "Ficha técnica": "Specifications", "Timeline de Fabricação": "Manufacturing timeline", "Progresso": "Progress", "Pedido Realizado": "Order placed", "Linha de Produção": "Production line", "Pronto para Retirada": "Ready for pickup", "Financiamento quitado": "Financing paid off", "Financeiro": "Financing", "Carregando financiamento...": "Loading financing...", "Valor Total": "Total amount", "Entrada": "Down payment", "Valor Financiado": "Financed amount", "Parcelas": "Installments", "Parcelas pagas": "Installments paid", "Parcelas restantes": "Installments remaining", "Valor da parcela": "Installment amount", "Taxa de juros": "Interest rate", "Último mês pago": "Last month paid", "Pagar parcela": "Pay installment", "Pagamento da parcela": "Installment payment", "Escolha a forma de pagamento": "Choose a payment method", "Cartão de crédito": "Credit card", "Cartão de débito": "Debit card", "PIX": "PIX", "Pix": "PIX", "Boleto": "Bank slip", "Confirmar pagamento": "Confirm payment",
   "Agendamentos": "Appointments", "Agenda": "Schedule", "Escolha a data e horário para seu atendimento.": "Choose a date and time for your appointment.", "Novo agendamento": "New appointment", "Tipo de serviço": "Service type", "Data": "Date", "Horário": "Time", "Selecione uma data": "Select a date", "Selecione um horário": "Select a time", "Retirada": "Pickup", "Revisão": "Service", "Recall": "Recall", "Outros": "Other", "Confirmar agendamento": "Confirm appointment", "Confirmar Agendamento": "Confirm appointment", "Confirmando...": "Confirming...", "Agendamento confirmado!": "Appointment confirmed!", "Nenhum compromisso neste dia.": "No appointments on this day.", "Excluir agendamento": "Delete appointment", "Deseja remover este agendamento?": "Do you want to remove this appointment?", "Cancelar": "Cancel", "Excluir": "Delete", "Sucesso": "Success", "Erro": "Error",
@@ -352,7 +354,7 @@ const spanish = {
   "Nome": "Nombre", "Seu nome": "Tu nombre", "Telefone": "Teléfono", "CPF": "Documento fiscal", "Senha": "Contraseña", "Confirmar Senha": "Confirmar contraseña", "Confirmar senha": "Confirmar contraseña",
   "Já tem conta?": "¿Ya tienes una cuenta?", "Cadastrar": "Registrarse", "Criar conta": "Crear cuenta", "Criando conta...": "Creando cuenta...", "E-mail já cadastrado.": "El correo ya está registrado.", "Erro ao cadastrar usuário.": "No se pudo registrar el usuario.", "Erro ao criar conta.": "No se pudo crear la cuenta.", "As senhas não coincidem.": "Las contraseñas no coinciden.",
   "Olá!": "¡Hola!", "Bem-vindo ao seu portal Toyota ACE.": "Te damos la bienvenida a tu portal Toyota ACE.", "Carregando Home...": "Cargando inicio...", "Carregando perfil...": "Cargando perfil...", "Veículo principal": "Vehículo principal", "Etapa atual": "Etapa actual",
-  "Pronto para retirada": "Listo para recoger", "Concessionária": "Concesionario", "Cegonha": "Transporte", "Inspeção": "Inspección", "Linha de produção": "Línea de producción", "Pedido realizado": "Pedido realizado", "Aguardando início": "Esperando inicio", "Ver veículo": "Ver vehículo", "Financiamento": "Financiación", "Veículos": "Vehículos", "Próxima parcela": "Próxima cuota", "Próxima revisão": "Próxima revisión", "Toyota Shop": "Tienda Toyota", "Acessórios": "Accesorios", "Central de avisos": "Centro de avisos", "Acompanhamento do veículo": "Seguimiento del vehículo", "Garantia": "Garantía",
+  "Pronto para retirada": "Listo para recoger", "Concessionária": "Concesionario", "Cegonha": "Transporte", "Inspeção": "Inspección", "Linha de produção": "Línea de producción", "Pedido realizado": "Pedido realizado", "Aguardando início": "Esperando inicio", "Ver veículo": "Ver vehículo", "Progresso de preparação": "Progreso de preparación", "Ver financiamento": "Pagar financiación", "Financiamento": "Financiación", "Veículos": "Vehículos", "Próxima parcela": "Próxima cuota", "Próxima revisão": "Próxima revisión", "Toyota Shop": "Tienda Toyota", "Acessórios": "Accesorios", "Central de avisos": "Centro de avisos", "Acompanhamento do veículo": "Seguimiento del vehículo", "Garantia": "Garantía",
   "Nenhum veículo encontrado": "No se encontró ningún vehículo", "Não encontramos veículos vinculados ao seu perfil.": "No encontramos vehículos vinculados a tu perfil.", "Meus Veículos": "Mis vehículos", "Selecione um veículo para acompanhar ficha técnica e fabricação.": "Selecciona un vehículo para consultar sus especificaciones y fabricación.", "Carregando veículos...": "Cargando vehículos...", "Não foi possível carregar seus veículos.": "No se pudieron cargar tus vehículos.", "Nenhum veículo vinculado ao seu cadastro ainda.": "Todavía no hay ningún vehículo vinculado a tu cuenta.", "Veículo Toyota": "Vehículo Toyota", "Ano não informado": "Año no informado", "Cor não informada": "Color no informado",
   "Marca": "Marca", "Modelo": "Modelo", "Ano": "Año", "Motor": "Motor", "Cor": "Color", "Câmbio": "Transmisión", "Combustível": "Combustible", "Chassi": "Chasis", "Placa": "Matrícula", "Ficha técnica": "Ficha técnica", "Timeline de Fabricação": "Cronología de fabricación", "Progresso": "Progreso", "Pedido Realizado": "Pedido realizado", "Linha de Produção": "Línea de producción", "Pronto para Retirada": "Listo para recoger", "Financiamento quitado": "Financiación pagada", "Financeiro": "Financiación", "Carregando financiamento...": "Cargando financiación...", "Valor Total": "Importe total", "Entrada": "Pago inicial", "Valor Financiado": "Importe financiado", "Parcelas": "Cuotas", "Parcelas pagas": "Cuotas pagadas", "Parcelas restantes": "Cuotas restantes", "Valor da parcela": "Importe de la cuota", "Taxa de juros": "Tasa de interés", "Último mês pago": "Último mes pagado", "Pagar parcela": "Pagar cuota", "Pagamento da parcela": "Pago de cuota", "Escolha a forma de pagamento": "Elige un método de pago", "Cartão de crédito": "Tarjeta de crédito", "Cartão de débito": "Tarjeta de débito", "PIX": "PIX", "Pix": "PIX", "Boleto": "Boleto", "Confirmar pagamento": "Confirmar pago",
   "Agendamentos": "Citas", "Agenda": "Agenda", "Escolha a data e horário para seu atendimento.": "Elige la fecha y hora de tu cita.", "Novo agendamento": "Nueva cita", "Tipo de serviço": "Tipo de servicio", "Data": "Fecha", "Horário": "Horario", "Selecione uma data": "Selecciona una fecha", "Selecione um horário": "Selecciona un horario", "Retirada": "Retiro", "Revisão": "Revisión", "Recall": "Llamado a revisión", "Outros": "Otros", "Confirmar agendamento": "Confirmar cita", "Confirmar Agendamento": "Confirmar cita", "Confirmando...": "Confirmando...", "Agendamento confirmado!": "¡Cita confirmada!", "Nenhum compromisso neste dia.": "No hay citas para este día.", "Excluir agendamento": "Eliminar cita", "Deseja remover este agendamento?": "¿Quieres eliminar esta cita?", "Cancelar": "Cancelar", "Excluir": "Eliminar", "Sucesso": "Éxito", "Erro": "Error",
@@ -465,6 +467,7 @@ Object.assign(english, {
   "Senha de acesso": "Access password",
   "Nome do cliente": "Customer name",
   "% do valor": "% of amount",
+  "% do progresso": "% of progress",
   "Este horário já está reservado. Escolha outro.": "This time is already booked. Choose another.",
   "Sem observação": "No notes",
   "Tem certeza que deseja remover este compromisso?": "Are you sure you want to remove this appointment?",
@@ -663,6 +666,7 @@ Object.assign(spanish, {
   "Senha de acesso": "Contraseña de acceso",
   "Nome do cliente": "Nombre del cliente",
   "% do valor": "% del importe",
+  "% do progresso": "% del progreso",
   "Este horário já está reservado. Escolha outro.": "Este horario ya está reservado. Elige otro.",
   "Sem observação": "Sin observaciones",
   "Tem certeza que deseja remover este compromisso?": "¿Seguro que quieres eliminar esta cita?",
@@ -854,6 +858,7 @@ Object.assign(japanese, {
   "A nova senha deve ter pelo menos 6 caracteres.": "新しいパスワードは6文字以上で入力してください。",
   "Nome do cliente": "お客様の氏名",
   "% do valor": "%",
+  "% do progresso": "%",
   "Este horário já está reservado. Escolha outro.": "この時間はすでに予約済みです。別の時間を選択してください。",
   "Aumentar tamanho do texto": "文字を大きくする",
   "Sem observação": "備考なし",
@@ -1549,6 +1554,9 @@ export function translateText(value, language) {
     const installmentCount = normalized.match(/^(\d+) pagas\s*[•·]\s*(\d+) restantes$/);
     if (installmentCount) return `${installmentCount[1]} 回支払い済み • 残り ${installmentCount[2]} 回`;
 
+    const progressPercentage = normalized.match(/^(\d+(?:[.,]\d+)?)% do progresso$/);
+    if (progressPercentage) return `進捗 ${progressPercentage[1]}%`;
+
     const percentage = normalized.match(/^(\d+)% do valor$/);
     if (percentage) return `金額の${percentage[1]}%`;
 
@@ -1661,6 +1669,13 @@ export function translateText(value, language) {
       return language === "en-US"
         ? `${installmentCount[1]} paid • ${installmentCount[2]} remaining`
         : `${installmentCount[1]} pagadas • ${installmentCount[2]} restantes`;
+    }
+
+    const progressPercentage = normalized.match(/^(\d+(?:[.,]\d+)?)% do progresso$/);
+    if (progressPercentage) {
+      return language === "en-US"
+        ? `${progressPercentage[1]}% of progress`
+        : `${progressPercentage[1]}% del progreso`;
     }
 
     const percentage = normalized.match(/^(\d+)% do valor$/);
