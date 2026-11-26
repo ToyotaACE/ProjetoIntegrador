@@ -178,6 +178,7 @@ test("vehicle screen instructions are localized in every supported language", ()
 test("vehicle timeline labels and vehicle specifications are localized", () => {
   const timelineLabels = [
     "Progresso Geral",
+    "Auditoria",
     "Seu pedido foi registrado com sucesso.",
     "Produto em processo de fabricação.",
     "Qualidade sendo verificada.",
@@ -204,6 +205,9 @@ test("vehicle timeline labels and vehicle specifications are localized", () => {
   }
 
   assert.equal(translateText("Progresso Geral", "en-US"), "Overall progress");
+  assert.equal(translateText("Auditoria", "en-US"), "Audit");
+  assert.equal(translateText("Auditoria", "es-ES"), "Auditoría");
+  assert.equal(translateText("Auditoria", "ja-JP"), "監査");
   assert.equal(translateText("Data do Pedido", "ja-JP"), "注文日");
   assert.equal(translateText("Vermelho", "es-ES"), "Rojo");
   assert.equal(translateText("Automático", "en-US"), "Automatic");

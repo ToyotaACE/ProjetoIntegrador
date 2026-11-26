@@ -1,6 +1,5 @@
 
 import { useCallback, useEffect, useState } from "react";
-import { useAppContext } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +37,7 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { api, type Cliente } from "@/services/api";
 
 // API LOCAL - SPRING BOOT
 const API_URL = (
@@ -74,7 +74,18 @@ type Appointment = {
   clientId?: number;
   type: AppointmentType;
   description: string;
+  retiradaPersonalizada?: boolean;
+  retiradaLaco?: boolean;
+  retiradaCorLaco?: string;
+  retiradaBaloes?: boolean;
+  retiradaCorBaloes?: string;
+  retiradaConfetes?: boolean;
+  retiradaCorConfetes?: string;
+  retiradaMensagemVideo?: string;
+  retiradaCorMensagemVideo?: string;
 };
+
+type PersistedCliente = Cliente & { id: number };
 
 type VehicleApiResponse = {
   marcaVeiculo?: string;
@@ -98,6 +109,15 @@ type AppointmentApiResponse = {
   tipoServico?: string;
   observacao?: string;
   status?: string;
+  retiradaPersonalizada?: boolean;
+  retiradaLaco?: boolean;
+  retiradaCorLaco?: string;
+  retiradaBaloes?: boolean;
+  retiradaCorBaloes?: string;
+  retiradaConfetes?: boolean;
+  retiradaCorConfetes?: string;
+  retiradaMensagemVideo?: string;
+  retiradaCorMensagemVideo?: string;
 };
 
 const typeConfig = {
@@ -191,9 +211,11 @@ const formatarVeiculo = (vehicle?: VehicleApiResponse): string => {
 };
 
 const Schedule = () => {
-  const { clients } = useAppContext();
   const { t, language, dateLocale } = useLanguage();
 
+  const [clients, setClients] = useState<PersistedCliente[]>([]);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [clientLoadError, setClientLoadError] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(
     new Date()
   );
@@ -217,7 +239,7 @@ const Schedule = () => {
 
   const [form, setForm] = useState({
     time: "",
-    client: "",
+    clientId: "",
     type: "visita" as AppointmentType,
     description: "",
   });
@@ -305,6 +327,15 @@ const Schedule = () => {
             item.observacao ||
             item.tipoServico ||
             "",
+          retiradaPersonalizada: item.retiradaPersonalizada,
+          retiradaLaco: item.retiradaLaco,
+          retiradaCorLaco: item.retiradaCorLaco,
+          retiradaBaloes: item.retiradaBaloes,
+          retiradaCorBaloes: item.retiradaCorBaloes,
+          retiradaConfetes: item.retiradaConfetes,
+          retiradaCorConfetes: item.retiradaCorConfetes,
+          retiradaMensagemVideo: item.retiradaMensagemVideo,
+          retiradaCorMensagemVideo: item.retiradaCorMensagemVideo,
         })
       );
 
@@ -332,9 +363,29 @@ const Schedule = () => {
     }
   }, [t]);
 
+  const carregarClientes = useCallback(async () => {
+    try {
+      const data = await api.listarClientes();
+      setClientLoadError(false);
+      setClients(
+        data.filter((cliente): cliente is PersistedCliente =>
+          typeof cliente.id === "number" && Number.isInteger(cliente.id)
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao carregar clientes do backend:", error);
+      setClients([]);
+      setClientLoadError(true);
+      toast.error(t("Erro ao carregar clientes do backend."));
+    } finally {
+      setLoadingClients(false);
+    }
+  }, [t]);
+
   useEffect(() => {
     void carregarAgendamentos();
-  }, [carregarAgendamentos]);
+    void carregarClientes();
+  }, [carregarAgendamentos, carregarClientes]);
 
   // ==========================================
   // FILTRO DOS AGENDAMENTOS POR DATA
@@ -370,7 +421,7 @@ const Schedule = () => {
   // ==========================================
 
   const handleSave = async () => {
-    if (!form.time || !form.client.trim()) {
+    if (!form.time || !form.clientId) {
       toast.error(
         t("Preencha horário e cliente")
       );
@@ -385,9 +436,7 @@ const Schedule = () => {
     }
 
     const clienteSelecionado = clients.find(
-      (client) =>
-        client.name.trim().toLowerCase() ===
-        form.client.trim().toLowerCase()
+      (client) => String(client.id) === form.clientId
     );
 
     if (!clienteSelecionado) {
@@ -447,7 +496,7 @@ const Schedule = () => {
 
       setForm({
         time: "",
-        client: "",
+        clientId: "",
         type: "visita",
         description: "",
       });
@@ -662,6 +711,11 @@ const Schedule = () => {
                   typeConfig[appointment.type];
 
                 const Icon = config.icon;
+                const pickupDetails = [
+                  { label: "Laço", enabled: appointment.retiradaLaco, color: appointment.retiradaCorLaco },
+                  { label: "Balões", enabled: appointment.retiradaBaloes, color: appointment.retiradaCorBaloes },
+                  { label: "Confetes", enabled: appointment.retiradaConfetes, color: appointment.retiradaCorConfetes },
+                ].filter((detail) => detail.enabled);
 
                 return (
                   <li
@@ -724,6 +778,42 @@ const Schedule = () => {
                           <p className="text-xs text-muted-foreground mt-1">
                             {appointment.description}
                           </p>
+                        )}
+
+                        {appointment.type === "retirada" && appointment.retiradaPersonalizada && (
+                          <div className="mt-2 rounded-md border border-border bg-muted/30 p-2 text-xs">
+                            <p className="mb-1 font-semibold">
+                              {t("Personalização para retirada")}
+                            </p>
+                            {pickupDetails.length > 0 ? (
+                              <div className="flex flex-wrap gap-3">
+                                {pickupDetails.map((detail) => (
+                                  <span key={detail.label} className="inline-flex items-center gap-1">
+                                    <span
+                                      aria-hidden="true"
+                                      className="h-3 w-3 rounded-full border border-border"
+                                      style={{ backgroundColor: detail.color }}
+                                    />
+                                    {t(detail.label)}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-muted-foreground">
+                                {t("Sem itens decorativos selecionados")}
+                              </p>
+                            )}
+                            {appointment.retiradaMensagemVideo && (
+                              <p className="mt-1 flex items-center gap-1">
+                                <span
+                                  aria-hidden="true"
+                                  className="h-3 w-3 rounded-full border border-border"
+                                  style={{ backgroundColor: appointment.retiradaCorMensagemVideo }}
+                                />
+                                {t("Mensagem no vídeo")}: “{appointment.retiradaMensagemVideo}”
+                              </p>
+                            )}
+                          </div>
                         )}
 
                       </div>
@@ -864,29 +954,43 @@ const Schedule = () => {
                 {t("Cliente")}
               </Label>
 
-              <Input
-                id="agenda-cliente"
-                value={form.client}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    client: event.target.value,
-                  }))
+              <Select
+                value={form.clientId}
+                onValueChange={(clientId) =>
+                  setForm((current) => ({ ...current, clientId }))
                 }
-                placeholder={t(
-                  "Digite o nome do cliente"
-                )}
-                list="agenda-clientes-cadastrados"
-              />
-
-              <datalist id="agenda-clientes-cadastrados">
-                {clients.map((client) => (
-                  <option
-                    key={client.id}
-                    value={client.name}
+                disabled={loadingClients || clients.length === 0}
+              >
+                <SelectTrigger id="agenda-cliente">
+                  <SelectValue
+                    placeholder={
+                      loadingClients
+                        ? t("Carregando clientes...")
+                        : t("Selecione um cliente")
+                    }
                   />
-                ))}
-              </datalist>
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={String(client.id)}>
+                      {client.nome}
+                      {client.email ? ` · ${client.email}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {!loadingClients && clientLoadError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {t("Não foi possível carregar os clientes cadastrados.")}
+                </p>
+              )}
+
+              {!loadingClients && !clientLoadError && clients.length === 0 && (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {t("Nenhum cliente cadastrado no aplicativo do cliente.")}
+                </p>
+              )}
 
             </div>
 

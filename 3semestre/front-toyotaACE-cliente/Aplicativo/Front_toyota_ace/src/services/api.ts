@@ -89,6 +89,27 @@ export type Agendamento = {
   concessionaria?: string;
   cliente?: { nome?: string };
   veiculo?: Veiculo;
+  retiradaPersonalizada?: boolean;
+  retiradaLaco?: boolean;
+  retiradaCorLaco?: string;
+  retiradaBaloes?: boolean;
+  retiradaCorBaloes?: string;
+  retiradaConfetes?: boolean;
+  retiradaCorConfetes?: string;
+  retiradaMensagemVideo?: string;
+  retiradaCorMensagemVideo?: string;
+};
+
+export type PersonalizacaoRetiradaRequest = {
+  clienteId: number;
+  laco: boolean;
+  corLaco: string;
+  baloes: boolean;
+  corBaloes: string;
+  confetes: boolean;
+  corConfetes: string;
+  mensagemVideo: string;
+  corMensagemVideo: string;
 };
 
 export type HorarioAgendamento = {
@@ -196,6 +217,15 @@ export const api = {
 
   listarAgendamentos: (clienteId: number) =>
     request<Agendamento[]>(`/agendamentos/cliente/${clienteId}`),
+
+  atualizarPersonalizacaoRetirada: (
+    agendamentoId: number,
+    dados: PersonalizacaoRetiradaRequest,
+  ) =>
+    request<Agendamento>(`/agendamentos/${agendamentoId}/personalizacao-retirada`, {
+      method: "PUT",
+      body: JSON.stringify(dados),
+    }),
 
   listarTodosAgendamentos: () =>
     request<Agendamento[]>("/agendamentos"),

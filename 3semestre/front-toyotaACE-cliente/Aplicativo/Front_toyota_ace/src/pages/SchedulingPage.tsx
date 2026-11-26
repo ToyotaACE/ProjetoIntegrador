@@ -59,6 +59,37 @@ type Appointment = {
   description: string;
   vehicle?: Veiculo;
   concessionaria?: string;
+  retiradaPersonalizada?: boolean;
+  retiradaLaco?: boolean;
+  retiradaCorLaco?: string;
+  retiradaBaloes?: boolean;
+  retiradaCorBaloes?: string;
+  retiradaConfetes?: boolean;
+  retiradaCorConfetes?: string;
+  retiradaMensagemVideo?: string;
+  retiradaCorMensagemVideo?: string;
+};
+
+type PickupCustomizationForm = {
+  laco: boolean;
+  corLaco: string;
+  baloes: boolean;
+  corBaloes: string;
+  confetes: boolean;
+  corConfetes: string;
+  mensagemVideo: string;
+  corMensagemVideo: string;
+};
+
+const emptyPickupCustomization: PickupCustomizationForm = {
+  laco: false,
+  corLaco: "#dc2626",
+  baloes: false,
+  corBaloes: "#2563eb",
+  confetes: false,
+  corConfetes: "#facc15",
+  mensagemVideo: "",
+  corMensagemVideo: "#111827",
 };
 
 const dealerships = [
@@ -129,6 +160,15 @@ const formatAppointments = (
     description: item.observacao || "",
     vehicle: item.veiculo,
     concessionaria: item.concessionaria,
+    retiradaPersonalizada: item.retiradaPersonalizada,
+    retiradaLaco: item.retiradaLaco,
+    retiradaCorLaco: item.retiradaCorLaco,
+    retiradaBaloes: item.retiradaBaloes,
+    retiradaCorBaloes: item.retiradaCorBaloes,
+    retiradaConfetes: item.retiradaConfetes,
+    retiradaCorConfetes: item.retiradaCorConfetes,
+    retiradaMensagemVideo: item.retiradaMensagemVideo,
+    retiradaCorMensagemVideo: item.retiradaCorMensagemVideo,
   }));
 
 const getVehicleDetails = (vehicle: Veiculo) =>
@@ -169,6 +209,9 @@ const SchedulingPage = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [customizingPickupId, setCustomizingPickupId] = useState<number | null>(null);
+  const [pickupForm, setPickupForm] = useState<PickupCustomizationForm>(emptyPickupCustomization);
+  const [savingPickup, setSavingPickup] = useState(false);
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [vehicles, setVehicles] = useState<Veiculo[]>([]);
@@ -326,6 +369,71 @@ const SchedulingPage = () => {
     }
   };
 
+  const openPickupCustomization = (appointment: Appointment) => {
+    setPickupForm({
+      laco: Boolean(appointment.retiradaLaco),
+      corLaco: appointment.retiradaCorLaco || emptyPickupCustomization.corLaco,
+      baloes: Boolean(appointment.retiradaBaloes),
+      corBaloes: appointment.retiradaCorBaloes || emptyPickupCustomization.corBaloes,
+      confetes: Boolean(appointment.retiradaConfetes),
+      corConfetes: appointment.retiradaCorConfetes || emptyPickupCustomization.corConfetes,
+      mensagemVideo: appointment.retiradaMensagemVideo || "",
+      corMensagemVideo: appointment.retiradaCorMensagemVideo || emptyPickupCustomization.corMensagemVideo,
+    });
+    setCustomizingPickupId(appointment.id);
+  };
+
+  const handleSavePickupCustomization = async (appointmentId: number) => {
+    if (!user?.id) {
+      toast.error("Não foi possível identificar sua conta. Entre novamente.");
+      return;
+    }
+
+    try {
+      setSavingPickup(true);
+      const saved = await api.atualizarPersonalizacaoRetirada(appointmentId, {
+        clienteId: user.id,
+        laco: pickupForm.laco,
+        corLaco: pickupForm.corLaco,
+        baloes: pickupForm.baloes,
+        corBaloes: pickupForm.corBaloes,
+        confetes: pickupForm.confetes,
+        corConfetes: pickupForm.corConfetes,
+        mensagemVideo: pickupForm.mensagemVideo.trim(),
+        corMensagemVideo: pickupForm.corMensagemVideo,
+      });
+
+      setAppointments((current) =>
+        current.map((appointment) =>
+          appointment.id === appointmentId
+            ? {
+                ...appointment,
+                retiradaPersonalizada: saved.retiradaPersonalizada,
+                retiradaLaco: saved.retiradaLaco,
+                retiradaCorLaco: saved.retiradaCorLaco,
+                retiradaBaloes: saved.retiradaBaloes,
+                retiradaCorBaloes: saved.retiradaCorBaloes,
+                retiradaConfetes: saved.retiradaConfetes,
+                retiradaCorConfetes: saved.retiradaCorConfetes,
+                retiradaMensagemVideo: saved.retiradaMensagemVideo,
+                retiradaCorMensagemVideo: saved.retiradaCorMensagemVideo,
+              }
+            : appointment,
+        ),
+      );
+      setCustomizingPickupId(null);
+      toast.success("Personalização da retirada salva!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar a personalização da retirada.",
+      );
+    } finally {
+      setSavingPickup(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <a
@@ -427,6 +535,11 @@ const SchedulingPage = () => {
               {dayAppointments.map((appointment) => {
                 const config = typeConfig[appointment.type];
                 const Icon = config.icon;
+                const pickupDetails = [
+                  { label: "Laço", enabled: appointment.retiradaLaco, color: appointment.retiradaCorLaco },
+                  { label: "Balões", enabled: appointment.retiradaBaloes, color: appointment.retiradaCorBaloes },
+                  { label: "Confetes", enabled: appointment.retiradaConfetes, color: appointment.retiradaCorConfetes },
+                ].filter((detail) => detail.enabled);
 
                 return (
                   <li
@@ -477,6 +590,160 @@ const SchedulingPage = () => {
                           <p className="mt-2 text-xs text-muted-foreground">
                             Veículo não informado neste agendamento.
                           </p>
+                        )}
+
+                        {appointment.type === "retirada" && (
+                          <div className="mt-4 space-y-3">
+                            {appointment.retiradaPersonalizada && (
+                              <div className="rounded-md border border-border bg-muted/30 p-3 text-xs">
+                                <p className="mb-1 font-semibold">Personalização salva</p>
+                                {pickupDetails.length > 0 ? (
+                                  <p>
+                                    {pickupDetails.map((detail) => (
+                                      <span key={detail.label} className="mr-3 inline-flex items-center gap-1">
+                                        <span
+                                          aria-hidden="true"
+                                          className="h-3 w-3 rounded-full border border-border"
+                                          style={{ backgroundColor: detail.color }}
+                                        />
+                                        {detail.label}
+                                      </span>
+                                    ))}
+                                  </p>
+                                ) : (
+                                  <p className="text-muted-foreground">Sem itens decorativos selecionados.</p>
+                                )}
+                                {appointment.retiradaMensagemVideo && (
+                                  <p className="mt-1 flex items-center gap-1">
+                                    <span
+                                      aria-hidden="true"
+                                      className="h-3 w-3 rounded-full border border-border"
+                                      style={{ backgroundColor: appointment.retiradaCorMensagemVideo }}
+                                    />
+                                    “{appointment.retiradaMensagemVideo}”
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                customizingPickupId === appointment.id
+                                  ? setCustomizingPickupId(null)
+                                  : openPickupCustomization(appointment)
+                              }
+                            >
+                              {customizingPickupId === appointment.id
+                                ? "Fechar personalização"
+                                : appointment.retiradaPersonalizada
+                                  ? "Editar personalização"
+                                  : "Personalizar retirada"}
+                            </Button>
+
+                            {customizingPickupId === appointment.id && (
+                              <div className="space-y-3 rounded-md border border-border p-3">
+                                {([
+                                  ["laco", "Laço", "corLaco", "Cor do laço"],
+                                  ["baloes", "Balões", "corBaloes", "Cor dos balões"],
+                                  ["confetes", "Confetes", "corConfetes", "Cor dos confetes"],
+                                ] as const).map(([enabledKey, label, colorKey, colorLabel]) => (
+                                  <div key={enabledKey} className="space-y-2">
+                                    <label className="flex items-center gap-2 text-sm">
+                                      <input
+                                        type="checkbox"
+                                        checked={pickupForm[enabledKey]}
+                                        onChange={(event) =>
+                                          setPickupForm((current) => ({
+                                            ...current,
+                                            [enabledKey]: event.target.checked,
+                                          }))
+                                        }
+                                      />
+                                      Quero o carro com {label.toLowerCase()}
+                                    </label>
+                                    {pickupForm[enabledKey] && (
+                                      <label className="flex items-center gap-2 pl-6 text-xs text-muted-foreground">
+                                        {colorLabel}
+                                        <input
+                                          aria-label={colorLabel}
+                                          type="color"
+                                          value={pickupForm[colorKey]}
+                                          onChange={(event) =>
+                                            setPickupForm((current) => ({
+                                              ...current,
+                                              [colorKey]: event.target.value,
+                                            }))
+                                          }
+                                          className="h-8 w-12 cursor-pointer rounded border border-border bg-transparent p-1"
+                                        />
+                                      </label>
+                                    )}
+                                  </div>
+                                ))}
+
+                                <div className="space-y-2">
+                                  <Label htmlFor={`pickup-message-${appointment.id}`}>
+                                    Mensagem para aparecer no vídeo (opcional)
+                                  </Label>
+                                  <textarea
+                                    id={`pickup-message-${appointment.id}`}
+                                    maxLength={100}
+                                    value={pickupForm.mensagemVideo}
+                                    onChange={(event) =>
+                                      setPickupForm((current) => ({
+                                        ...current,
+                                        mensagemVideo: event.target.value,
+                                      }))
+                                    }
+                                    placeholder="Digite uma mensagem de até 100 caracteres"
+                                    className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                  />
+                                  {pickupForm.mensagemVideo.trim() && (
+                                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      Cor da mensagem
+                                      <input
+                                        aria-label="Cor da mensagem no vídeo"
+                                        type="color"
+                                        value={pickupForm.corMensagemVideo}
+                                        onChange={(event) =>
+                                          setPickupForm((current) => ({
+                                            ...current,
+                                            corMensagemVideo: event.target.value,
+                                          }))
+                                        }
+                                        className="h-8 w-12 cursor-pointer rounded border border-border bg-transparent p-1"
+                                      />
+                                    </label>
+                                  )}
+                                  <p className="text-right text-xs text-muted-foreground">
+                                    {pickupForm.mensagemVideo.length}/100
+                                  </p>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    disabled={savingPickup}
+                                    onClick={() => handleSavePickupCustomization(appointment.id)}
+                                  >
+                                    {savingPickup ? "Salvando..." : "Salvar personalização"}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setCustomizingPickupId(null)}
+                                  >
+                                    Cancelar
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
 

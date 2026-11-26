@@ -40,4 +40,16 @@ public class Agendamento {
 
     private String observacao;
     private String status;
+
+    private Boolean retiradaPersonalizada = false;
+    private Boolean retiradaLaco;
+    private String retiradaCorLaco;
+    private Boolean retiradaBaloes;
+    private String retiradaCorBaloes;
+    private Boolean retiradaConfetes;
+    private String retiradaCorConfetes;
+
+    @Column(length = 100)
+    private String retiradaMensagemVideo;
+    private String retiradaCorMensagemVideo;
 }

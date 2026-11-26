@@ -129,7 +129,7 @@ const DashboardPage = () => {
     if (progresso >= 100) return "Pronto para retirada";
     if (progresso >= 83) return "Concessionária";
     if (progresso >= 66) return "Transporte";
-    if (progresso >= 50) return "Inspeção";
+    if (progresso >= 50) return "Auditoria";
     if (progresso >= 33) return "Linha de produção";
     if (progresso >= 16) return "Pedido realizado";
     return "Aguardando atualização";
