@@ -36,7 +36,7 @@ const stages = [
     isComplete: (progress: number) => progress >= 33,
   },
   {
-    label: "Inspeção",
+    label: "Auditoria",
     description: "Qualidade sendo verificada.",
     icon: Search,
     isComplete: (progress: number) => progress >= 50,

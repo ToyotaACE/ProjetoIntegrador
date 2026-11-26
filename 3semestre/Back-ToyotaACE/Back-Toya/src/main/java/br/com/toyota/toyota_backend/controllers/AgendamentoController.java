@@ -2,6 +2,7 @@ package br.com.toyota.toyota_backend.controllers;
 
 import br.com.toyota.toyota_backend.dto.AgendamentoRequest;
 import br.com.toyota.toyota_backend.dto.AgendamentoDisponibilidade;
+import br.com.toyota.toyota_backend.dto.PersonalizacaoRetiradaRequest;
 import br.com.toyota.toyota_backend.models.Agendamento;
 import br.com.toyota.toyota_backend.models.Cliente;
 import br.com.toyota.toyota_backend.repositories.AgendamentoRepository;
@@ -14,11 +15,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/agendamentos")
 @CrossOrigin(origins = "*")
 public class AgendamentoController {
+
+    private static final Pattern HEX_COLOR = Pattern.compile("^#[0-9A-Fa-f]{6}$");
 
     private final AgendamentoRepository agendamentoRepository;
     private final ClienteService clienteService;
@@ -88,6 +93,55 @@ public class AgendamentoController {
         return ResponseEntity.ok(agendamentos);
     }
 
+    @PutMapping("/{id}/personalizacao-retirada")
+    public ResponseEntity<Agendamento> personalizarRetirada(
+            @PathVariable Long id,
+            @RequestBody PersonalizacaoRetiradaRequest request
+    ) {
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado."));
+
+        if (request.getClienteId() == null
+                || !request.getClienteId().equals(agendamento.getCliente().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Este agendamento não pertence ao cliente informado.");
+        }
+
+        if (agendamento.getTipoServico() == null
+                || !agendamento.getTipoServico().toLowerCase(Locale.ROOT).contains("retirada")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A personalização está disponível apenas para retiradas.");
+        }
+
+        boolean laco = Boolean.TRUE.equals(request.getLaco());
+        boolean baloes = Boolean.TRUE.equals(request.getBaloes());
+        boolean confetes = Boolean.TRUE.equals(request.getConfetes());
+        String mensagemVideo = request.getMensagemVideo() == null ? "" : request.getMensagemVideo().trim();
+
+        if (mensagemVideo.length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A mensagem do vídeo deve ter no máximo 100 caracteres.");
+        }
+
+        String corLaco = validarCor(request.getCorLaco(), laco, "laço");
+        String corBaloes = validarCor(request.getCorBaloes(), baloes, "balões");
+        String corConfetes = validarCor(request.getCorConfetes(), confetes, "confetes");
+        String corMensagemVideo = validarCor(
+                request.getCorMensagemVideo(),
+                !mensagemVideo.isEmpty(),
+                "mensagem do vídeo"
+        );
+
+        agendamento.setRetiradaLaco(laco);
+        agendamento.setRetiradaCorLaco(corLaco);
+        agendamento.setRetiradaBaloes(baloes);
+        agendamento.setRetiradaCorBaloes(corBaloes);
+        agendamento.setRetiradaConfetes(confetes);
+        agendamento.setRetiradaCorConfetes(corConfetes);
+        agendamento.setRetiradaMensagemVideo(mensagemVideo.isEmpty() ? null : mensagemVideo);
+        agendamento.setRetiradaCorMensagemVideo(corMensagemVideo);
+        agendamento.setRetiradaPersonalizada(true);
+
+        return ResponseEntity.ok(agendamentoRepository.save(agendamento));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarAgendamento(@PathVariable Long id) {
         if (!agendamentoRepository.existsById(id)) {
@@ -96,5 +150,20 @@ public class AgendamentoController {
 
         agendamentoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private String validarCor(String cor, boolean obrigatoria, String opcao) {
+        if (!obrigatoria) {
+            return null;
+        }
+
+        if (cor == null || !HEX_COLOR.matcher(cor).matches()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Selecione uma cor válida para " + opcao + "."
+            );
+        }
+
+        return cor.toUpperCase(Locale.ROOT);
     }
 }

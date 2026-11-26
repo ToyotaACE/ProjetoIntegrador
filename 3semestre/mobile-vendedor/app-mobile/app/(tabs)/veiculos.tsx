@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -21,7 +22,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLocalizedAlert } from "@/hooks/useLocalizedAlert";
-import { api, endpoints } from "@/services/api";
+import { api, endpoints, type CatalogoVeiculo } from "@/services/api";
 
 type BackendCliente = {
   id: number;
@@ -40,7 +41,7 @@ type ClienteOption = {
 };
 
 type CatalogVehicle = {
-  id: number;
+  id: number | string;
   name: string;
   brand: string;
   year: string;
@@ -49,19 +50,31 @@ type CatalogVehicle = {
   fuel: string;
   transmission: string;
   image: any;
+  photoUrl?: string;
   versions: {
     name: string;
     price: number;
+    motor?: string;
   }[];
+  colors?: { name: string; hexadecimal: string }[];
+  options?: Accessory[];
 };
 
 type Accessory = {
-  id: number;
+  id: number | string;
   name: string;
   price: number;
 };
 
-const catalogVehicles: CatalogVehicle[] = [
+type CatalogVersionForm = { nome: string; motor: string; preco: string };
+type CatalogColorForm = { nome: string; hexadecimal: string };
+type CatalogOptionalForm = { nome: string; preco: string };
+
+const emptyCatalogVersion = (): CatalogVersionForm => ({ nome: "", motor: "", preco: "" });
+const emptyCatalogColor = (): CatalogColorForm => ({ nome: "", hexadecimal: "#FFFFFF" });
+const emptyCatalogOptional = (): CatalogOptionalForm => ({ nome: "", preco: "0" });
+
+const defaultCatalogVehicles: CatalogVehicle[] = [
   {
     id: 1,
     name: "Corolla Cross",
@@ -208,6 +221,14 @@ function onlyNumber(value: string) {
   return number;
 }
 
+function catalogAmount(value: string) {
+  const normalized = value.includes(",")
+    ? value.replace(/\./g, "").replace(",", ".")
+    : value;
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : 0;
+}
+
 function gerarChassi() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let result = "9BR";
@@ -240,6 +261,40 @@ function normalizarClientes(lista: BackendCliente[]): ClienteOption[] {
   }));
 }
 
+function mapCatalogVehicle(vehicle: CatalogoVeiculo): CatalogVehicle {
+  return {
+    id: `catalog-${vehicle.id}`,
+    name: vehicle.modelo,
+    brand: "Toyota",
+    year: String(vehicle.ano),
+    basePrice: vehicle.precoBase,
+    motor: vehicle.motor,
+    fuel: vehicle.combustivel,
+    transmission: vehicle.cambio,
+    image: { uri: vehicle.fotoCarroUrl },
+    photoUrl: vehicle.fotoCarroUrl,
+    versions: vehicle.versoes.map((version) => ({
+      name: version.nome,
+      motor: version.motor,
+      price: version.preco,
+    })),
+    colors: vehicle.cores,
+    options: vehicle.opcionais.map((option, index) => ({
+      id: `${vehicle.id}-${index}`,
+      name: option.nome,
+      price: option.preco,
+    })),
+  };
+}
+
+function getVehicleColors(vehicle: CatalogVehicle) {
+  return vehicle.colors?.length ? vehicle.colors.map((color) => color.name) : colorsOptions;
+}
+
+function getVehicleAccessories(vehicle: CatalogVehicle): Accessory[] {
+  return vehicle.options ?? accessories;
+}
+
 export default function Veiculos() {
   const Alert = useLocalizedAlert();
   const { colors, isDark } = useTheme();
@@ -256,6 +311,8 @@ export default function Veiculos() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [catalogVehicles, setCatalogVehicles] = useState(defaultCatalogVehicles);
+  const [catalogLoadError, setCatalogLoadError] = useState("");
 
   const [clients, setClients] = useState<ClienteOption[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<CatalogVehicle | null>(
@@ -263,6 +320,7 @@ export default function Veiculos() {
   );
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [catalogModalVisible, setCatalogModalVisible] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
 
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
@@ -270,7 +328,20 @@ export default function Veiculos() {
   const [selectedVersion, setSelectedVersion] = useState("");
   const [selectedColor, setSelectedColor] = useState("Branco");
   const [selectedSeat, setSelectedSeat] = useState("Tecido");
-  const [selectedAccessories, setSelectedAccessories] = useState<number[]>([]);
+  const [selectedAccessories, setSelectedAccessories] = useState<string[]>([]);
+
+  const [newModel, setNewModel] = useState("");
+  const [newCategory, setNewCategory] = useState("SUV");
+  const [newYear, setNewYear] = useState(String(new Date().getFullYear()));
+  const [newBasePrice, setNewBasePrice] = useState("");
+  const [newMotor, setNewMotor] = useState("");
+  const [newFuel, setNewFuel] = useState("");
+  const [newTransmission, setNewTransmission] = useState("");
+  const [newPhotoUrl, setNewPhotoUrl] = useState("");
+  const [newPhotoName, setNewPhotoName] = useState("");
+  const [newVersions, setNewVersions] = useState<CatalogVersionForm[]>([emptyCatalogVersion()]);
+  const [newColors, setNewColors] = useState<CatalogColorForm[]>([emptyCatalogColor()]);
+  const [newOptions, setNewOptions] = useState<CatalogOptionalForm[]>([]);
 
   const [entrada, setEntrada] = useState("20000");
   const [parcelasTotais, setParcelasTotais] = useState("48");
@@ -295,7 +366,7 @@ export default function Veiculos() {
   useFocusEffect(
     useCallback(() => {
       carregarClientes();
-    }, [])
+    }, [clienteIdParam])
   );
 
   async function carregarClientes() {
@@ -312,6 +383,18 @@ export default function Veiculos() {
       } else {
         setSelectedClientId(null);
       }
+
+      try {
+        const catalog = await api.get<CatalogoVeiculo[]>(endpoints.catalogoVeiculos);
+        setCatalogVehicles([...defaultCatalogVehicles, ...catalog.map(mapCatalogVehicle)]);
+        setCatalogLoadError("");
+      } catch (error: any) {
+        setCatalogLoadError(error?.message || "Não foi possível carregar os modelos cadastrados.");
+        Alert.alert(
+          "Catálogo indisponível",
+          error?.message || "Não foi possível carregar os modelos cadastrados."
+        );
+      }
     } catch (error: any) {
       Alert.alert(
         "Erro",
@@ -319,6 +402,112 @@ export default function Veiculos() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function chooseCatalogPhoto() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("Permissão necessária", "Permita o acesso às fotos para selecionar a imagem do veículo.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.65,
+      base64: true,
+    });
+
+    if (result.canceled) return;
+    const photo = result.assets[0];
+    if (!photo.base64 || !photo.mimeType || !["image/png", "image/jpeg", "image/webp"].includes(photo.mimeType)) {
+      Alert.alert("Imagem inválida", "Selecione uma imagem PNG, JPEG ou WebP.");
+      return;
+    }
+    if (photo.base64.length > 4_200_000) {
+      Alert.alert("Imagem muito grande", "Escolha uma imagem de até 3 MB.");
+      return;
+    }
+    setNewPhotoUrl(`data:${photo.mimeType};base64,${photo.base64}`);
+    setNewPhotoName(photo.fileName || "Imagem selecionada");
+  }
+
+  function resetCatalogForm() {
+    setNewModel("");
+    setNewCategory("SUV");
+    setNewYear(String(new Date().getFullYear()));
+    setNewBasePrice("");
+    setNewMotor("");
+    setNewFuel("");
+    setNewTransmission("");
+    setNewPhotoUrl("");
+    setNewPhotoName("");
+    setNewVersions([emptyCatalogVersion()]);
+    setNewColors([emptyCatalogColor()]);
+    setNewOptions([]);
+  }
+
+  async function saveCatalogVehicle() {
+    if (!newModel.trim() || !newMotor.trim() || !newFuel.trim() || !newTransmission.trim()) {
+      Alert.alert("Dados incompletos", "Preencha o modelo, motor, combustível e câmbio.");
+      return;
+    }
+    if (!newPhotoUrl) {
+      Alert.alert("Foto obrigatória", "Selecione uma foto do veículo.");
+      return;
+    }
+    if (catalogAmount(newBasePrice) <= 0 || !Number.isInteger(Number(newYear)) || Number(newYear) < 1900 || Number(newYear) > 2100) {
+      Alert.alert("Dados inválidos", "Informe um ano e preço base válidos.");
+      return;
+    }
+    if (newVersions.some((version) => !version.nome.trim() || !version.motor.trim() || catalogAmount(version.preco) <= 0)) {
+      Alert.alert("Versões incompletas", "Preencha nome, motorização e preço para cada versão.");
+      return;
+    }
+    if (newColors.some((color) => !color.nome.trim() || !/^#[0-9a-fA-F]{6}$/.test(color.hexadecimal))) {
+      Alert.alert("Cores incompletas", "Preencha o nome e use uma cor no formato #RRGGBB.");
+      return;
+    }
+    if (newOptions.some((option) => !option.nome.trim() || catalogAmount(option.preco) < 0)) {
+      Alert.alert("Opcionais incompletos", "Preencha nome e preço válido para cada opcional.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const created = await api.post<CatalogoVeiculo>(endpoints.catalogoVeiculos, {
+        modelo: newModel.trim(),
+        categoria: newCategory,
+        ano: Number(newYear),
+        precoBase: catalogAmount(newBasePrice),
+        motor: newMotor.trim(),
+        combustivel: newFuel.trim(),
+        cambio: newTransmission.trim(),
+        fotoCarroUrl: newPhotoUrl,
+        versoes: newVersions.map((version) => ({
+          nome: version.nome.trim(),
+          motor: version.motor.trim(),
+          preco: catalogAmount(version.preco),
+        })),
+        cores: newColors.map((color) => ({
+          nome: color.nome.trim(),
+          hexadecimal: color.hexadecimal.trim(),
+        })),
+        opcionais: newOptions.map((option) => ({
+          nome: option.nome.trim(),
+          preco: catalogAmount(option.preco),
+        })),
+      });
+      setCatalogVehicles((current) => [...current, mapCatalogVehicle(created)]);
+      setCatalogModalVisible(false);
+      resetCatalogForm();
+      Alert.alert("Veículo adicionado", "O modelo já está disponível para novos pedidos.");
+    } catch (error: any) {
+      Alert.alert("Erro", error?.message || "Não foi possível adicionar o veículo ao catálogo.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -336,10 +525,11 @@ export default function Veiculos() {
   }, [selectedSeat]);
 
   const selectedAccessoriesData = useMemo(() => {
-    return accessories.filter((accessory) =>
-      selectedAccessories.includes(accessory.id)
+    if (!selectedVehicle) return [];
+    return getVehicleAccessories(selectedVehicle).filter((accessory) =>
+      selectedAccessories.includes(String(accessory.id))
     );
-  }, [selectedAccessories]);
+  }, [selectedAccessories, selectedVehicle]);
 
   const totalAccessories = selectedAccessoriesData.reduce(
     (total, item) => total + item.price,
@@ -381,7 +571,7 @@ export default function Veiculos() {
     setOrderConfirmed(false);
     setSelectedVehicle(vehicle);
     setSelectedVersion(vehicle.versions[0].name);
-    setSelectedColor("Branco");
+    setSelectedColor(getVehicleColors(vehicle)[0]);
     setSelectedSeat("Tecido");
     setSelectedAccessories([]);
     setEntrada("20000");
@@ -397,15 +587,16 @@ export default function Veiculos() {
     setModalVisible(true);
   }
 
-  function toggleAccessory(accessoryId: number) {
-    if (selectedAccessories.includes(accessoryId)) {
+  function toggleAccessory(accessoryId: number | string) {
+    const normalizedId = String(accessoryId);
+    if (selectedAccessories.includes(normalizedId)) {
       setSelectedAccessories(
-        selectedAccessories.filter((item) => item !== accessoryId)
+        selectedAccessories.filter((item) => item !== normalizedId)
       );
       return;
     }
 
-    setSelectedAccessories([...selectedAccessories, accessoryId]);
+    setSelectedAccessories([...selectedAccessories, normalizedId]);
   }
 
   async function saveOrder() {
@@ -435,10 +626,10 @@ export default function Veiculos() {
         anoVeiculo: selectedVehicle.year,
         corVeiculo: selectedColor,
         chassiVeiculo: gerarChassi(),
-        motorVeiculo: selectedVehicle.motor,
+        motorVeiculo: selectedVersionData.motor || selectedVehicle.motor,
         combustivelVeiculo: selectedVehicle.fuel,
         cambioVeiculo: selectedVehicle.transmission,
-        fotoCarroUrl: selectedVehicle.name,
+        fotoCarroUrl: selectedVehicle.photoUrl || selectedVehicle.name,
 
         statusVeiculo: "Pedido realizado",
         progressoVeiculo: 20,
@@ -505,13 +696,33 @@ export default function Veiculos() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={styles.header}>
+      <View style={styles.headerRow}>
         <View>
           <Text style={[styles.title, { color: colors.text }]}>Veículos</Text>
-
-          
+          <Text style={[styles.headerHint, { color: colors.subtext }]}>
+            Catálogo Toyota
+          </Text>
         </View>
+        <TouchableOpacity
+          style={[styles.addCatalogButton, { backgroundColor: colors.primary }]}
+          onPress={() => setCatalogModalVisible(true)}
+          accessibilityRole="button"
+        >
+          <Ionicons name="add" size={19} color="#fff" />
+          <Text style={styles.configureButtonText}>Adicionar</Text>
+        </TouchableOpacity>
       </View>
+
+      {catalogLoadError ? (
+        <View style={styles.catalogErrorRow}>
+          <Text style={[styles.catalogErrorText, { color: colors.danger }]}>
+            {catalogLoadError}
+          </Text>
+          <TouchableOpacity onPress={() => carregarClientes()}>
+            <Text style={{ color: colors.primary, fontWeight: "700" }}>Tentar novamente</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       {clienteSelecionado ? (
         <View
@@ -588,6 +799,140 @@ export default function Veiculos() {
           </View>
         )}
       />
+
+      <Modal
+        visible={catalogModalVisible}
+        animationType="slide"
+        onRequestClose={() => setCatalogModalVisible(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Adicionar veículo</Text>
+              <Text style={[styles.modalSubtitle, { color: colors.subtext }]}>
+                O modelo ficará disponível para criar pedidos.
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => setCatalogModalVisible(false)} accessibilityRole="button">
+              <Ionicons name="close-outline" size={28} color={colors.subtext} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.catalogFormContent} keyboardShouldPersistTaps="handled">
+            <CatalogField label="Modelo" value={newModel} onChangeText={setNewModel} colors={colors} />
+            <View style={styles.catalogRow}>
+              <View style={styles.catalogFieldHalf}>
+                <Text style={[styles.inputLabel, { color: colors.subtext }]}>Categoria</Text>
+                <View style={[styles.catalogSelect, { backgroundColor: colors.input, borderColor: colors.border }]}>
+                  {["SUV", "Sedan", "Hatch", "Picape"].map((item) => {
+                    const active = newCategory === item;
+                    return (
+                      <TouchableOpacity
+                        key={item}
+                        onPress={() => setNewCategory(item)}
+                        style={[styles.catalogCategoryChip, { backgroundColor: active ? colors.primary : colors.card }]}
+                      >
+                        <Text style={{ color: active ? "#fff" : colors.text, fontSize: 12, fontWeight: "700" }}>{item}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+              <CatalogField label="Ano" value={newYear} onChangeText={setNewYear} colors={colors} keyboardType="numeric" half />
+            </View>
+            <View style={styles.catalogRow}>
+              <CatalogField label="Preço base (R$)" value={newBasePrice} onChangeText={setNewBasePrice} colors={colors} keyboardType="decimal-pad" half />
+              <CatalogField label="Motor" value={newMotor} onChangeText={setNewMotor} colors={colors} half />
+            </View>
+            <View style={styles.catalogRow}>
+              <CatalogField label="Combustível" value={newFuel} onChangeText={setNewFuel} colors={colors} half />
+              <CatalogField label="Câmbio" value={newTransmission} onChangeText={setNewTransmission} colors={colors} half />
+            </View>
+
+            <SectionTitle title="Foto do veículo" color={colors.text} />
+            <TouchableOpacity
+              style={[styles.photoPicker, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={chooseCatalogPhoto}
+              accessibilityRole="button"
+            >
+              {newPhotoUrl ? (
+                <Image source={{ uri: newPhotoUrl }} style={styles.catalogPhotoPreview} />
+              ) : (
+                <Ionicons name="image-outline" size={28} color={colors.primary} />
+              )}
+              <Text style={[styles.photoPickerText, { color: colors.text }]}>
+                {newPhotoName || "Escolher foto (PNG, JPEG ou WebP, até 3 MB)"}
+              </Text>
+            </TouchableOpacity>
+
+            <SectionTitle title="Versões" color={colors.text} />
+            {newVersions.map((version, index) => (
+              <View key={`version-${index}`} style={[styles.catalogEntry, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <CatalogField label="Nome" value={version.nome} onChangeText={(value) => setNewVersions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, nome: value } : item))} colors={colors} />
+                <CatalogField label="Motor da versão" value={version.motor} onChangeText={(value) => setNewVersions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, motor: value } : item))} colors={colors} />
+                <CatalogField label="Preço (R$)" value={version.preco} onChangeText={(value) => setNewVersions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, preco: value } : item))} colors={colors} keyboardType="decimal-pad" />
+                {newVersions.length > 1 ? (
+                  <TouchableOpacity onPress={() => setNewVersions((current) => current.filter((_, itemIndex) => itemIndex !== index))} style={styles.removeCatalogEntry}>
+                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                    <Text style={{ color: colors.danger }}>Remover versão</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ))}
+            <CatalogAddButton title="Adicionar versão" onPress={() => setNewVersions((current) => [...current, emptyCatalogVersion()])} colors={colors} />
+
+            <SectionTitle title="Cores" color={colors.text} />
+            {newColors.map((color, index) => (
+              <View key={`color-${index}`} style={[styles.catalogEntry, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <CatalogField label="Nome da cor" value={color.nome} onChangeText={(value) => setNewColors((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, nome: value } : item))} colors={colors} />
+                <View style={styles.colorInputRow}>
+                  <View style={[styles.colorSwatch, { backgroundColor: /^#[0-9a-fA-F]{6}$/.test(color.hexadecimal) ? color.hexadecimal : colors.border }]} />
+                  <View style={{ flex: 1 }}>
+                    <CatalogField label="Código (#RRGGBB)" value={color.hexadecimal} onChangeText={(value) => setNewColors((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, hexadecimal: value } : item))} colors={colors} />
+                  </View>
+                </View>
+                {newColors.length > 1 ? (
+                  <TouchableOpacity onPress={() => setNewColors((current) => current.filter((_, itemIndex) => itemIndex !== index))} style={styles.removeCatalogEntry}>
+                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                    <Text style={{ color: colors.danger }}>Remover cor</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ))}
+            <CatalogAddButton title="Adicionar cor" onPress={() => setNewColors((current) => [...current, emptyCatalogColor()])} colors={colors} />
+
+            <SectionTitle title="Opcionais" color={colors.text} />
+            {newOptions.map((option, index) => (
+              <View key={`optional-${index}`} style={[styles.catalogEntry, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <CatalogField label="Nome do opcional" value={option.nome} onChangeText={(value) => setNewOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, nome: value } : item))} colors={colors} />
+                <CatalogField label="Preço (R$)" value={option.preco} onChangeText={(value) => setNewOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, preco: value } : item))} colors={colors} keyboardType="decimal-pad" />
+                <TouchableOpacity onPress={() => setNewOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))} style={styles.removeCatalogEntry}>
+                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  <Text style={{ color: colors.danger }}>Remover opcional</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+            <CatalogAddButton title="Adicionar opcional" onPress={() => setNewOptions((current) => [...current, emptyCatalogOptional()])} colors={colors} />
+
+            <View style={styles.catalogActions}>
+              <TouchableOpacity
+                style={[styles.cancelCatalogButton, { borderColor: colors.border }]}
+                onPress={() => setCatalogModalVisible(false)}
+                disabled={saving}
+              >
+                <Text style={{ color: colors.text, fontWeight: "700" }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: colors.primary, opacity: saving ? 0.65 : 1 }]}
+                onPress={saveCatalogVehicle}
+                disabled={saving}
+              >
+                {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveButtonText}>Salvar veículo</Text>}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
 
       <Modal visible={modalVisible} animationType="slide">
         <SafeAreaView
@@ -771,7 +1116,7 @@ export default function Veiculos() {
             <SectionTitle title="Cor" color={colors.text} />
 
             <View style={styles.chipsRow}>
-              {colorsOptions.map((colorOption) => {
+              {getVehicleColors(selectedVehicle).map((colorOption) => {
                 const active = selectedColor === colorOption;
 
                 return (
@@ -836,8 +1181,8 @@ export default function Veiculos() {
             <SectionTitle title="Acessórios" color={colors.text} />
 
             <View style={styles.optionsGrid}>
-              {accessories.map((accessory) => {
-                const active = selectedAccessories.includes(accessory.id);
+              {getVehicleAccessories(selectedVehicle).map((accessory) => {
+                const active = selectedAccessories.includes(String(accessory.id));
 
                 return (
                   <TouchableOpacity
@@ -1035,6 +1380,62 @@ function Input({
   );
 }
 
+function CatalogField({
+  label,
+  value,
+  colors,
+  onChangeText,
+  keyboardType,
+  half,
+}: {
+  label: string;
+  value: string;
+  colors: any;
+  onChangeText: (text: string) => void;
+  keyboardType?: any;
+  half?: boolean;
+}) {
+  return (
+    <View style={half ? styles.catalogFieldHalf : styles.catalogField}>
+      <Text style={[styles.inputLabel, { color: colors.subtext }]}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        placeholderTextColor={colors.subtext}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.input,
+            color: colors.text,
+            borderColor: colors.border,
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
+function CatalogAddButton({
+  title,
+  onPress,
+  colors,
+}: {
+  title: string;
+  onPress: () => void;
+  colors: any;
+}) {
+  return (
+    <TouchableOpacity
+      style={[styles.addCatalogEntry, { borderColor: colors.border }]}
+      onPress={onPress}
+    >
+      <Ionicons name="add-circle-outline" size={19} color={colors.primary} />
+      <Text style={{ color: colors.primary, fontWeight: "700" }}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+
 function SummaryRow({
   label,
   value,
@@ -1089,6 +1490,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 12,
+  },
+
+  headerRow: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  headerHint: {
+    marginTop: 3,
+    fontSize: 13,
+  },
+
+  addCatalogButton: {
+    minHeight: 40,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  catalogErrorRow: {
+    marginHorizontal: 20,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  catalogErrorText: {
+    flex: 1,
+    fontSize: 12,
   },
 
   title: {
@@ -1213,6 +1652,119 @@ const styles = StyleSheet.create({
   modalContent: {
     padding: 20,
     paddingBottom: 120,
+  },
+
+  catalogFormContent: {
+    padding: 20,
+    paddingBottom: 50,
+    gap: 12,
+  },
+
+  catalogRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+
+  catalogField: {
+    width: "100%",
+  },
+
+  catalogFieldHalf: {
+    flex: 1,
+  },
+
+  catalogSelect: {
+    minHeight: 46,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 3,
+  },
+
+  catalogCategoryChip: {
+    flex: 1,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  catalogEntry: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    gap: 10,
+  },
+
+  photoPicker: {
+    minHeight: 84,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  catalogPhotoPreview: {
+    width: 76,
+    height: 56,
+    resizeMode: "contain",
+    borderRadius: 8,
+  },
+
+  photoPickerText: {
+    flex: 1,
+    fontSize: 12,
+  },
+
+  colorInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  colorSwatch: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: "#888",
+  },
+
+  removeCatalogEntry: {
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  addCatalogEntry: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+  },
+
+  catalogActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12,
+  },
+
+  cancelCatalogButton: {
+    flex: 1,
+    minHeight: 52,
+    borderWidth: 1,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   previewCard: {

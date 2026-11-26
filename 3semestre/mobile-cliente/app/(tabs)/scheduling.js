@@ -8,7 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { LocalizedText as Text } from "../../components/LocalizedText";
+import {
+  LocalizedText as Text,
+  LocalizedTextInput,
+} from "../../components/LocalizedText";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useAccessibility } from "../../contexts/AccessibilityContext";
@@ -52,6 +55,28 @@ const dealerships = [
   "Toyota Campinas — Rod. Anhanguera, km 95 - Campinas",
   "Toyota ABC — Av. Industrial, 800 - Santo André",
 ];
+
+const pickupColors = [
+  { name: "Vermelho", value: "#dc2626" },
+  { name: "Azul", value: "#2563eb" },
+  { name: "Amarelo", value: "#facc15" },
+  { name: "Rosa", value: "#ec4899" },
+  { name: "Verde", value: "#16a34a" },
+  { name: "Branco", value: "#ffffff" },
+  { name: "Preto", value: "#111827" },
+  { name: "Dourado", value: "#d97706" },
+];
+
+const emptyPickupCustomization = {
+  laco: false,
+  corLaco: "#dc2626",
+  baloes: false,
+  corBaloes: "#2563eb",
+  confetes: false,
+  corConfetes: "#facc15",
+  mensagemVideo: "",
+  corMensagemVideo: "#111827",
+};
 
 function getUserId(user) {
   return user?.id || user?.clienteId || user?.usuario?.id || null;
@@ -121,6 +146,15 @@ function normalizeAppointment(item, user) {
     client: item.cliente?.nome || getUserName(user),
     vehicle: item.veiculo || null,
     dealership: item.concessionaria || "",
+    retiradaPersonalizada: item.retiradaPersonalizada,
+    retiradaLaco: item.retiradaLaco,
+    retiradaCorLaco: item.retiradaCorLaco,
+    retiradaBaloes: item.retiradaBaloes,
+    retiradaCorBaloes: item.retiradaCorBaloes,
+    retiradaConfetes: item.retiradaConfetes,
+    retiradaCorConfetes: item.retiradaCorConfetes,
+    retiradaMensagemVideo: item.retiradaMensagemVideo,
+    retiradaCorMensagemVideo: item.retiradaCorMensagemVideo,
   };
 }
 
@@ -166,6 +200,9 @@ export default function SchedulingPage() {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
   const [selectedDealership, setSelectedDealership] = useState("");
+  const [customizingPickupId, setCustomizingPickupId] = useState(null);
+  const [pickupForm, setPickupForm] = useState(emptyPickupCustomization);
+  const [savingPickup, setSavingPickup] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -354,6 +391,87 @@ export default function SchedulingPage() {
         },
       },
     ]);
+  };
+
+  const openPickupCustomization = (appointment) => {
+    setPickupForm({
+      laco: Boolean(appointment.retiradaLaco),
+      corLaco: appointment.retiradaCorLaco || emptyPickupCustomization.corLaco,
+      baloes: Boolean(appointment.retiradaBaloes),
+      corBaloes: appointment.retiradaCorBaloes || emptyPickupCustomization.corBaloes,
+      confetes: Boolean(appointment.retiradaConfetes),
+      corConfetes: appointment.retiradaCorConfetes || emptyPickupCustomization.corConfetes,
+      mensagemVideo: appointment.retiradaMensagemVideo || "",
+      corMensagemVideo:
+        appointment.retiradaCorMensagemVideo || emptyPickupCustomization.corMensagemVideo,
+    });
+    setCustomizingPickupId(appointment.id);
+  };
+
+  const handleSavePickupCustomization = async (appointmentId) => {
+    if (!clienteId) {
+      setErrorMessage("Cliente não identificado. Faça login novamente.");
+      return;
+    }
+
+    try {
+      setSavingPickup(true);
+      setErrorMessage("");
+      const response = await fetch(
+        `${API_URL}/agendamentos/${appointmentId}/personalizacao-retirada`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clienteId,
+            laco: pickupForm.laco,
+            corLaco: pickupForm.corLaco,
+            baloes: pickupForm.baloes,
+            corBaloes: pickupForm.corBaloes,
+            confetes: pickupForm.confetes,
+            corConfetes: pickupForm.corConfetes,
+            mensagemVideo: pickupForm.mensagemVideo.trim(),
+            corMensagemVideo: pickupForm.corMensagemVideo,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || "Não foi possível salvar a personalização.");
+      }
+
+      const saved = await response.json();
+      setAppointments((current) =>
+        current.map((appointment) =>
+          appointment.id === appointmentId
+            ? {
+                ...appointment,
+                retiradaPersonalizada: saved.retiradaPersonalizada,
+                retiradaLaco: saved.retiradaLaco,
+                retiradaCorLaco: saved.retiradaCorLaco,
+                retiradaBaloes: saved.retiradaBaloes,
+                retiradaCorBaloes: saved.retiradaCorBaloes,
+                retiradaConfetes: saved.retiradaConfetes,
+                retiradaCorConfetes: saved.retiradaCorConfetes,
+                retiradaMensagemVideo: saved.retiradaMensagemVideo,
+                retiradaCorMensagemVideo: saved.retiradaCorMensagemVideo,
+              }
+            : appointment,
+        ),
+      );
+      setCustomizingPickupId(null);
+      Alert.alert("Sucesso", "Personalização da retirada salva!");
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar a personalização.",
+      );
+    } finally {
+      setSavingPickup(false);
+    }
   };
 
   if (loading) {
@@ -704,6 +822,186 @@ export default function SchedulingPage() {
                   Veículo não informado neste agendamento.
                 </Text>
               )}
+
+              {appointment.type === "retirada" ? (
+                <View style={styles.pickupCustomization}>
+                  {appointment.retiradaPersonalizada ? (
+                    <View style={[styles.savedPickup, { backgroundColor: theme.box }]}>
+                      <Text style={[styles.savedPickupTitle, { color: theme.text }]}>
+                        Personalização salva
+                      </Text>
+                      {[
+                        ["Laço", appointment.retiradaLaco, appointment.retiradaCorLaco],
+                        ["Balões", appointment.retiradaBaloes, appointment.retiradaCorBaloes],
+                        ["Confetes", appointment.retiradaConfetes, appointment.retiradaCorConfetes],
+                      ]
+                        .filter(([, enabled]) => enabled)
+                        .map(([label, , color]) => (
+                          <View key={label} style={styles.savedColorRow}>
+                            <View
+                              style={[styles.colorSwatch, { backgroundColor: color }]}
+                            />
+                            <Text style={[styles.savedPickupText, { color: theme.text }]}>
+                              {label}
+                            </Text>
+                          </View>
+                        ))}
+                      {appointment.retiradaMensagemVideo ? (
+                        <Text style={[styles.savedPickupText, { color: theme.text }]}>
+                          “{appointment.retiradaMensagemVideo}”
+                        </Text>
+                      ) : null}
+                    </View>
+                  ) : null}
+
+                  <TouchableOpacity
+                    style={[styles.customizeButton, { borderColor: theme.primary }]}
+                    onPress={() =>
+                      customizingPickupId === appointment.id
+                        ? setCustomizingPickupId(null)
+                        : openPickupCustomization(appointment)
+                    }
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.customizeButtonText, { color: theme.primary }]}>
+                      {customizingPickupId === appointment.id
+                        ? "Fechar personalização"
+                        : appointment.retiradaPersonalizada
+                          ? "Editar personalização"
+                          : "Personalizar retirada"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {customizingPickupId === appointment.id ? (
+                    <View style={[styles.pickupForm, { backgroundColor: theme.box }]}>
+                      {[
+                        ["laco", "Laço", "corLaco"],
+                        ["baloes", "Balões", "corBaloes"],
+                        ["confetes", "Confetes", "corConfetes"],
+                      ].map(([enabledKey, label, colorKey]) => (
+                        <View key={enabledKey} style={styles.pickupOption}>
+                          <TouchableOpacity
+                            style={styles.pickupToggle}
+                            onPress={() =>
+                              setPickupForm((current) => ({
+                                ...current,
+                                [enabledKey]: !current[enabledKey],
+                              }))
+                            }
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: pickupForm[enabledKey] }}
+                          >
+                            <Ionicons
+                              name={pickupForm[enabledKey] ? "checkbox" : "square-outline"}
+                              size={20}
+                              color={theme.primary}
+                            />
+                            <Text style={[styles.pickupOptionLabel, { color: theme.text }]}>
+                              Quero o carro com {label.toLowerCase()}
+                            </Text>
+                          </TouchableOpacity>
+                          {pickupForm[enabledKey] ? (
+                            <>
+                              <Text style={[styles.pickupColorLabel, { color: theme.subtext }]}>
+                                Cor {label.toLowerCase()}
+                              </Text>
+                              <View style={styles.colorOptions}>
+                                {pickupColors.map((color) => (
+                                  <TouchableOpacity
+                                    key={`${colorKey}-${color.value}`}
+                                    onPress={() =>
+                                      setPickupForm((current) => ({
+                                        ...current,
+                                        [colorKey]: color.value,
+                                      }))
+                                    }
+                                    accessibilityRole="radio"
+                                    accessibilityLabel={color.name}
+                                    accessibilityState={{
+                                      selected: pickupForm[colorKey] === color.value,
+                                    }}
+                                    style={[
+                                      styles.colorSwatch,
+                                      { backgroundColor: color.value },
+                                      pickupForm[colorKey] === color.value && styles.colorSwatchSelected,
+                                    ]}
+                                  />
+                                ))}
+                              </View>
+                            </>
+                          ) : null}
+                        </View>
+                      ))}
+
+                      <Text style={[styles.pickupColorLabel, { color: theme.text }]}>
+                        Mensagem para aparecer no vídeo (opcional)
+                      </Text>
+                      <LocalizedTextInput
+                        style={[
+                          styles.messageInput,
+                          { backgroundColor: theme.card, color: theme.text },
+                        ]}
+                        value={pickupForm.mensagemVideo}
+                        onChangeText={(mensagemVideo) =>
+                          setPickupForm((current) => ({ ...current, mensagemVideo }))
+                        }
+                        maxLength={100}
+                        placeholder="Digite uma mensagem de até 100 caracteres"
+                        placeholderTextColor={theme.subtext}
+                        multiline
+                      />
+                      <Text style={[styles.messageCount, { color: theme.subtext }]}>
+                        {pickupForm.mensagemVideo.length}/100
+                      </Text>
+                      {pickupForm.mensagemVideo.trim() ? (
+                        <>
+                          <Text style={[styles.pickupColorLabel, { color: theme.subtext }]}>
+                            Cor da mensagem
+                          </Text>
+                          <View style={styles.colorOptions}>
+                            {pickupColors.map((color) => (
+                              <TouchableOpacity
+                                key={`video-${color.value}`}
+                                onPress={() =>
+                                  setPickupForm((current) => ({
+                                    ...current,
+                                    corMensagemVideo: color.value,
+                                  }))
+                                }
+                                accessibilityRole="radio"
+                                accessibilityLabel={color.name}
+                                accessibilityState={{
+                                  selected: pickupForm.corMensagemVideo === color.value,
+                                }}
+                                style={[
+                                  styles.colorSwatch,
+                                  { backgroundColor: color.value },
+                                  pickupForm.corMensagemVideo === color.value &&
+                                    styles.colorSwatchSelected,
+                                ]}
+                              />
+                            ))}
+                          </View>
+                        </>
+                      ) : null}
+
+                      <TouchableOpacity
+                        style={[
+                          styles.savePickupButton,
+                          { backgroundColor: theme.primary },
+                          savingPickup && styles.buttonDisabled,
+                        ]}
+                        disabled={savingPickup}
+                        onPress={() => handleSavePickupCustomization(appointment.id)}
+                      >
+                        <Text style={styles.savePickupButtonText}>
+                          {savingPickup ? "Salvando..." : "Salvar personalização"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
 
             <TouchableOpacity
@@ -971,6 +1269,118 @@ const styles = StyleSheet.create({
 
   description: {
     fontSize: 13,
+  },
+
+  pickupCustomization: {
+    marginTop: 12,
+    gap: 8,
+  },
+
+  savedPickup: {
+    borderRadius: 10,
+    padding: 10,
+    gap: 5,
+  },
+
+  savedPickupTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  savedPickupText: {
+    fontSize: 12,
+  },
+
+  savedColorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  customizeButton: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+
+  customizeButtonText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  pickupForm: {
+    borderRadius: 10,
+    padding: 12,
+    gap: 10,
+  },
+
+  pickupOption: {
+    gap: 6,
+  },
+
+  pickupToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  pickupOptionLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  pickupColorLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  colorOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+
+  colorSwatch: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#94a3b8",
+  },
+
+  colorSwatchSelected: {
+    borderWidth: 3,
+    borderColor: "#111827",
+  },
+
+  messageInput: {
+    minHeight: 68,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    textAlignVertical: "top",
+    fontSize: 13,
+  },
+
+  messageCount: {
+    alignSelf: "flex-end",
+    fontSize: 11,
+  },
+
+  savePickupButton: {
+    alignItems: "center",
+    borderRadius: 10,
+    paddingVertical: 11,
+    marginTop: 2,
+  },
+
+  savePickupButtonText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
   },
 
   vehicleDetails: {

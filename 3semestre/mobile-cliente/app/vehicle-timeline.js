@@ -39,8 +39,8 @@ const stages = [
     completed: (progress) => progress >= 33,
   },
   {
-    id: "inspecao",
-    label: "Inspeção",
+    id: "auditoria",
+    label: "Auditoria",
     description: "Qualidade sendo verificada.",
     icon: "search-outline",
     completed: (progress) => progress >= 50,

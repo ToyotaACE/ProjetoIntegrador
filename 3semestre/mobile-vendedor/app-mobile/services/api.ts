@@ -87,6 +87,7 @@ export const endpoints = {
   veiculosPorCliente: (clienteId: number | string) =>
     `/veiculos/cliente/${clienteId}`,
   veiculoPorId: (veiculoId: number | string) => `/veiculos/${veiculoId}`,
+  catalogoVeiculos: "/catalogo-veiculos",
 
   agendamentos: "/agendamentos",
   agendamentosPorCliente: (clienteId: number | string) =>
@@ -97,6 +98,21 @@ export const endpoints = {
   usuarios: "/usuarios",
   loginUsuario: "/usuarios/login",
   usuarioPorId: (usuarioId: number | string) => `/usuarios/${usuarioId}`,
+};
+
+export type CatalogoVeiculo = {
+  id: number;
+  modelo: string;
+  categoria: string;
+  ano: number;
+  precoBase: number;
+  motor: string;
+  combustivel: string;
+  cambio: string;
+  fotoCarroUrl: string;
+  versoes: { nome: string; motor: string; preco: number }[];
+  cores: { nome: string; hexadecimal: string }[];
+  opcionais: { nome: string; preco: number }[];
 };
 
 export default api;

@@ -97,6 +97,23 @@ export type VeiculoRequest = {
   vinIot?: string;
 };
 
+export type CatalogoVeiculo = {
+  id: number;
+  modelo: string;
+  categoria: string;
+  ano: number;
+  precoBase: number;
+  motor: string;
+  combustivel: string;
+  cambio: string;
+  fotoCarroUrl: string;
+  versoes: { nome: string; motor: string; preco: number }[];
+  cores: { nome: string; hexadecimal: string }[];
+  opcionais: { nome: string; preco: number }[];
+};
+
+export type CatalogoVeiculoRequest = Omit<CatalogoVeiculo, "id">;
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
@@ -160,6 +177,14 @@ export const api = {
 
   listarVeiculosCliente: (clienteId: number) =>
     request<Veiculo[]>(`/veiculos/cliente/${clienteId}`),
+
+  listarCatalogoVeiculos: () => request<CatalogoVeiculo[]>("/catalogo-veiculos"),
+
+  cadastrarCatalogoVeiculo: (dados: CatalogoVeiculoRequest) =>
+    request<CatalogoVeiculo>("/catalogo-veiculos", {
+      method: "POST",
+      body: JSON.stringify(dados),
+    }),
 
   buscarVeiculo: (veiculoId: number) =>
     request<Veiculo>(`/veiculos/${veiculoId}`),

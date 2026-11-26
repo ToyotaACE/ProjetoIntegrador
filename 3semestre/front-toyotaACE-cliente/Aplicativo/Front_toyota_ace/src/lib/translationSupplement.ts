@@ -8,6 +8,92 @@ export const translationSupplement: Record<
   string,
   Record<SharedLocale, string>
 > = {
+  "Personalização salva": {
+    "en-US": "Customization saved",
+    "es-ES": "Personalización guardada",
+    "ja-JP": "カスタマイズを保存しました",
+  },
+  "Personalizar retirada": {
+    "en-US": "Customize pickup",
+    "es-ES": "Personalizar la recogida",
+    "ja-JP": "受け取りをカスタマイズ",
+  },
+  "Editar personalização": {
+    "en-US": "Edit customization",
+    "es-ES": "Editar personalización",
+    "ja-JP": "カスタマイズを編集",
+  },
+  "Fechar personalização": {
+    "en-US": "Close customization",
+    "es-ES": "Cerrar personalización",
+    "ja-JP": "カスタマイズを閉じる",
+  },
+  Laço: { "en-US": "Bow", "es-ES": "Lazo", "ja-JP": "リボン" },
+  Balões: { "en-US": "Balloons", "es-ES": "Globos", "ja-JP": "風船" },
+  Confetes: { "en-US": "Confetti", "es-ES": "Confeti", "ja-JP": "紙吹雪" },
+  "Sem itens decorativos selecionados": {
+    "en-US": "No decorations selected",
+    "es-ES": "No se seleccionaron decoraciones",
+    "ja-JP": "装飾は選択されていません",
+  },
+  "Quero o carro com laço": {
+    "en-US": "I want a bow on the car",
+    "es-ES": "Quiero un lazo en el auto",
+    "ja-JP": "車にリボンを付けたい",
+  },
+  "Quero o carro com balões": {
+    "en-US": "I want balloons",
+    "es-ES": "Quiero globos",
+    "ja-JP": "風船を付けたい",
+  },
+  "Quero o carro com confetes": {
+    "en-US": "I want confetti",
+    "es-ES": "Quiero confeti",
+    "ja-JP": "紙吹雪を使いたい",
+  },
+  "Cor do laço": { "en-US": "Bow color", "es-ES": "Color del lazo", "ja-JP": "リボンの色" },
+  "Cor dos balões": { "en-US": "Balloons color", "es-ES": "Color de los globos", "ja-JP": "風船の色" },
+  "Cor dos confetes": { "en-US": "Confetti color", "es-ES": "Color del confeti", "ja-JP": "紙吹雪の色" },
+  "Mensagem para aparecer no vídeo (opcional)": {
+    "en-US": "Message to show in the video (optional)",
+    "es-ES": "Mensaje para mostrar en el video (opcional)",
+    "ja-JP": "動画に表示するメッセージ（任意）",
+  },
+  "Digite uma mensagem de até 100 caracteres": {
+    "en-US": "Enter a message of up to 100 characters",
+    "es-ES": "Escribe un mensaje de hasta 100 caracteres",
+    "ja-JP": "100文字以内でメッセージを入力",
+  },
+  "Cor da mensagem": {
+    "en-US": "Message color",
+    "es-ES": "Color del mensaje",
+    "ja-JP": "メッセージの色",
+  },
+  "Cor da mensagem no vídeo": {
+    "en-US": "Video message color",
+    "es-ES": "Color del mensaje en el video",
+    "ja-JP": "動画メッセージの色",
+  },
+  "Salvar personalização": {
+    "en-US": "Save customization",
+    "es-ES": "Guardar personalización",
+    "ja-JP": "カスタマイズを保存",
+  },
+  "Personalização da retirada salva!": {
+    "en-US": "Pickup customization saved!",
+    "es-ES": "¡Personalización de la recogida guardada!",
+    "ja-JP": "受け取りのカスタマイズを保存しました",
+  },
+  "Não foi possível identificar sua conta. Entre novamente.": {
+    "en-US": "Could not identify your account. Please sign in again.",
+    "es-ES": "No se pudo identificar tu cuenta. Vuelve a iniciar sesión.",
+    "ja-JP": "アカウントを確認できません。再度ログインしてください。",
+  },
+  "Não foi possível salvar a personalização da retirada.": {
+    "en-US": "Could not save pickup customization.",
+    "es-ES": "No se pudo guardar la personalización de la recogida.",
+    "ja-JP": "受け取りのカスタマイズを保存できませんでした。",
+  },
   " a.m.": {
     "en-US": " per month",
     "es-ES": " al mes",
@@ -1283,10 +1369,10 @@ export const translationSupplement: Record<
     "es-ES": "Ingresa tu contraseña actual y elige una nueva.",
     "ja-JP": "現在のパスワードを入力し、新しいパスワードを設定してください。",
   },
-  "Inspeção": {
-    "en-US": "Inspection",
-    "es-ES": "Inspección",
-    "ja-JP": "検査",
+  "Auditoria": {
+    "en-US": "Audit",
+    "es-ES": "Auditoría",
+    "ja-JP": "監査",
   },
   "Ir para Toyota Shop": {
     "en-US": "Go to Toyota Shop",

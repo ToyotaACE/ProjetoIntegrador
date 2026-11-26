@@ -135,7 +135,7 @@ function getCurrentStep(vehicle) {
   }
 
   if (progress >= 50 || status.includes("inspe")) {
-    return "Inspeção";
+    return "Auditoria";
   }
 
   if (
