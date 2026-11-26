@@ -15,7 +15,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { format } from "date-fns";
 import { enUS, es, ja, ptBR } from "date-fns/locale";
 import { vehicles } from "@/lib/mock-data";
-import { api, type Cliente, type Veiculo, type VeiculoRequest } from "@/services/api";
+import { api, type CatalogoVeiculo, type Cliente, type Veiculo, type VeiculoRequest } from "@/services/api";
 import { useAppContext } from "@/contexts/AppContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
@@ -49,7 +49,6 @@ const orderOptions = [
   { id: "engate-reboque", label: "Engate de reboque", price: 1890 },
 ] as const;
 
-type OrderOptionId = (typeof orderOptions)[number]["id"];
 type OrderVersion = {
   id: string;
   name: string;
@@ -61,6 +60,21 @@ type OrderRecord = Veiculo & {
   id: number;
   clientePedido: Cliente;
   orderDate: string | null;
+};
+
+type OrderVehicle = {
+  id: number | string;
+  name: string;
+  category: string;
+  price: number;
+  year: number;
+  image: string;
+  motor: string;
+  fuel: string;
+  transmission: string;
+  versions: OrderVersion[];
+  colors: { id: string; name: string; hex: string }[];
+  options: { id: string; label: string; price: number }[];
 };
 
 const parsePrice = (price: string) =>
@@ -231,57 +245,123 @@ export function NewVehicleOrder() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [clients, setClients] = useState<Cliente[]>([]);
+  const [customCatalog, setCustomCatalog] = useState<CatalogoVeiculo[]>([]);
   const [step, setStep] = useState(0);
   const [modelSearch, setModelSearch] = useState("");
   const [category, setCategory] = useState<(typeof modelCategories)[number]>("Todos");
-  const [vehicleId, setVehicleId] = useState<number | null>(() => {
+  const [vehicleId, setVehicleId] = useState<number | string | null>(() => {
     const requestedId = Number(searchParams.get("modelo"));
     return vehicles.some((vehicle) => vehicle.id === requestedId) ? requestedId : null;
   });
-  const selectedVehicle = vehicles.find((vehicle) => vehicle.id === vehicleId) ?? null;
-  const basePrice = selectedVehicle ? parsePrice(selectedVehicle.price) : 0;
-  const versions = selectedVehicle ? getVersions(selectedVehicle.name, basePrice) : [];
+  const allOrderVehicles = useMemo<OrderVehicle[]>(() => [
+    ...vehicles.map((vehicle) => ({
+      id: vehicle.id,
+      name: vehicle.name,
+      category: vehicle.category,
+      price: parsePrice(vehicle.price),
+      year: vehicle.year,
+      image: vehicle.image,
+      motor: "",
+      fuel: "",
+      transmission: "Automático",
+      versions: getVersions(vehicle.name, parsePrice(vehicle.price)),
+      colors: paintColors.map((color) => ({ id: color.id, name: color.name, hex: color.hex })),
+      options: orderOptions.map((option) => ({ id: option.id, label: option.label, price: option.price })),
+    })),
+    ...customCatalog.map((vehicle) => ({
+      id: `catalog-${vehicle.id}`,
+      name: vehicle.modelo,
+      category: vehicle.categoria,
+      price: vehicle.precoBase,
+      year: vehicle.ano,
+      image: vehicle.fotoCarroUrl,
+      motor: vehicle.motor,
+      fuel: vehicle.combustivel,
+      transmission: vehicle.cambio,
+      versions: vehicle.versoes.map((version, index) => ({
+        id: `catalog-version-${vehicle.id}-${index}`,
+        name: version.nome,
+        engine: version.motor,
+        price: version.preco,
+      })),
+      colors: vehicle.cores.map((color, index) => ({
+        id: `catalog-color-${vehicle.id}-${index}`,
+        name: color.nome,
+        hex: color.hexadecimal,
+      })),
+      options: vehicle.opcionais.map((option, index) => ({
+        id: `catalog-option-${vehicle.id}-${index}`,
+        label: option.nome,
+        price: option.preco,
+      })),
+    })),
+  ], [customCatalog]);
+  const selectedVehicle = allOrderVehicles.find((vehicle) => vehicle.id === vehicleId) ?? null;
+  const basePrice = selectedVehicle?.price ?? 0;
+  const versions = selectedVehicle?.versions ?? [];
   const [versionId, setVersionId] = useState(() =>
-    selectedVehicle ? getVersions(selectedVehicle.name, basePrice)[0]?.id ?? "" : ""
+    selectedVehicle?.versions[0]?.id ?? ""
   );
-  const [colorId, setColorId] = useState<(typeof paintColors)[number]["id"]>("branco");
-  const [selectedOptions, setSelectedOptions] = useState<OrderOptionId[]>([]);
+  const [colorId, setColorId] = useState("branco");
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [clientId, setClientId] = useState(() => localStorage.getItem("toyota_selected_client_id") || "");
   const [submitting, setSubmitting] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
-    api.listarClientes()
-      .then((data) => { if (active) setClients(data); })
+    Promise.all([api.listarClientes(), api.listarCatalogoVeiculos()])
+      .then(([clientData, catalogData]) => {
+        if (!active) return;
+        setClients(clientData);
+        setCustomCatalog(catalogData);
+        const requestedId = searchParams.get("modelo");
+        if (requestedId?.startsWith("catalog-")) {
+          setVehicleId(requestedId);
+        }
+      })
       .catch((error: unknown) => {
-        console.error("Erro ao carregar clientes:", error);
-        if (active) toast.error(t("Erro ao carregar clientes."));
+        console.error("Erro ao carregar dados do pedido:", error);
+        if (active) toast.error(t("Erro ao carregar os dados do pedido."));
       });
     return () => { active = false; };
-  }, [t]);
+  }, [searchParams, t]);
 
   const filteredVehicles = useMemo(() => {
     const normalizedSearch = modelSearch.trim().toLocaleLowerCase();
-    return vehicles.filter((vehicle) => {
+    return allOrderVehicles.filter((vehicle) => {
       const matchesCategory = category === "Todos" || vehicle.category === category;
       const matchesSearch = `${vehicle.name} ${vehicle.category}`.toLocaleLowerCase().includes(normalizedSearch);
       return matchesCategory && matchesSearch;
     });
-  }, [category, modelSearch]);
+  }, [allOrderVehicles, category, modelSearch]);
 
   const selectedVersion = versions.find((version) => version.id === versionId) ?? versions[0] ?? null;
-  const selectedColor = paintColors.find((color) => color.id === colorId) ?? paintColors[0];
+  const availableColors = selectedVehicle?.colors ?? paintColors.map((color) => ({ id: color.id, name: color.name, hex: color.hex }));
+  const availableOptions = selectedVehicle?.options ?? orderOptions.map((option) => ({ id: option.id, label: option.label, price: option.price }));
+  const selectedColor = availableColors.find((color) => color.id === colorId) ?? availableColors[0]!;
   const selectedClient = clients.find((client) => String(client.id) === clientId) ?? null;
-  const accessoriesTotal = orderOptions
+  const accessoriesTotal = availableOptions
     .filter((option) => selectedOptions.includes(option.id))
     .reduce((sum, option) => sum + option.price, 0);
   const total = (selectedVersion?.price ?? basePrice) + accessoriesTotal;
 
-  const chooseModel = (id: number) => {
+  useEffect(() => {
+    if (!selectedVehicle) return;
+    if (!selectedVehicle.versions.some((version) => version.id === versionId)) {
+      setVersionId(selectedVehicle.versions[0]?.id ?? "");
+    }
+    if (!selectedVehicle.colors.some((color) => color.id === colorId)) {
+      setColorId(selectedVehicle.colors[0]?.id ?? "branco");
+    }
+  }, [selectedVehicle, versionId, colorId]);
+
+  const chooseModel = (id: number | string) => {
     setVehicleId(id);
-    const model = vehicles.find((vehicle) => vehicle.id === id);
-    setVersionId(model ? getVersions(model.name, parsePrice(model.price))[0]?.id ?? "" : "");
+    const model = allOrderVehicles.find((vehicle) => vehicle.id === id);
+    setVersionId(model?.versions[0]?.id ?? "");
+    setColorId(model?.colors[0]?.id ?? "branco");
+    setSelectedOptions([]);
   };
 
   const validateStep = () => {
@@ -301,7 +381,7 @@ export function NewVehicleOrder() {
   };
 
   const submitOrder = async () => {
-    if (!selectedVehicle || !selectedVersion || !selectedClient?.id) {
+    if (!selectedVehicle || !selectedVersion || !selectedClient?.id || !selectedColor) {
       toast.error(t("Confira o modelo, a versão e os dados do cliente."));
       return;
     }
@@ -312,14 +392,14 @@ export function NewVehicleOrder() {
       marcaVeiculo: "Toyota",
       anoVeiculo: String(selectedVehicle.year),
       corVeiculo: selectedColor.name,
-      motorVeiculo: selectedVersion.engine,
-      combustivelVeiculo: selectedVersion.engine.toLowerCase().includes("híbrido") ? "Híbrido/Flex" : "Flex",
-      cambioVeiculo: "Automático",
+      motorVeiculo: selectedVersion.engine || selectedVehicle.motor,
+      combustivelVeiculo: selectedVehicle.fuel || (selectedVersion.engine.toLowerCase().includes("híbrido") ? "Híbrido/Flex" : "Flex"),
+      cambioVeiculo: selectedVehicle.transmission,
       fotoCarroUrl: selectedVehicle.image,
       statusVeiculo: "Em análise",
       progressoVeiculo: 10,
       valorTotal: total,
-      acessorios: orderOptions
+      acessorios: availableOptions
         .filter((option) => selectedOptions.includes(option.id))
         .map((option) => option.label)
         .join(", "),
@@ -419,7 +499,7 @@ export function NewVehicleOrder() {
                         </span>
                         <span className="flex items-center justify-between gap-2 p-3">
                           <span><span className="block font-medium">{t(vehicle.name)}</span><span className="text-xs text-muted-foreground">{t(vehicle.category)} · {vehicle.year}</span></span>
-                          <span className="text-right text-xs font-semibold">{vehicle.price}</span>
+                          <span className="text-right text-xs font-semibold">{formatPrice(vehicle.price, language)}</span>
                         </span>
                       </button>
                     ))}
@@ -470,10 +550,10 @@ export function NewVehicleOrder() {
                   <p className="text-sm text-muted-foreground">{t(selectedColor.name)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {paintColors.map((color) => (
+                  {availableColors.map((color) => (
                     <button key={color.id} type="button" onClick={() => setColorId(color.id)} aria-pressed={colorId === color.id} className={`flex flex-col items-center gap-3 rounded-xl border p-4 text-sm ${colorId === color.id ? "border-primary ring-1 ring-primary" : "hover:border-primary/50"}`}>
                       <span className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-sm ${colorId === color.id ? "ring-2 ring-primary ring-offset-2" : ""}`} style={{ backgroundColor: color.hex }}>
-                        {colorId === color.id ? <Check aria-hidden="true" className={color.id === "preto" || color.id === "cinza" || color.id === "azul" || color.id === "vermelho" ? "h-5 w-5 text-white" : "h-5 w-5 text-slate-900"} /> : null}
+                        {colorId === color.id ? <Check aria-hidden="true" className="h-5 w-5 text-slate-900" /> : null}
                       </span>
                       {t(color.name)}
                     </button>
@@ -491,7 +571,7 @@ export function NewVehicleOrder() {
               </div>
               <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
                 <div className="divide-y rounded-xl border">
-                  {orderOptions.map((option) => {
+                  {availableOptions.map((option) => {
                     const checked = selectedOptions.includes(option.id);
                     return (
                       <label key={option.id} className="flex cursor-pointer items-center gap-3 p-4 hover:bg-muted/40">

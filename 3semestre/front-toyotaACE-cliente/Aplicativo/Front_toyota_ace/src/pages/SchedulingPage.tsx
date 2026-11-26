@@ -35,6 +35,10 @@ import {
   Trash2,
   CheckCircle2,
   AlertTriangle,
+  Check,
+  Gift,
+  PartyPopper,
+  Video,
 } from "lucide-react";
 
 import { format } from "date-fns";
@@ -540,6 +544,11 @@ const SchedulingPage = () => {
                   { label: "Balões", enabled: appointment.retiradaBaloes, color: appointment.retiradaCorBaloes },
                   { label: "Confetes", enabled: appointment.retiradaConfetes, color: appointment.retiradaCorConfetes },
                 ].filter((detail) => detail.enabled);
+                const selectedPickupDetails = [
+                  { label: "Laço", enabled: pickupForm.laco, color: pickupForm.corLaco },
+                  { label: "Balões", enabled: pickupForm.baloes, color: pickupForm.corBaloes },
+                  { label: "Confetes", enabled: pickupForm.confetes, color: pickupForm.corConfetes },
+                ].filter((detail) => detail.enabled);
 
                 return (
                   <li
@@ -644,89 +653,165 @@ const SchedulingPage = () => {
                             </Button>
 
                             {customizingPickupId === appointment.id && (
-                              <div className="space-y-3 rounded-md border border-border p-3">
-                                {([
-                                  ["laco", "Laço", "corLaco", "Cor do laço"],
-                                  ["baloes", "Balões", "corBaloes", "Cor dos balões"],
-                                  ["confetes", "Confetes", "corConfetes", "Cor dos confetes"],
-                                ] as const).map(([enabledKey, label, colorKey, colorLabel]) => (
-                                  <div key={enabledKey} className="space-y-2">
-                                    <label className="flex items-center gap-2 text-sm">
-                                      <input
-                                        type="checkbox"
-                                        checked={pickupForm[enabledKey]}
-                                        onChange={(event) =>
-                                          setPickupForm((current) => ({
-                                            ...current,
-                                            [enabledKey]: event.target.checked,
-                                          }))
-                                        }
-                                      />
-                                      Quero o carro com {label.toLowerCase()}
-                                    </label>
-                                    {pickupForm[enabledKey] && (
-                                      <label className="flex items-center gap-2 pl-6 text-xs text-muted-foreground">
-                                        {colorLabel}
-                                        <input
-                                          aria-label={colorLabel}
-                                          type="color"
-                                          value={pickupForm[colorKey]}
-                                          onChange={(event) =>
-                                            setPickupForm((current) => ({
-                                              ...current,
-                                              [colorKey]: event.target.value,
-                                            }))
-                                          }
-                                          className="h-8 w-12 cursor-pointer rounded border border-border bg-transparent p-1"
-                                        />
-                                      </label>
-                                    )}
-                                  </div>
-                                ))}
-
-                                <div className="space-y-2">
-                                  <Label htmlFor={`pickup-message-${appointment.id}`}>
-                                    Mensagem para aparecer no vídeo (opcional)
-                                  </Label>
-                                  <textarea
-                                    id={`pickup-message-${appointment.id}`}
-                                    maxLength={100}
-                                    value={pickupForm.mensagemVideo}
-                                    onChange={(event) =>
-                                      setPickupForm((current) => ({
-                                        ...current,
-                                        mensagemVideo: event.target.value,
-                                      }))
-                                    }
-                                    placeholder="Digite uma mensagem de até 100 caracteres"
-                                    className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                  />
-                                  {pickupForm.mensagemVideo.trim() && (
-                                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                                      Cor da mensagem
-                                      <input
-                                        aria-label="Cor da mensagem no vídeo"
-                                        type="color"
-                                        value={pickupForm.corMensagemVideo}
-                                        onChange={(event) =>
-                                          setPickupForm((current) => ({
-                                            ...current,
-                                            corMensagemVideo: event.target.value,
-                                          }))
-                                        }
-                                        className="h-8 w-12 cursor-pointer rounded border border-border bg-transparent p-1"
-                                      />
-                                    </label>
-                                  )}
-                                  <p className="text-right text-xs text-muted-foreground">
-                                    {pickupForm.mensagemVideo.length}/100
+                              <div className="space-y-5 rounded-xl border bg-card p-4 md:p-5">
+                                <div>
+                                  <h3 className="text-lg font-semibold">Personalize a entrega do seu veículo</h3>
+                                  <p className="mt-1 text-sm text-muted-foreground">
+                                    Escolha a decoração e a mensagem para tornar a retirada especial.
                                   </p>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2">
+                                <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+                                  <aside className="h-fit rounded-xl border bg-muted/30 p-4">
+                                    {appointment.vehicle?.fotoCarroUrl && (
+                                      <img
+                                        src={appointment.vehicle.fotoCarroUrl}
+                                        alt={`${appointment.vehicle.modeloVeiculo || "Veículo"} para retirada`}
+                                        className="aspect-[4/3] w-full rounded-lg bg-background object-contain"
+                                      />
+                                    )}
+                                    <h4 className="mt-3 font-semibold">
+                                      {appointment.vehicle?.marcaVeiculo || "Toyota"}{" "}
+                                      {appointment.vehicle?.modeloVeiculo || "Seu veículo"}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">Prévia da retirada</p>
+                                    <div className="mt-4 border-t pt-3">
+                                      <p className="text-sm font-medium">Sua personalização</p>
+                                      <div className="mt-2 flex flex-wrap gap-2">
+                                        {selectedPickupDetails.length ? selectedPickupDetails.map((detail) => (
+                                          <span key={detail.label} className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs">
+                                            <span
+                                              aria-hidden="true"
+                                              className="h-3 w-3 rounded-full border border-border"
+                                              style={{ backgroundColor: detail.color }}
+                                            />
+                                            {detail.label}
+                                          </span>
+                                        )) : (
+                                          <span className="text-xs text-muted-foreground">Escolha itens para ver sua seleção.</span>
+                                        )}
+                                      </div>
+                                      {pickupForm.mensagemVideo.trim() && (
+                                        <p
+                                          className="mt-3 rounded-md bg-background p-2 text-sm font-medium"
+                                          style={{ color: pickupForm.corMensagemVideo }}
+                                        >
+                                          “{pickupForm.mensagemVideo}”
+                                        </p>
+                                      )}
+                                    </div>
+                                  </aside>
+
+                                  <div className="space-y-4">
+                                    <section className="space-y-3">
+                                      <div>
+                                        <h4 className="font-semibold">Escolha a decoração</h4>
+                                        <p className="text-sm text-muted-foreground">Selecione os detalhes e as cores desejadas.</p>
+                                      </div>
+                                      <div className="grid gap-3 sm:grid-cols-2">
+                                        {([
+                                          { key: "laco", colorKey: "corLaco", label: "Laço", colorLabel: "Cor do laço", Icon: Gift },
+                                          { key: "baloes", colorKey: "corBaloes", label: "Balões", colorLabel: "Cor dos balões", Icon: PartyPopper },
+                                          { key: "confetes", colorKey: "corConfetes", label: "Confetes", colorLabel: "Cor dos confetes", Icon: PartyPopper },
+                                        ] as const).map(({ key, colorKey, label, colorLabel, Icon }) => (
+                                          <div
+                                            key={key}
+                                            className={`rounded-xl border p-3 transition-colors ${pickupForm[key] ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:border-primary/50"}`}
+                                          >
+                                            <div className="flex items-start gap-3">
+                                              <label htmlFor={`pickup-${appointment.id}-${key}`} className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+                                              <input
+                                                id={`pickup-${appointment.id}-${key}`}
+                                                type="checkbox"
+                                                checked={pickupForm[key]}
+                                                onChange={(event) =>
+                                                  setPickupForm((current) => ({
+                                                    ...current,
+                                                    [key]: event.target.checked,
+                                                  }))
+                                                }
+                                                className="mt-1 h-4 w-4 accent-primary"
+                                              />
+                                              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${pickupForm[key] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                                                <Icon aria-hidden="true" className="h-5 w-5" />
+                                              </span>
+                                              <span className="min-w-0 flex-1">
+                                                <span className="block text-sm font-medium">Quero {label.toLowerCase()}</span>
+                                              </span>
+                                              {pickupForm[key] && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />}
+                                            </label>
+                                            {pickupForm[key] && (
+                                              <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                                {colorLabel}
+                                                <input
+                                                  aria-label={colorLabel}
+                                                  type="color"
+                                                  value={pickupForm[colorKey]}
+                                                  onChange={(event) =>
+                                                    setPickupForm((current) => ({
+                                                      ...current,
+                                                      [colorKey]: event.target.value,
+                                                    }))
+                                                  }
+                                                  className="h-8 w-10 cursor-pointer rounded-md border border-border bg-background p-1"
+                                                />
+                                              </label>
+                                            )}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </section>
+
+                                    <section className="space-y-3 rounded-xl border p-4">
+                                      <div className="flex items-center gap-2">
+                                        <Video aria-hidden="true" className="h-4 w-4 text-primary" />
+                                        <Label htmlFor={`pickup-message-${appointment.id}`} className="font-semibold">
+                                          Mensagem para o vídeo (opcional)
+                                        </Label>
+                                      </div>
+                                      <textarea
+                                        id={`pickup-message-${appointment.id}`}
+                                        maxLength={100}
+                                        value={pickupForm.mensagemVideo}
+                                        onChange={(event) =>
+                                          setPickupForm((current) => ({
+                                            ...current,
+                                            mensagemVideo: event.target.value,
+                                          }))
+                                        }
+                                        placeholder="Escreva uma mensagem de até 100 caracteres"
+                                        className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                      />
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        {pickupForm.mensagemVideo.trim() ? (
+                                          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            Cor da mensagem
+                                            <input
+                                              aria-label="Cor da mensagem no vídeo"
+                                              type="color"
+                                              value={pickupForm.corMensagemVideo}
+                                              onChange={(event) =>
+                                                setPickupForm((current) => ({
+                                                  ...current,
+                                                  corMensagemVideo: event.target.value,
+                                                }))
+                                              }
+                                              className="h-8 w-10 cursor-pointer rounded-md border border-border bg-background p-1"
+                                            />
+                                          </label>
+                                        ) : <span />}
+                                        <p className="text-xs text-muted-foreground">
+                                          {pickupForm.mensagemVideo.length}/100
+                                        </p>
+                                      </div>
+                                    </section>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-wrap justify-end gap-2 border-t pt-4">
                                   <Button
                                     type="button"
-                                    size="sm"
                                     disabled={savingPickup}
                                     onClick={() => handleSavePickupCustomization(appointment.id)}
                                   >
@@ -735,7 +820,6 @@ const SchedulingPage = () => {
                                   <Button
                                     type="button"
                                     variant="ghost"
-                                    size="sm"
                                     onClick={() => setCustomizingPickupId(null)}
                                   >
                                     Cancelar
